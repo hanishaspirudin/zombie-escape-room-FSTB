@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FSTB Game Boy Escape Room</title>
+  <title>FSTB Game Boy Zombie Escape</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
@@ -18,9 +18,9 @@
       padding: 15px 10px;
     }
 
-    /* Rangka Utama Game Boy Color Emulator */
+    /* Rangka Game Boy Color Emulator */
     #gameboy {
-      background: #6b21a8; /* Warna Purple Game Boy Retro */
+      background: #6b21a8;
       border: 5px solid #4c1d95;
       border-bottom-width: 14px;
       border-radius: 24px 24px 55px 24px;
@@ -34,7 +34,7 @@
       position: relative;
     }
 
-    /* Bezel Skrin Game Boy */
+    /* Bezel Skrin */
     #screen-bezel {
       background: #1e293b;
       border-radius: 12px 12px 35px 12px;
@@ -62,7 +62,7 @@
       margin-right: 5px;
     }
 
-    /* Skrin Canvas LCD Game Boy */
+    /* Skrin Canvas LCD */
     #canvas-container {
       position: relative;
       background: #8b9bb4;
@@ -78,8 +78,8 @@
       justify-content: space-between;
       background: #0f172a;
       color: #38bdf8;
-      font-size: 0.7rem;
-      padding: 4px 8px;
+      font-size: 0.62rem;
+      padding: 4px 6px;
       font-weight: bold;
     }
 
@@ -99,39 +99,45 @@
       display: none;
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: #064e3b;
+      background: rgba(6, 78, 59, 0.92);
       border-radius: 2px;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 10px;
+      padding: 8px;
       text-align: center;
       z-index: 20;
     }
     #terminal-modal.active { display: flex; }
-    .term-title { color: #f59e0b; font-size: 0.7rem; font-weight: bold; }
+    .term-title { color: #f59e0b; font-size: 0.68rem; font-weight: bold; }
+    .term-warning { color: #ef4444; font-size: 0.6rem; font-weight: bold; margin-bottom: 2px; }
     .term-question { 
-      font-size: 0.72rem; 
+      font-size: 0.7rem; 
       color: #a7f3d0; 
-      line-height: 1.35; 
+      line-height: 1.3; 
       text-align: left; 
       background: #022c22; 
-      padding: 8px; 
+      padding: 6px; 
       border-radius: 4px; 
       border: 1px solid #059669; 
       width: 100%;
     }
     .term-input {
       width: 100%;
-      padding: 6px;
+      padding: 5px;
       background: #0284c7;
       border: 2px solid #38bdf8;
       color: #ffffff;
       font-family: monospace;
-      font-size: 1.1rem;
+      font-size: 1rem;
       border-radius: 4px;
       text-align: center;
       font-weight: bold;
+    }
+    .term-btn-group {
+      display: flex;
+      gap: 5px;
+      width: 100%;
     }
     .term-btn {
       background: #22c55e;
@@ -141,8 +147,12 @@
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
-      font-size: 0.75rem;
-      width: 100%;
+      font-size: 0.68rem;
+      flex: 1;
+    }
+    .term-btn-close {
+      background: #ef4444;
+      color: #ffffff;
     }
 
     /* KAWALAN EMULATOR (D-Pad & Action Buttons) */
@@ -192,8 +202,9 @@
       border: 3px solid #991b1b;
       color: white;
       font-weight: bold;
-      font-size: 1rem;
+      font-size: 0.95rem;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 0 #7f1d1d, inset 0 2px 4px rgba(255,255,255,0.3);
@@ -203,15 +214,16 @@
       transform: translateY(3px);
       box-shadow: 0 1px 0 #7f1d1d;
     }
+    .btn-label-sub { font-size: 0.5rem; color: #fecdd3; }
 
-    /* BUTANG SELECT & START */
+    /* BUTANG SELECT, START & SOUND */
     .meta-buttons {
       display: flex;
-      gap: 15px;
+      gap: 12px;
       margin-top: 15px;
     }
     .btn-pill {
-      width: 45px; height: 12px;
+      width: 42px; height: 12px;
       background: #475569;
       border-radius: 10px;
       transform: rotate(-25deg);
@@ -221,18 +233,19 @@
     }
     .btn-pill:active { background: #1e293b; }
     .pill-label {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       color: #cbd5e1;
       text-align: center;
-      margin-top: 2px;
+      margin-top: 3px;
       font-weight: bold;
     }
 
     #controls-info {
-      margin-top: 15px;
-      font-size: 0.72rem;
+      margin-top: 12px;
+      font-size: 0.7rem;
       color: #94a3b8;
       text-align: center;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -250,16 +263,21 @@
       <div id="canvas-container">
         <div id="gb-status">
           <div>STAGE: <span id="room-num" style="color:#f59e0b">1</span>/5</div>
+          <div>SENJATA: <span id="weapon-status" style="color:#ef4444">TIADA</span></div>
           <div>PINTU: <span id="door-status" style="color:#ef4444">KUNCI</span></div>
         </div>
         <canvas id="gameCanvas" width="300" height="210"></canvas>
 
         <!-- Terminal Modal Soalan -->
         <div id="terminal-modal">
-          <div class="term-title">💻 TERMINAL PINTU BILIK <span id="modal-room">1</span></div>
+          <div class="term-title">💻 TERMINAL BILIK <span id="modal-room">1</span></div>
+          <div class="term-warning">⚠️ AWAS! ZOMBIE SEDANG MERANGKAK KEJAR ANDA!</div>
           <div class="term-question" id="modal-q">Cari FSTB...</div>
-          <input type="number" id="passcode-input" class="term-input" placeholder="MASUKKAN FSTB" autocomplete="off">
-          <button class="term-btn" onclick="submitPasscode()">[ BUTANG A ] HANTAR JAWAPAN</button>
+          <input type="number" id="passcode-input" class="term-input" placeholder="JAWAPAN FSTB" autocomplete="off">
+          <div class="term-btn-group">
+            <button class="term-btn" onclick="submitPasscode()">[ A ] HANTAR</button>
+            <button class="term-btn term-btn-close" onclick="closeTerminal()">[ B ] TUTUP</button>
+          </div>
         </div>
       </div>
 
@@ -279,73 +297,157 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons">
-        <div class="btn-action" onclick="interact()">B</div>
-        <div class="btn-action" onclick="interact()">A</div>
+        <div class="btn-action" onclick="useButtonB()">
+          B
+          <span class="btn-label-sub">SHOOT</span>
+        </div>
+        <div class="btn-action" onclick="useButtonA()">
+          A
+          <span class="btn-label-sub">INTERACT</span>
+        </div>
       </div>
     </div>
 
-    <!-- Select & Start -->
+    <!-- Select, Sound, & Start -->
     <div class="meta-buttons">
       <div>
         <div class="btn-pill" onclick="restartGame()"></div>
         <div class="pill-label">RESET</div>
       </div>
       <div>
-        <div class="btn-pill" onclick="interact()"></div>
+        <div class="btn-pill" onclick="toggleBGM()"></div>
+        <div class="pill-label">SOUND</div>
+      </div>
+      <div>
+        <div class="btn-pill" onclick="useButtonA()"></div>
         <div class="pill-label">START</div>
       </div>
     </div>
   </div>
 
-  <div id="controls-info">Guna Keyboard (**W, A, S, D** / **Arrow Keys** & **Space / E**) atau Touch Screen.</div>
+  <div id="controls-info">
+    [A / Space] = Buka Terminal / Hantar Jawapan<br>
+    [B / Shift] = Tembak Zombie (Bila ada pistol) / Close Modal
+  </div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 // ==========================================
+// SYSTEM AUDIOS (WEB AUDIO API CHIPTUNE BGM & SFX)
+// ==========================================
+let audioCtx = null;
+let bgmInterval = null;
+let bgmEnabled = true;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playTone(freq, type, duration, volume = 0.1) {
+  if (!audioCtx || !bgmEnabled) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e){}
+}
+
+const bgmNotes = [
+  261.63, 329.63, 392.00, 523.25, 392.00, 329.63,
+  293.66, 349.23, 440.00, 587.33, 440.00, 349.23,
+  329.63, 392.00, 493.88, 659.25, 493.88, 392.00,
+  349.23, 440.00, 523.25, 698.46, 523.25, 440.00
+];
+let bgmNoteIndex = 0;
+
+function startBGM() {
+  if (bgmInterval) clearInterval(bgmInterval);
+  bgmInterval = setInterval(() => {
+    if (bgmEnabled && audioCtx && audioCtx.state === 'running') {
+      const note = bgmNotes[bgmNoteIndex];
+      playTone(note, 'square', 0.12, 0.03);
+      bgmNoteIndex = (bgmNoteIndex + 1) % bgmNotes.length;
+    }
+  }, 180);
+}
+
+function toggleBGM() {
+  initAudio();
+  bgmEnabled = !bgmEnabled;
+  playSFX('button');
+}
+
+function playSFX(type) {
+  initAudio();
+  if (!bgmEnabled) return;
+  if (type === 'button') {
+    playTone(440, 'square', 0.05, 0.08);
+  } else if (type === 'correct') {
+    playTone(523.25, 'triangle', 0.1, 0.15);
+    setTimeout(() => playTone(659.25, 'triangle', 0.1, 0.15), 100);
+    setTimeout(() => playTone(783.99, 'triangle', 0.2, 0.15), 200);
+  } else if (type === 'wrong') {
+    playTone(180, 'sawtooth', 0.15, 0.15);
+    setTimeout(() => playTone(130, 'sawtooth', 0.25, 0.15), 150);
+  } else if (type === 'shoot') {
+    playTone(800, 'square', 0.04, 0.12);
+    setTimeout(() => playTone(300, 'sawtooth', 0.08, 0.12), 40);
+  } else if (type === 'explosion') {
+    playTone(120, 'sawtooth', 0.2, 0.2);
+    setTimeout(() => playTone(60, 'sawtooth', 0.3, 0.2), 100);
+  } else if (type === 'door') {
+    playTone(300, 'square', 0.08, 0.1);
+    setTimeout(() => playTone(450, 'square', 0.12, 0.1), 80);
+  }
+}
+
+// ==========================================
 // BANK SOALAN RAWAK FSTB (MATEMATIK TINGKATAN 1)
 // ==========================================
 const questionPool = {
-  // Stage 1: Nombor Kecil
   1: [
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 8 dan 12.", code: "4" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 12 dan 18.", code: "6" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 10 dan 25.", code: "5" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 14 dan 21.", code: "7" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 16 dan 24.", code: "8" }
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 14 dan 21.", code: "7" }
   ],
-  // Stage 2: Nombor Sederhana
   2: [
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 36.", code: "12" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 30 dan 45.", code: "15" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 50.", code: "10" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 36 dan 54.", code: "18" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 28 dan 42.", code: "14" }
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 36 dan 54.", code: "18" }
   ],
-  // Stage 3: Tiga Nombor
   3: [
     { q: "Cari FSTB bagi tiga nombor: 12, 18, dan 24.", code: "6" },
     { q: "Cari FSTB bagi tiga nombor: 15, 30, dan 45.", code: "15" },
     { q: "Cari FSTB bagi tiga nombor: 16, 32, dan 48.", code: "16" },
-    { q: "Cari FSTB bagi tiga nombor: 20, 40, dan 60.", code: "20" },
-    { q: "Cari FSTB bagi tiga nombor: 18, 27, dan 36.", code: "9" }
+    { q: "Cari FSTB bagi tiga nombor: 20, 40, dan 60.", code: "20" }
   ],
-  // Stage 4: Nombor Lebih Besar
   4: [
     { q: "Cari FSTB bagi nombor 32, 48, dan 80.", code: "16" },
     { q: "Cari FSTB bagi nombor 36, 54, dan 90.", code: "18" },
     { q: "Cari FSTB bagi nombor 28, 56, dan 84.", code: "28" },
-    { q: "Cari FSTB bagi nombor 45, 75, dan 105.", code: "15" },
-    { q: "Cari FSTB bagi nombor 48, 72, dan 120.", code: "24" }
+    { q: "Cari FSTB bagi nombor 45, 75, dan 105.", code: "15" }
   ],
-  // Stage 5: Cabaran Akhir FSTB
   5: [
     { q: "Soalan Akhir! Cari FSTB bagi 56, 84, dan 140.", code: "28" },
     { q: "Soalan Akhir! Cari FSTB bagi 64, 96, dan 160.", code: "32" },
     { q: "Soalan Akhir! Cari FSTB bagi 60, 90, dan 150.", code: "30" },
-    { q: "Soalan Akhir! Cari FSTB bagi 72, 108, dan 180.", code: "36" },
-    { q: "Soalan Akhir! Cari FSTB bagi 84, 126, dan 210.", code: "42" }
+    { q: "Soalan Akhir! Cari FSTB bagi 72, 108, dan 180.", code: "36" }
   ]
 };
 
@@ -354,7 +456,13 @@ let sessionQuestions = [];
 let doorUnlocked = false;
 let isTerminalOpen = false;
 
-// Penjanaan Set Soalan Rawak untuk Sesi Main Ini
+// Entiti Game
+const player = { x: 40, y: 105, size: 10, speed: 2.2, facingX: 1, facingY: 0, hasWeapon: false };
+const zombie = { x: 260, y: 40, size: 10, speed: 0.65, active: true };
+const terminal = { x: 130, y: 22, w: 32, h: 22 };
+const door = { x: 280, y: 80, w: 12, h: 50 };
+let bullets = [];
+
 function generateSessionQuestions() {
   sessionQuestions = [];
   for (let stage = 1; stage <= 5; stage++) {
@@ -364,20 +472,52 @@ function generateSessionQuestions() {
   }
 }
 
-// State Karakter & Objek Bilik
-const player = { x: 40, y: 105, size: 10, speed: 2.2 };
-const terminal = { x: 130, y: 22, w: 32, h: 22 };
-const door = { x: 280, y: 80, w: 12, h: 50 };
+function resetZombie() {
+  zombie.x = 260;
+  zombie.y = 40;
+  zombie.speed = 0.55 + (currentRoom * 0.12); // Zombie makin laju ikut stage
+  zombie.active = true;
+}
 
-function interact() {
+// Kawalan Butang A (INTERACT / CONFIRM)
+function useButtonA() {
+  initAudio();
+  playSFX('button');
+
   if (isTerminalOpen) {
     submitPasscode();
     return;
   }
+
   let dist = Math.hypot((player.x) - (terminal.x + terminal.w/2), (player.y) - (terminal.y + terminal.h/2));
   if (dist < 38) {
     openTerminal();
   }
+}
+
+// Kawalan Butang B (SHOOT / CANCEL)
+function useButtonB() {
+  initAudio();
+
+  if (isTerminalOpen) {
+    closeTerminal();
+    return;
+  }
+
+  if (!player.hasWeapon) {
+    playSFX('wrong');
+    return;
+  }
+
+  // Tembak Peluru
+  playSFX('shoot');
+  bullets.push({
+    x: player.x,
+    y: player.y,
+    vx: player.facingX * 6,
+    vy: player.facingY * 6,
+    size: 3
+  });
 }
 
 function openTerminal() {
@@ -390,41 +530,60 @@ function openTerminal() {
   setTimeout(() => document.getElementById("passcode-input").focus(), 100);
 }
 
+function closeTerminal() {
+  document.getElementById("terminal-modal").classList.remove("active");
+  isTerminalOpen = false;
+  playSFX('button');
+}
+
 function submitPasscode() {
   const input = document.getElementById("passcode-input").value.trim();
   const currentQ = sessionQuestions[currentRoom];
 
   if (input === currentQ.code) {
-    alert("SYABAS! Jawapan FSTB Betul! Pintu Nyahterkunci.");
+    playSFX('correct');
+    alert("SYABAS! FSTB BETUL!\n\n🎁 DAPAT SENJATA (🔫 GUN) & PINTU TERBUKA!\nTekan BUTANG B untuk tembak zombie!");
     doorUnlocked = true;
+    player.hasWeapon = true;
+    
     document.getElementById("door-status").innerText = "BUKA";
     document.getElementById("door-status").style.color = "#4ade80";
-    document.getElementById("terminal-modal").classList.remove("active");
-    isTerminalOpen = false;
+    document.getElementById("weapon-status").innerText = "🔫 GUN";
+    document.getElementById("weapon-status").style.color = "#fbbf24";
+    
+    closeTerminal();
   } else {
-    alert("JAWAPAN SALAH! Sila semak semula pengiraan FSTB anda.");
+    playSFX('wrong');
+    alert("JAWAPAN SALAH! Cepat, zombie semakin menghampiri anda!");
   }
 }
 
 function restartGame() {
+  initAudio();
+  playSFX('button');
   currentRoom = 0;
   doorUnlocked = false;
   isTerminalOpen = false;
   player.x = 40;
   player.y = 105;
+  player.hasWeapon = false;
+  bullets = [];
+  
   document.getElementById("room-num").innerText = "1";
   document.getElementById("door-status").innerText = "KUNCI";
   document.getElementById("door-status").style.color = "#ef4444";
+  document.getElementById("weapon-status").innerText = "TIADA";
+  document.getElementById("weapon-status").style.color = "#ef4444";
   document.getElementById("terminal-modal").classList.remove("active");
   
-  // Jana set soalan baharu yang berbeza!
   generateSessionQuestions();
-  alert("GAME DENGAN SET SOALAN BAHARU DIMULAKAN!");
+  resetZombie();
 }
 
-// Pergerakan Touch Control
+// Touch controls
 let moveInterval = null;
 function startMove(dx, dy) {
+  initAudio();
   if (moveInterval) clearInterval(moveInterval);
   movePlayer(dx, dy);
   moveInterval = setInterval(() => movePlayer(dx, dy), 40);
@@ -435,10 +594,11 @@ function stopMove() {
 
 const keys = {};
 window.addEventListener("keydown", (e) => {
+  initAudio();
   keys[e.key.toLowerCase()] = true;
-  if (e.key === "a" || e.key === "A" || e.key === "e" || e.key === "E" || e.key === " ") {
-    interact();
-  }
+  if (e.key === "m" || e.key === "M") toggleBGM();
+  if (e.key === "a" || e.key === "A" || e.key === "e" || e.key === "E" || e.key === " ") useButtonA();
+  if (e.key === "b" || e.key === "B" || e.key === "Shift" || e.key === "j" || e.key === "J") useButtonB();
 });
 window.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
 
@@ -447,33 +607,85 @@ function movePlayer(dx, dy) {
   let nextX = player.x + dx * player.speed;
   let nextY = player.y + dy * player.speed;
 
+  if (dx !== 0 || dy !== 0) {
+    player.facingX = dx;
+    player.facingY = dy;
+  }
+
   if (nextX - player.size > 12 && nextX + player.size < canvas.width - 12) player.x = nextX;
   if (nextY - player.size > 12 && nextY + player.size < canvas.height - 12) player.y = nextY;
 }
 
 function update() {
-  if (isTerminalOpen) return;
-
   if (keys["w"] || keys["arrowup"]) movePlayer(0, -1);
   if (keys["s"] || keys["arrowdown"]) movePlayer(0, 1);
   if (keys["a"] || keys["arrowleft"]) movePlayer(-1, 0);
   if (keys["d"] || keys["arrowright"]) movePlayer(1, 0);
 
-  // Semak jika jalan melepasi pintu
+  // Pergerakan Zombie (Perlahan bila Terminal terbuka)
+  if (zombie.active) {
+    let zSpeed = isTerminalOpen ? zombie.speed * 0.25 : zombie.speed;
+    let angle = Math.atan2(player.y - zombie.y, player.x - zombie.x);
+    zombie.x += Math.cos(angle) * zSpeed;
+    zombie.y += Math.sin(angle) * zSpeed;
+
+    // Semak jika Zombie tangkap pemain
+    let dist = Math.hypot(player.x - zombie.x, player.y - zombie.y);
+    if (dist < player.size + zombie.size) {
+      playSFX('wrong');
+      alert("⚠️ ZOMBIE TANGKAP ANDA!\nAnda dikembalikan ke permulaan bilik.");
+      player.x = 40;
+      player.y = 105;
+      resetZombie();
+    }
+  }
+
+  // Update Peluru
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    let b = bullets[i];
+    b.x += b.vx;
+    b.y += b.vy;
+
+    if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+      bullets.splice(i, 1);
+      continue;
+    }
+
+    // Peluru Kena Zombie
+    if (zombie.active) {
+      let dist = Math.hypot(b.x - zombie.x, b.y - zombie.y);
+      if (dist < b.size + zombie.size) {
+        zombie.active = false;
+        bullets.splice(i, 1);
+        playSFX('explosion');
+      }
+    }
+  }
+
+  // Semak Pintu Keluar
   if (player.x + player.size >= door.x && player.y > door.y && player.y < door.y + door.h) {
     if (doorUnlocked) {
+      playSFX('door');
       currentRoom++;
       if (currentRoom >= 5) {
-        alert("TAHNIAH! Anda berjaya tamatkan kesemua 5 bilik FSTB! Permainan akan mula semula dengan set soalan baharu.");
+        playSFX('correct');
+        alert("🎉 TAHNIAH! Anda berjaya membunuh Zombie & menyelesaikan kesemua 5 bilik FSTB!");
         restartGame();
         return;
       }
       player.x = 40;
       player.y = 105;
+      player.hasWeapon = false;
       doorUnlocked = false;
+      bullets = [];
+
       document.getElementById("room-num").innerText = currentRoom + 1;
       document.getElementById("door-status").innerText = "KUNCI";
       document.getElementById("door-status").style.color = "#ef4444";
+      document.getElementById("weapon-status").innerText = "TIADA";
+      document.getElementById("weapon-status").style.color = "#ef4444";
+      
+      resetZombie();
     }
   }
 }
@@ -481,11 +693,11 @@ function update() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Lantai Bilik Retro LCD
+  // Lantai Bilik LCD Retro
   ctx.fillStyle = "#8b9bb4";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Garis Grid Lantai
+  // Grid Lantai
   ctx.strokeStyle = "#7b8b9f";
   ctx.lineWidth = 1;
   for (let x = 0; x < canvas.width; x += 20) {
@@ -495,12 +707,12 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
   }
 
-  // Dinding Bilik
+  // Dinding
   ctx.strokeStyle = "#0f172a";
   ctx.lineWidth = 8;
   ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
 
-  // Pintu Bilik
+  // Pintu
   ctx.fillStyle = doorUnlocked ? "#22c55e" : "#ef4444";
   ctx.fillRect(door.x, door.y, door.w, door.h);
 
@@ -510,13 +722,38 @@ function draw() {
   ctx.fillStyle = "#38bdf8";
   ctx.fillRect(terminal.x + 3, terminal.y + 3, terminal.w - 6, terminal.h - 8);
 
-  // Watak Karakter 8-Bit
+  // Lukis Zombie 8-Bit (Hijau Muka Merah)
+  if (zombie.active) {
+    ctx.fillStyle = "#15803d"; // Badan Hijau
+    ctx.fillRect(zombie.x - 6, zombie.y - 6, 12, 12);
+    ctx.fillStyle = "#4ade80"; // Kepala
+    ctx.fillRect(zombie.x - 4, zombie.y - 8, 8, 6);
+    ctx.fillStyle = "#ef4444"; // Mata Merah
+    ctx.fillRect(zombie.x - 2, zombie.y - 7, 2, 2);
+    ctx.fillRect(zombie.x + 1, zombie.y - 7, 2, 2);
+  }
+
+  // Lukis Peluru
+  ctx.fillStyle = "#f59e0b";
+  bullets.forEach(b => {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Watak Karakter
   ctx.fillStyle = "#0f172a"; // Baju
   ctx.fillRect(player.x - 6, player.y - 6, 12, 12);
   ctx.fillStyle = "#fbcfe8"; // Muka
   ctx.fillRect(player.x - 4, player.y - 8, 8, 6);
-  ctx.fillStyle = "#ec4899"; // Topi Pink Retro
+  ctx.fillStyle = "#ec4899"; // Topi Pink
   ctx.fillRect(player.x - 5, player.y - 11, 10, 4);
+
+  // Lukis Pistol pada tangan jika ada senjata
+  if (player.hasWeapon) {
+    ctx.fillStyle = "#0284c7";
+    ctx.fillRect(player.x + (player.facingX * 6), player.y + (player.facingY * 6), 5, 3);
+  }
 }
 
 function gameLoop() {
@@ -525,8 +762,9 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Mula perlawanan pertama
 generateSessionQuestions();
+resetZombie();
+startBGM();
 gameLoop();
 </script>
 </body>

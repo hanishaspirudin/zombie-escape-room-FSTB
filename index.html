@@ -101,6 +101,27 @@
     }
     .brand-title span { color: #ec4899; }
 
+    /* NOTIFIKASI DALAM GAME */
+    #game-notice {
+      display: none;
+      position: absolute;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      border: 2px solid #f59e0b;
+      color: #fbbf24;
+      font-size: 0.58rem;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 6px;
+      z-index: 25;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
     /* Modal Terminal Soalan LCD Retro */
     #terminal-modal {
       display: none;
@@ -391,13 +412,15 @@
         </div>
         <canvas id="gameCanvas" width="300" height="210"></canvas>
 
+        <!-- BANNER NOTIFIKASI DALAM GAME -->
+        <div id="game-notice">🔑 KUNCI BERTUKAR LOKASI!</div>
+
         <!-- PAGE 1: SKRIN MULA & NAMA PEMAIN -->
         <div id="start-modal" class="active">
           <div class="vic-title" style="font-size: 0.9rem; margin-bottom:4px;">🧟 FSTB ZOMBIE ESCAPE 🗝️</div>
           <div class="vic-text" style="color:#cbd5e1; margin-bottom:6px;">
-            Masukkan nama pemain (Maks 10 huruf):
+            Masukkan nama pemain (MAX 10 huruf):
           </div>
-          <!-- HAD NAMA DILIMITKAN KEPADA 10 HURUF (MAXLENGTH=10) -->
           <input type="text" id="player-name-input" class="term-input" style="width:85%; margin-bottom:8px; font-size:0.8rem;" placeholder="NAMA (MAX 10)" maxlength="10" value="Pemain 1" oninput="playTypingSFX()" onclick="initAudio(); startBGM();">
           
           <div class="term-btn-group" style="width:85%; flex-direction:column; gap:5px;">
@@ -570,6 +593,22 @@
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+
+// ==========================================
+// NOTIFIKASI BANNER RETRO DALAM GAME
+// ==========================================
+let noticeTimeout = null;
+function showGameNotice(msg, color='#f59e0b', duration=2500) {
+  const notice = document.getElementById("game-notice");
+  notice.innerText = msg;
+  notice.style.borderColor = color;
+  notice.style.color = color;
+  notice.style.display = "block";
+  if (noticeTimeout) clearTimeout(noticeTimeout);
+  noticeTimeout = setTimeout(() => {
+    notice.style.display = "none";
+  }, duration);
+}
 
 // ==========================================
 // SYSTEM AUDIOS (WEB AUDIO API)
@@ -1164,7 +1203,7 @@ function startTimer() {
       playSFX('wrong');
       closeTerminal();
       relocateKey();
-      alert("⌛ MASA HABIS (30s)!\nKedudukan Kunci Emas telah bertukar! Sila cari kunci semula di lokasi baharu.");
+      showGameNotice("🔑 MASA HABIS! KUNCI BERTUKAR LOKASI!", "#ef4444", 2500);
     }
   }, 1000);
 }
@@ -1205,10 +1244,10 @@ function submitPasscode() {
     player.hasWeapon = true;
     spawnRandomDoor();
 
-    alert("SYABAS! JAWAPAN BETUL! (+100 PTS)\n\n🚪 PINTU RAHSIA TERBUKA & 🔫 SENJATA DIAKTIFKAN!\nAnda boleh terus LARI ke pintu atau TEMBAK ZOMBIE untuk bonus +50 PTS!");
+    showGameNotice("✨ JAWAPAN BETUL! 🚪 PINTU RAHSIA TERBUKA!", "#4ade80", 3000);
   } else {
     playSFX('wrong');
-    alert("JAWAPAN SALAH! Sila semak semula pengiraan FSTB anda.");
+    showGameNotice("❌ JAWAPAN SALAH! SILA SEMAK FSTB", "#ef4444", 2000);
   }
 }
 
@@ -1297,7 +1336,6 @@ function stopMove() {
 
 const keys = {};
 window.addEventListener("keydown", (e) => {
-  // ELAKKAN PERGERAKAN GAMEBOY DARIPADA MENGANGGU APABILA TAIPING DALAM INPUT
   if (document.activeElement.tagName === "INPUT") {
     if (e.key === "Enter") {
       if (document.activeElement.id === "passcode-input") {
@@ -1306,7 +1344,7 @@ window.addEventListener("keydown", (e) => {
         openGuideModal();
       }
     }
-    return; // JANGAN EXECUTE SHORTCUT KAWALAN GAMEBOY
+    return;
   }
 
   initAudio();
@@ -1383,7 +1421,7 @@ function update() {
             openGameOverModal();
           } else {
             playSFX('wrong');
-            alert(`⚠️ ZOMBIE TANGKAP ANDA!\nNyawa terkurang 1! (Baki Nyawa: ${playerLives})`);
+            showGameNotice(`⚠️ ZOMBIE TANGKAP! BAKI HP: ${playerLives}`, "#ef4444", 2000);
             player.x = 40;
             player.y = 105;
             bullets = [];

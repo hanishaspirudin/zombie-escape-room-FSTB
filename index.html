@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FSTB Zombie Escape</title>
+  <title>FSTB Zombie Escape 3D</title>
+  <!-- THREE.JS CDN UNTUK GRAFIK ISOMETRIC 3D -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
@@ -62,21 +64,20 @@
       margin-right: 5px;
     }
 
-    /* Skrin Canvas LCD */
+    /* Bekas Skrin 3D Canvas */
     #canvas-container {
       position: relative;
-      background: #8b9bb4;
+      background: #020617;
       border: 4px solid #0f172a;
       border-radius: 4px;
       overflow: hidden;
       width: 100%;
+      height: 210px;
     }
-    canvas { 
+    #canvas-container canvas { 
       display: block; 
-      background: #8b9bb4; 
-      image-rendering: pixelated; 
-      width: 100%; 
-      height: auto; 
+      width: 100% !important; 
+      height: 100% !important; 
     }
 
     /* Bar Status Skrin */
@@ -398,7 +399,7 @@
     <div id="screen-bezel">
       <div class="screen-header">
         <div><span class="power-led"></span>POWER</div>
-        <div style="font-size:0.55rem;">DOT MATRIX WITH STEREO SOUND</div>
+        <div style="font-size:0.55rem;">3D GRAPHICS ENGINE</div>
       </div>
 
       <!-- Canvas LCD -->
@@ -410,14 +411,13 @@
           <div>HP:<span id="lives-num" style="color:#ef4444">❤️❤️❤️</span></div>
           <div>PTR:<span id="door-status" style="color:#ef4444">KUNCI</span></div>
         </div>
-        <canvas id="gameCanvas" width="300" height="210"></canvas>
 
         <!-- BANNER NOTIFIKASI DALAM GAME -->
         <div id="game-notice">🔑 KUNCI BERTUKAR LOKASI!</div>
 
         <!-- PAGE 1: SKRIN MULA & NAMA PEMAIN -->
         <div id="start-modal" class="active">
-          <div class="vic-title" style="font-size: 0.9rem; margin-bottom:4px;">🧟 FSTB ZOMBIE ESCAPE 🗝️</div>
+          <div class="vic-title" style="font-size: 0.9rem; margin-bottom:4px;">🧟 FSTB ZOMBIE ESCAPE 3D 🗝️</div>
           <div class="vic-text" style="color:#cbd5e1; margin-bottom:6px;">
             Masukkan nama pemain (MAX 10 huruf):
           </div>
@@ -434,11 +434,11 @@
           <div class="vic-title" style="font-size: 0.8rem; margin-bottom:2px;">📜 MISI & PERATURAN</div>
           <div class="vic-details" style="font-size: 0.52rem; line-height: 1.25; margin-bottom: 6px; padding: 4px 6px;">
             <div style="color:#fbbf24; font-weight:bold;">🎯 MISI UTAMA:</div>
-            <div>• Escape 5 Stage Bilik Berzombie!</div>
+            <div>• Escape 5 Stage Bilik Berzombie 3D!</div>
             <div style="color:#4ade80; font-weight:bold; margin-top:2px;">🔄 CARA MAIN:</div>
-            <div>1. Cari Kunci Emas 🗝️</div>
+            <div>1. Cari Kunci Emas 3D 🗝️</div>
             <div>2. Jawab Soalan FSTB (Masa: 30s) 🧮</div>
-            <div>3. Pintu Rahsia Terus Buka! 🚪</div>
+            <div>3. Pintu Rahsia 3D Terus Buka! 🚪</div>
             <div>4. Lari ke Pintu ATAU Tembak Zombie (+50 PTS) 🔫</div>
             <div style="color:#ef4444; font-weight:bold; margin-top:2px;">❤️ PERATURAN:</div>
             <div>• 3 Nyawa (Kena gigit = -1 HP). 0 HP = Game Over!</div>
@@ -519,7 +519,7 @@
 
       </div>
 
-      <div class="brand-title">FSTB <span>ZOMBIE ESCAPE</span></div>
+      <div class="brand-title">FSTB <span>ZOMBIE ESCAPE 3D</span></div>
     </div>
 
     <!-- Kawalan Emulator (D-Pad / Joystick & Buttons) -->
@@ -591,9 +591,6 @@
   </div>
 
 <script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
 // ==========================================
 // NOTIFIKASI BANNER RETRO DALAM GAME
 // ==========================================
@@ -784,36 +781,36 @@ const questionPool = {
 };
 
 const keyPositions = [
-  { x: 140, y: 35 },
-  { x: 140, y: 165 },
-  { x: 210, y: 40 },
-  { x: 50, y: 165 },
-  { x: 140, y: 105 }
+  { x: 0, z: -8 },
+  { x: 0, z: 8 },
+  { x: 6, z: -7 },
+  { x: -8, z: 8 },
+  { x: 0, z: 0 }
 ];
 
 const roomObstacles = {
-  0: [{ x: 125, y: 85, w: 50, h: 30, type: 'table' }],
+  0: [{ x: 0, z: 0, w: 4, d: 2.5, type: 'table' }],
   1: [
-    { x: 70, y: 55, w: 22, h: 22, type: 'barrel' },
-    { x: 140, y: 110, w: 28, h: 28, type: 'crate' },
-    { x: 200, y: 45, w: 22, h: 22, type: 'barrel' },
-    { x: 80, y: 135, w: 28, h: 28, type: 'crate' }
+    { x: -5, z: -4, w: 1.8, d: 1.8, type: 'barrel' },
+    { x: 0, z: 2, w: 2.2, d: 2.2, type: 'crate' },
+    { x: 5, z: -5, w: 1.8, d: 1.8, type: 'barrel' },
+    { x: -4, z: 5, w: 2.2, d: 2.2, type: 'crate' }
   ],
   2: [
-    { x: 160, y: 20, w: 20, h: 90, type: 'table' },
-    { x: 95, y: 95, w: 28, h: 28, type: 'crate' }
+    { x: 2, z: -5, w: 1.6, d: 7, type: 'table' },
+    { x: -3, z: 1, w: 2.2, d: 2.2, type: 'crate' }
   ],
   3: [
-    { x: 75, y: 40, w: 25, h: 55, type: 'table' },
-    { x: 80, y: 125, w: 30, h: 30, type: 'crate' },
-    { x: 145, y: 85, w: 22, h: 22, type: 'barrel' },
-    { x: 190, y: 40, w: 22, h: 22, type: 'barrel' }
+    { x: -5, z: -5, w: 2, d: 4, type: 'table' },
+    { x: -4, z: 4, w: 2.5, d: 2.5, type: 'crate' },
+    { x: 1, z: 0, w: 1.8, d: 1.8, type: 'barrel' },
+    { x: 4, z: -5, w: 1.8, d: 1.8, type: 'barrel' }
   ],
   4: [
-    { x: 105, y: 70, w: 28, h: 28, type: 'crate' },
-    { x: 165, y: 70, w: 28, h: 28, type: 'crate' },
-    { x: 135, y: 145, w: 30, h: 22, type: 'table' },
-    { x: 60, y: 50, w: 22, h: 22, type: 'barrel' }
+    { x: -2.5, z: -2, w: 2.2, d: 2.2, type: 'crate' },
+    { x: 2.5, z: -2, w: 2.2, d: 2.2, type: 'crate' },
+    { x: 0, z: 5, w: 2.5, d: 1.8, type: 'table' },
+    { x: -6, z: -4, w: 1.8, d: 1.8, type: 'barrel' }
   ]
 };
 
@@ -836,27 +833,218 @@ let gameTimeTimer = null;
 let questionTimer = 30;
 let timerInterval = null;
 
-const player = { x: 40, y: 105, size: 10, speed: 2.2, facingX: 1, facingY: 0, hasWeapon: false };
-const keyObj = { x: 140, y: 35 };
-
-let door = { x: 255, y: 80, w: 14, h: 45, isVisible: false };
+// SIFAT ENTITI 3D
+const player = { x: -8, z: 0, size: 0.8, speed: 0.18, facingX: 1, facingZ: 0, hasWeapon: false };
+const keyObj = { x: 0, z: -8 };
+let door = { x: 9.5, z: 0, w: 1, d: 3.5, isVisible: false };
 
 let zombies = [];
 let bullets = [];
 
+// ==========================================
+// PENETAPAN TIGA PERSPEKTIF THREE.JS (ISOMETRIC 3D)
+// ==========================================
+let scene, camera, renderer;
+let playerMesh, keyMesh, doorMesh;
+let obstacleMeshes = [];
+let zombieMeshes = [];
+let bulletMeshes = [];
+let keyLight;
+
+function init3D() {
+  const container = document.getElementById("canvas-container");
+  
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x020617);
+
+  // KAMERA ISOMETIK (ORTHOGRAPHIC)
+  const aspect = container.clientWidth / container.clientHeight;
+  const d = 12;
+  camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+  camera.position.set(15, 20, 15);
+  camera.lookAt(0, 0, 0);
+
+  // ENGIN GRAFIK RENDERER
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  container.appendChild(renderer.domElement);
+
+  // PENCAHAYAAN 3D
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffb86c, 0.8);
+  dirLight.position.set(15, 25, 10);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 1024;
+  dirLight.shadow.mapSize.height = 1024;
+  scene.add(dirLight);
+
+  // LANTAI 3D (GRID TILE)
+  const floorGeo = new THREE.PlaneGeometry(20, 20);
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  const grid = new THREE.GridHelper(20, 20, 0x38bdf8, 0x334155);
+  grid.position.y = 0.01;
+  scene.add(grid);
+
+  // DINDING PERIMETER 3D
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
+  const wallGeoH = new THREE.BoxGeometry(20.8, 1.5, 0.8);
+  const wallGeoV = new THREE.BoxGeometry(0.8, 1.5, 20.8);
+
+  const wallN = new THREE.Mesh(wallGeoH, wallMat); wallN.position.set(0, 0.75, -10.4); wallN.castShadow = true; scene.add(wallN);
+  const wallS = new THREE.Mesh(wallGeoH, wallMat); wallS.position.set(0, 0.75, 10.4); wallS.castShadow = true; scene.add(wallS);
+  const wallW = new THREE.Mesh(wallGeoV, wallMat); wallW.position.set(-10.4, 0.75, 0); wallW.castShadow = true; scene.add(wallW);
+  const wallE = new THREE.Mesh(wallGeoV, wallMat); wallE.position.set(10.4, 0.75, 0); wallE.castShadow = true; scene.add(wallE);
+
+  // PEMAIN 3D (WATAK)
+  const pGroup = new THREE.Group();
+  const bodyGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.2, 12);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xec4899 });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.y = 0.6;
+  body.castShadow = true;
+  pGroup.add(body);
+
+  const headGeo = new THREE.SphereGeometry(0.35, 12, 12);
+  const headMat = new THREE.MeshStandardMaterial({ color: 0xfbcfe8 });
+  const head = new THREE.Mesh(headGeo, headMat);
+  head.position.y = 1.35;
+  head.castShadow = true;
+  pGroup.add(head);
+
+  // VISOR PENEMBAK
+  const visorGeo = new THREE.BoxGeometry(0.3, 0.15, 0.2);
+  const visorMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7 });
+  const visor = new THREE.Mesh(visorGeo, visorMat);
+  visor.position.set(0.2, 1.35, 0);
+  pGroup.add(visor);
+
+  playerMesh = pGroup;
+  scene.add(playerMesh);
+
+  // KUNCI EMAS 3D
+  const keyGroup = new THREE.Group();
+  const ringGeo = new THREE.TorusGeometry(0.3, 0.08, 8, 16);
+  const keyMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.8, roughness: 0.2 });
+  const ring = new THREE.Mesh(ringGeo, keyMat);
+  ring.rotation.x = Math.PI / 2;
+  keyGroup.add(ring);
+
+  const stemGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.8, 8);
+  const stem = new THREE.Mesh(stemGeo, keyMat);
+  stem.rotation.z = Math.PI / 2;
+  stem.position.x = 0.5;
+  keyGroup.add(stem);
+
+  keyMesh = keyGroup;
+  keyMesh.position.y = 0.8;
+  scene.add(keyMesh);
+
+  keyLight = new THREE.PointLight(0xfbbf24, 1.5, 4);
+  scene.add(keyLight);
+
+  // PINTU RAHSIA 3D
+  const doorGeo = new THREE.BoxGeometry(1, 2.2, 3.5);
+  const doorMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d });
+  doorMesh = new THREE.Mesh(doorGeo, doorMat);
+  doorMesh.position.y = 1.1;
+  doorMesh.visible = false;
+  scene.add(doorMesh);
+
+  window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize() {
+  const container = document.getElementById("canvas-container");
+  if (!container || !renderer) return;
+  const aspect = container.clientWidth / container.clientHeight;
+  const d = 12;
+  camera.left = -d * aspect;
+  camera.right = d * aspect;
+  camera.top = d;
+  camera.bottom = -d;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+}
+
+function rebuild3DObstacles() {
+  obstacleMeshes.forEach(m => scene.remove(m));
+  obstacleMeshes = [];
+
+  const list = roomObstacles[currentRoom] || [];
+  list.forEach(obs => {
+    let geo, mat;
+    if (obs.type === 'table') {
+      geo = new THREE.BoxGeometry(obs.w, 0.8, obs.d);
+      mat = new THREE.MeshStandardMaterial({ color: 0xb45309 });
+    } else if (obs.type === 'barrel') {
+      geo = new THREE.CylinderGeometry(obs.w / 2, obs.w / 2, 1.2, 12);
+      mat = new THREE.MeshStandardMaterial({ color: 0x475569 });
+    } else {
+      geo = new THREE.BoxGeometry(obs.w, 1.2, obs.d);
+      mat = new THREE.MeshStandardMaterial({ color: 0xd97706 });
+    }
+
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(obs.x, 0.5, obs.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    obstacleMeshes.push(mesh);
+  });
+}
+
+function update3DZombies() {
+  zombieMeshes.forEach(m => scene.remove(m));
+  zombieMeshes = [];
+
+  zombies.forEach(z => {
+    const zGroup = new THREE.Group();
+    const zGeo = new THREE.BoxGeometry(0.9, 1.2, 0.9);
+    const zMat = new THREE.MeshStandardMaterial({ color: 0x15803d });
+    const zMesh = new THREE.Mesh(zGeo, zMat);
+    zMesh.position.y = 0.6;
+    zMesh.castShadow = true;
+    zGroup.add(zMesh);
+
+    // MATA BERSINAR MERAH ZOMBIE
+    const eyeGeo = new THREE.BoxGeometry(0.15, 0.1, 0.1);
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444 });
+    const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.2, 0.9, -0.45); zGroup.add(eyeL);
+    const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.2, 0.9, -0.45); zGroup.add(eyeR);
+
+    zGroup.position.set(z.x, 0, z.z);
+    zGroup.visible = z.active;
+    scene.add(zGroup);
+    zombieMeshes.push(zGroup);
+  });
+}
+
 function spawnRandomDoor() {
   const wallPositions = [
-    { x: 255, y: Math.floor(Math.random() * 100) + 35, w: 14, h: 45 },
-    { x: Math.floor(Math.random() * 140) + 70, y: 12, w: 45, h: 14 },
-    { x: Math.floor(Math.random() * 140) + 70, y: 182, w: 45, h: 14 }
+    { x: 9.5, z: (Math.random() * 10) - 5, w: 1, d: 3.5 },
+    { x: (Math.random() * 10) - 5, z: -9.5, w: 3.5, d: 1 },
+    { x: (Math.random() * 10) - 5, z: 9.5, w: 3.5, d: 1 }
   ];
   
   const chosen = wallPositions[Math.floor(Math.random() * wallPositions.length)];
   door.x = chosen.x;
-  door.y = chosen.y;
+  door.z = chosen.z;
   door.w = chosen.w;
-  door.h = chosen.h;
-  door.isVisible = true;
+  door.d = chosen.d;
+
+  doorMesh.geometry.dispose();
+  doorMesh.geometry = new THREE.BoxGeometry(chosen.w, 2.2, chosen.d);
+  doorMesh.position.set(chosen.x, 1.1, chosen.z);
+  doorMesh.visible = true;
 }
 
 let joyActive = false;
@@ -934,7 +1122,7 @@ function generateSessionQuestions() {
 function updateKeyLocation() {
   const pos = keyPositions[currentRoom];
   keyObj.x = pos.x;
-  keyObj.y = pos.y;
+  keyObj.z = pos.z;
 }
 
 function updateLivesDisplay() {
@@ -947,43 +1135,40 @@ function updateLivesDisplay() {
 
 function relocateKey() {
   let valid = false;
-  let newX, newY;
+  let newX, newZ;
   while (!valid) {
-    newX = Math.floor(Math.random() * 160) + 40;
-    newY = Math.floor(Math.random() * 120) + 35;
-    let distToPlayer = Math.hypot(player.x - newX, player.y - newY);
-    let distToDoor = Math.hypot(door.x - newX, door.y - newY);
-    if (distToPlayer > 45 && distToDoor > 40 && !isCollidingWithObstacle(newX, newY, 15)) {
+    newX = (Math.random() * 14) - 7;
+    newZ = (Math.random() * 14) - 7;
+    let distToPlayer = Math.hypot(player.x - newX, player.z - newZ);
+    if (distToPlayer > 4 && !isCollidingWithObstacle(newX, newZ, 1.2)) {
       valid = true;
     }
   }
   keyObj.x = newX;
-  keyObj.y = newY;
+  keyObj.z = newZ;
 }
 
 function resetZombies() {
   zombies = [];
-  const baseSpeed = 0.55 + (currentRoom * 0.1);
+  const baseSpeed = 0.045 + (currentRoom * 0.008);
 
   if (currentRoom === 0) {
-    zombies.push({ x: 230, y: 40, size: 10, speed: baseSpeed, active: true });
+    zombies.push({ x: 7, z: -7, size: 0.8, speed: baseSpeed, active: true });
   } else if (currentRoom === 1) {
-    zombies.push({ x: 230, y: 40, size: 10, speed: baseSpeed + 0.1, active: true });
+    zombies.push({ x: 7, z: -7, size: 0.8, speed: baseSpeed + 0.005, active: true });
   } else if (currentRoom === 2) {
-    zombies.push({ x: 230, y: 40, size: 10, speed: baseSpeed, active: true });
-    zombies.push({ x: 230, y: 160, size: 10, speed: baseSpeed, active: true });
+    zombies.push({ x: 7, z: -7, size: 0.8, speed: baseSpeed, active: true });
+    zombies.push({ x: 7, z: 7, size: 0.8, speed: baseSpeed, active: true });
   } else if (currentRoom === 3) {
-    zombies.push({ x: 230, y: 40, size: 10, speed: baseSpeed + 0.1, active: true });
-    zombies.push({ x: 230, y: 160, size: 10, speed: baseSpeed + 0.1, active: true });
+    zombies.push({ x: 7, z: -7, size: 0.8, speed: baseSpeed + 0.005, active: true });
+    zombies.push({ x: 7, z: 7, size: 0.8, speed: baseSpeed + 0.005, active: true });
   } else if (currentRoom === 4) {
-    zombies.push({ x: 230, y: 40, size: 10, speed: baseSpeed + 0.05, active: true });
-    zombies.push({ x: 230, y: 160, size: 10, speed: baseSpeed + 0.05, active: true });
-    zombies.push({ x: 230, y: 100, size: 10, speed: baseSpeed + 0.05, active: true });
+    zombies.push({ x: 7, z: -7, size: 0.8, speed: baseSpeed + 0.005, active: true });
+    zombies.push({ x: 7, z: 7, size: 0.8, speed: baseSpeed + 0.005, active: true });
+    zombies.push({ x: 7, z: 0, size: 0.8, speed: baseSpeed + 0.005, active: true });
   }
-}
 
-function areAllZombiesDead() {
-  return zombies.every(z => !z.active);
+  update3DZombies();
 }
 
 function addScore(pts) {
@@ -991,16 +1176,15 @@ function addScore(pts) {
   document.getElementById("score-num").innerText = totalScore;
 }
 
-function isCollidingWithObstacle(x, y, radius) {
+function isCollidingWithObstacle(x, z, radius) {
   const obstacles = roomObstacles[currentRoom] || [];
   for (let obs of obstacles) {
-    let closestX = Math.max(obs.x, Math.min(x, obs.x + obs.w));
-    let closestY = Math.max(obs.y, Math.min(y, obs.y + obs.h));
-    let distX = x - closestX;
-    let distY = y - closestY;
-    let distance = Math.hypot(distX, distY);
+    let minX = obs.x - obs.w / 2 - radius;
+    let maxX = obs.x + obs.w / 2 + radius;
+    let minZ = obs.z - obs.d / 2 - radius;
+    let maxZ = obs.z + obs.d / 2 + radius;
 
-    if (distance < radius) {
+    if (x >= minX && x <= maxX && z >= minZ && z <= maxZ) {
       return true;
     }
   }
@@ -1153,8 +1337,8 @@ function useButtonA() {
     return;
   }
 
-  let dist = Math.hypot(player.x - keyObj.x, player.y - keyObj.y);
-  if (dist < 32 && !doorUnlocked) {
+  let dist = Math.hypot(player.x - keyObj.x, player.z - keyObj.z);
+  if (dist < 2.2 && !doorUnlocked) {
     openTerminal();
   }
 }
@@ -1180,12 +1364,20 @@ function useButtonB() {
   }
 
   playSFX('shoot');
+  
+  // CIPTA PELURU 3D
+  const bGeo = new THREE.SphereGeometry(0.2, 8, 8);
+  const bMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b });
+  const bMesh = new THREE.Mesh(bGeo, bMat);
+  bMesh.position.set(player.x, 0.6, player.z);
+  scene.add(bMesh);
+
   bullets.push({
     x: player.x,
-    y: player.y,
-    vx: player.facingX * 6,
-    vy: player.facingY * 6,
-    size: 3
+    z: player.z,
+    vx: player.facingX * 0.4,
+    vz: player.facingZ * 0.4,
+    mesh: bMesh
   });
 }
 
@@ -1305,11 +1497,13 @@ function restartGame() {
   updateLivesDisplay();
 
   doorUnlocked = false;
-  door.isVisible = false;
+  doorMesh.visible = false;
   isTerminalOpen = false;
-  player.x = 40;
-  player.y = 105;
+  player.x = -8;
+  player.z = 0;
   player.hasWeapon = false;
+
+  bullets.forEach(b => scene.remove(b.mesh));
   bullets = [];
   
   document.getElementById("room-num").innerText = "1";
@@ -1319,16 +1513,17 @@ function restartGame() {
   
   generateSessionQuestions();
   updateKeyLocation();
+  rebuild3DObstacles();
   resetZombies();
   startGameTimer();
 }
 
 let moveInterval = null;
-function startMove(dx, dy) {
+function startMove(dx, dz) {
   initAudio();
   if (moveInterval) clearInterval(moveInterval);
-  movePlayer(dx, dy);
-  moveInterval = setInterval(() => movePlayer(dx, dy), 40);
+  movePlayer(dx, dz);
+  moveInterval = setInterval(() => movePlayer(dx, dz), 40);
 }
 function stopMove() {
   if (moveInterval) clearInterval(moveInterval);
@@ -1366,24 +1561,25 @@ window.addEventListener("keyup", (e) => {
   keys[e.key.toLowerCase()] = false;
 });
 
-function movePlayer(dx, dy) {
+function movePlayer(dx, dz) {
   if (!isGameStarted || isTerminalOpen || isVictoryOpen || isGameOver) return;
   let nextX = player.x + dx * player.speed;
-  let nextY = player.y + dy * player.speed;
+  let nextZ = player.z + dz * player.speed;
 
-  if (dx !== 0 || dy !== 0) {
+  if (dx !== 0 || dz !== 0) {
     player.facingX = dx;
-    player.facingY = dy;
+    player.facingZ = dz;
+    playerMesh.rotation.y = Math.atan2(dx, dz) - Math.PI / 2;
   }
 
-  if (nextX - player.size > 12 && nextX + player.size < canvas.width - 12) {
-    if (!isCollidingWithObstacle(nextX, player.y, player.size)) {
+  if (nextX > -9 && nextX < 9) {
+    if (!isCollidingWithObstacle(nextX, player.z, player.size)) {
       player.x = nextX;
     }
   }
-  if (nextY - player.size > 12 && nextY + player.size < canvas.height - 12) {
-    if (!isCollidingWithObstacle(player.x, nextY, player.size)) {
-      player.y = nextY;
+  if (nextZ > -9 && nextZ < 9) {
+    if (!isCollidingWithObstacle(player.x, nextZ, player.size)) {
+      player.z = nextZ;
     }
   }
 }
@@ -1400,19 +1596,40 @@ function update() {
     movePlayer(joyVector.x, joyVector.y);
   }
 
+  // KEMASKINI KEDUDUKAN WATAK 3D
+  playerMesh.position.set(player.x, 0, player.z);
+
+  // KEMASKINI KUNCI EMAS 3D (PUTARAN & TERAPUNG)
+  if (!doorUnlocked) {
+    keyMesh.visible = true;
+    keyMesh.position.set(keyObj.x, 0.8 + Math.sin(Date.now() / 200) * 0.15, keyObj.z);
+    keyMesh.rotation.y += 0.03;
+    keyLight.position.set(keyObj.x, 1.5, keyObj.z);
+    keyLight.intensity = 1.5 + Math.sin(Date.now() / 150) * 0.5;
+  } else {
+    keyMesh.visible = false;
+    keyLight.intensity = 0;
+  }
+
+  // PERGERAKAN ZOMBIE 3D
   if (!isTerminalOpen && !isVictoryOpen && !isGameOver) {
-    zombies.forEach(z => {
+    zombies.forEach((z, idx) => {
       if (z.active) {
         let zSpeed = z.speed;
-        let angle = Math.atan2(player.y - z.y, player.x - z.x);
+        let angle = Math.atan2(player.z - z.z, player.x - z.x);
         let nextZX = z.x + Math.cos(angle) * zSpeed;
-        let nextZY = z.y + Math.sin(angle) * zSpeed;
+        let nextZZ = z.z + Math.sin(angle) * zSpeed;
 
-        if (!isCollidingWithObstacle(nextZX, z.y, z.size)) z.x = nextZX;
-        if (!isCollidingWithObstacle(z.x, nextZY, z.size)) z.y = nextZY;
+        if (!isCollidingWithObstacle(nextZX, z.z, z.size)) z.x = nextZX;
+        if (!isCollidingWithObstacle(z.x, nextZZ, z.size)) z.z = nextZZ;
 
-        let dist = Math.hypot(player.x - z.x, player.y - z.y);
-        if (dist < player.size + z.size) {
+        if (zombieMeshes[idx]) {
+          zombieMeshes[idx].position.set(z.x, 0, z.z);
+          zombieMeshes[idx].rotation.y = -angle + Math.PI / 2;
+        }
+
+        let dist = Math.hypot(player.x - z.x, player.z - z.z);
+        if (dist < player.size + z.size - 0.2) {
           playerLives--;
           updateLivesDisplay();
 
@@ -1422,8 +1639,9 @@ function update() {
           } else {
             playSFX('wrong');
             showGameNotice(`⚠️ ZOMBIE TANGKAP! BAKI HP: ${playerLives}`, "#ef4444", 2000);
-            player.x = 40;
-            player.y = 105;
+            player.x = -8;
+            player.z = 0;
+            bullets.forEach(b => scene.remove(b.mesh));
             bullets = [];
             resetZombies();
           }
@@ -1441,21 +1659,26 @@ function update() {
     doorElem.style.color = "#ef4444";
   }
 
+  // KEMASKINI PELURU 3D
   for (let i = bullets.length - 1; i >= 0; i--) {
     let b = bullets[i];
     b.x += b.vx;
-    b.y += b.vy;
+    b.z += b.vz;
+    b.mesh.position.set(b.x, 0.6, b.z);
 
-    if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height || isCollidingWithObstacle(b.x, b.y, b.size)) {
+    if (Math.abs(b.x) > 9.5 || Math.abs(b.z) > 9.5 || isCollidingWithObstacle(b.x, b.z, 0.2)) {
+      scene.remove(b.mesh);
       bullets.splice(i, 1);
       continue;
     }
 
-    zombies.forEach(z => {
+    zombies.forEach((z, idx) => {
       if (z.active) {
-        let dist = Math.hypot(b.x - z.x, b.y - z.y);
-        if (dist < b.size + z.size) {
+        let dist = Math.hypot(b.x - z.x, b.z - z.z);
+        if (dist < z.size) {
           z.active = false;
+          if (zombieMeshes[idx]) zombieMeshes[idx].visible = false;
+          scene.remove(b.mesh);
           bullets.splice(i, 1);
           playSFX('explosion');
           addScore(50);
@@ -1464,182 +1687,50 @@ function update() {
     });
   }
 
-  if (doorUnlocked && door.isVisible) {
-    let touchDoor = player.x + player.size >= door.x && player.x - player.size <= door.x + door.w &&
-                    player.y + player.size >= door.y && player.y - player.size <= door.y + door.h;
-
-    if (touchDoor) {
+  // SEMAKAN PELARIAN KE PINTU RAHSIA 3D
+  if (doorUnlocked && doorMesh.visible) {
+    let distDoor = Math.hypot(player.x - door.x, player.z - door.z);
+    if (distDoor < 2.0) {
       playSFX('door');
       currentRoom++;
       if (currentRoom >= 5) {
         openVictoryModal();
         return;
       }
-      player.x = 40;
-      player.y = 105;
+      player.x = -8;
+      player.z = 0;
       player.hasWeapon = false;
       doorUnlocked = false;
-      door.isVisible = false;
+      doorMesh.visible = false;
+
+      bullets.forEach(b => scene.remove(b.mesh));
       bullets = [];
 
       document.getElementById("room-num").innerText = currentRoom + 1;
       
       updateKeyLocation();
+      rebuild3DObstacles();
       resetZombies();
     }
   }
 }
 
-function drawObstacles() {
-  const obstacles = roomObstacles[currentRoom] || [];
-  for (let obs of obstacles) {
-    if (obs.type === 'table') {
-      ctx.fillStyle = "#b45309";
-      ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-      ctx.strokeStyle = "#78350f";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
-      ctx.fillStyle = "#451a03";
-      ctx.fillRect(obs.x + 2, obs.y + 2, 4, 4);
-      ctx.fillRect(obs.x + obs.w - 6, obs.y + 2, 4, 4);
-      ctx.fillRect(obs.x + 2, obs.y + obs.h - 6, 4, 4);
-      ctx.fillRect(obs.x + obs.w - 6, obs.y + obs.h - 6, 4, 4);
-    } else if (obs.type === 'barrel') {
-      ctx.fillStyle = "#475569";
-      ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-      ctx.strokeStyle = "#1e293b";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
-      ctx.fillStyle = "#ef4444";
-      ctx.fillRect(obs.x, obs.y + obs.h*0.35, obs.w, 4);
-    } else if (obs.type === 'crate') {
-      ctx.fillStyle = "#d97706";
-      ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-      ctx.strokeStyle = "#78350f";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
-      ctx.beginPath();
-      ctx.moveTo(obs.x, obs.y); ctx.lineTo(obs.x + obs.w, obs.y + obs.h);
-      ctx.moveTo(obs.x + obs.w, obs.y); ctx.lineTo(obs.x, obs.y + obs.h);
-      ctx.stroke();
-    }
-  }
-}
-
-function drawGoldenKey(x, y) {
-  if (doorUnlocked) return;
-
-  let floatY = y + Math.sin(Date.now() / 250) * 2;
-
-  ctx.save();
-  ctx.translate(x, floatY);
-
-  ctx.fillStyle = "rgba(15, 23, 42, 0.4)";
-  ctx.beginPath();
-  ctx.ellipse(0, 10, 8, 3, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#fbbf24";
-  ctx.strokeStyle = "#b45309";
-  ctx.lineWidth = 1.5;
-
-  ctx.beginPath();
-  ctx.arc(-6, 0, 6, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#8b9bb4";
-  ctx.beginPath();
-  ctx.arc(-6, 0, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#fbbf24";
-  ctx.fillRect(0, -1.5, 14, 3);
-  ctx.strokeRect(0, -1.5, 14, 3);
-
-  ctx.fillRect(6, 1.5, 3, 4);
-  ctx.strokeRect(6, 1.5, 3, 4);
-  ctx.fillRect(10, 1.5, 3, 4);
-  ctx.strokeRect(10, 1.5, 3, 4);
-
-  ctx.restore();
-}
-
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = "#8b9bb4";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.strokeStyle = "#7b8b9f";
-  ctx.lineWidth = 1;
-  for (let x = 0; x < canvas.width; x += 20) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-  }
-  for (let y = 0; y < canvas.height; y += 20) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-  }
-
-  ctx.strokeStyle = "#0f172a";
-  ctx.lineWidth = 8;
-  ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-
-  if (door.isVisible) {
-    ctx.fillStyle = "#22c55e";
-    ctx.fillRect(door.x, door.y, door.w, door.h);
-    ctx.strokeStyle = "#0f172a";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(door.x, door.y, door.w, door.h);
-  }
-
-  drawObstacles();
-  drawGoldenKey(keyObj.x, keyObj.y);
-
-  zombies.forEach(z => {
-    if (z.active) {
-      ctx.fillStyle = "#15803d";
-      ctx.fillRect(z.x - 6, z.y - 6, 12, 12);
-      ctx.fillStyle = "#4ade80";
-      ctx.fillRect(z.x - 4, z.y - 8, 8, 6);
-      ctx.fillStyle = "#ef4444";
-      ctx.fillRect(z.x - 2, z.y - 7, 2, 2);
-      ctx.fillRect(z.x + 1, z.y - 7, 2, 2);
-    }
-  });
-
-  ctx.fillStyle = "#f59e0b";
-  bullets.forEach(b => {
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  ctx.fillStyle = "#0f172a";
-  ctx.fillRect(player.x - 6, player.y - 6, 12, 12);
-  ctx.fillStyle = "#fbcfe8";
-  ctx.fillRect(player.x - 4, player.y - 8, 8, 6);
-  ctx.fillStyle = "#ec4899";
-  ctx.fillRect(player.x - 5, player.y - 11, 10, 4);
-
-  if (player.hasWeapon) {
-    ctx.fillStyle = "#0284c7";
-    ctx.fillRect(player.x + (player.facingX * 6), player.y + (player.facingY * 6), 5, 3);
-  }
-}
-
-function gameLoop() {
+function animate() {
+  requestAnimationFrame(animate);
   update();
-  draw();
-  requestAnimationFrame(gameLoop);
+  if (renderer && scene && camera) {
+    renderer.render(scene, camera);
+  }
 }
 
+init3D();
 generateSessionQuestions();
 updateKeyLocation();
+rebuild3DObstacles();
 resetZombies();
 updateLivesDisplay();
 setupJoystick();
-gameLoop();
+animate();
 </script>
 </body>
 </html>

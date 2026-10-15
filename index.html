@@ -83,7 +83,6 @@
       font-weight: bold;
     }
 
-    /* Penukaran Tajuk Game */
     .brand-title {
       color: #cbd5e1;
       font-size: 0.85rem;
@@ -157,8 +156,8 @@
       color: #ffffff;
     }
 
-    /* MODAL OVERLAYS (START / VICTORY / GAME OVER) */
-    #start-modal, #victory-modal, #gameover-modal {
+    /* MODAL OVERLAYS (START / CONTROL / VICTORY / GAME OVER) */
+    #start-modal, #control-modal, #victory-modal, #gameover-modal {
       display: none;
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -171,7 +170,7 @@
       text-align: center;
       z-index: 30;
     }
-    #start-modal.active, #victory-modal.active, #gameover-modal.active { display: flex; }
+    #start-modal.active, #control-modal.active, #victory-modal.active, #gameover-modal.active { display: flex; }
     
     .vic-title { color: #f59e0b; font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; text-shadow: 0 0 6px #f59e0b; }
     .go-title { color: #ef4444; font-size: 0.95rem; font-weight: bold; margin-bottom: 6px; text-shadow: 0 0 6px #ef4444; }
@@ -237,6 +236,31 @@
     .dpad-center { grid-column: 2; grid-row: 2; background: #334155; }
     .dpad-right { grid-column: 3; grid-row: 2; border-radius: 0 5px 5px 0; }
     .dpad-down { grid-column: 2; grid-row: 3; border-radius: 0 0 5px 5px; }
+
+    /* VIRTUAL JOYSTICK SENTUH */
+    #joystick-box {
+      width: 102px;
+      height: 102px;
+      background: #1e293b;
+      border: 3px solid #38bdf8;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    }
+    #joystick-stick {
+      width: 42px;
+      height: 42px;
+      background: #38bdf8;
+      border: 2px solid #0284c7;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      pointer-events: none;
+      transition: transform 0.05s ease-out;
+    }
 
     /* BUTANG A & B */
     .action-container { position: relative; }
@@ -349,7 +373,17 @@
             PRESS [ENTER] / [A] TO START
           </div>
           <div class="term-btn-group" style="width:85%;">
-            <button class="term-btn" onclick="startGame()">▶️ START GAME</button>
+            <button class="term-btn" onclick="openControlSelection()">▶️ START GAME</button>
+          </div>
+        </div>
+
+        <!-- PAGE PILIHAN KAEDAH KAWALAN -->
+        <div id="control-modal">
+          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:6px;">🕹️ PILIH MODE KAWALAN</div>
+          <div class="vic-text" style="color:#cbd5e1; margin-bottom:12px;">Pilih gaya kawalan pergerakan yang anda inginkan:</div>
+          <div class="term-btn-group" style="flex-direction:column; gap:8px; width:90%;">
+            <button class="term-btn" style="background:#38bdf8; color:#0f172a;" onclick="setControlMode('joystick')">🕹️ VIRTUAL JOYSTICK (SENTUH 360°)</button>
+            <button class="term-btn" style="background:#22c55e; color:#052e16;" onclick="setControlMode('dpad')">🎛️ D-PAD BUTTONS (BUTANG 4-ARAH)</button>
           </div>
         </div>
 
@@ -393,20 +427,28 @@
 
       </div>
 
-      <!-- TAJUK BARU PADA FRAME -->
       <div class="brand-title">FSTB <span>ZOMBIE ESCAPE</span></div>
     </div>
 
-    <!-- Kawalan Emulator (D-Pad & Buttons) -->
+    <!-- Kawalan Emulator (D-Pad / Joystick & Buttons) -->
     <div id="controls">
       <div class="dpad-container">
-        <div class="dpad">
+        <!-- MODE D-PAD BUTTONS -->
+        <div id="dpad-ui" class="dpad">
           <div class="btn-dpad dpad-up" onmousedown="startMove(0,-1)" onmouseup="stopMove()" ontouchstart="startMove(0,-1)" ontouchend="stopMove()">▲</div>
           <div class="btn-dpad dpad-left" onmousedown="startMove(-1,0)" onmouseup="stopMove()" ontouchstart="startMove(-1,0)" ontouchend="stopMove()">◄</div>
           <div class="btn-dpad dpad-center"></div>
           <div class="btn-dpad dpad-right" onmousedown="startMove(1,0)" onmouseup="stopMove()" ontouchstart="startMove(1,0)" ontouchend="stopMove()">►</div>
           <div class="btn-dpad dpad-down" onmousedown="startMove(0,1)" onmouseup="stopMove()" ontouchstart="startMove(0,1)" ontouchend="stopMove()">▼</div>
         </div>
+
+        <!-- MODE VIRTUAL JOYSTICK SENTUH -->
+        <div id="joystick-ui" style="display:none;">
+          <div id="joystick-box">
+            <div id="joystick-stick"></div>
+          </div>
+        </div>
+
         <div class="kb-hint" style="bottom:-18px; left:18px;">WASD / 🠄🠅🠆C</div>
       </div>
 
@@ -503,7 +545,7 @@ let bgmNoteIndex = 0;
 function startBGM() {
   if (bgmInterval) clearInterval(bgmInterval);
   bgmInterval = setInterval(() => {
-    if (bgmEnabled && audioCtx && audioCtx.state === 'running') {
+    if (bgmEnabled && audioCtx && audioCtx.state === 'running' && !isVictoryOpen) {
       const note = bgmNotes[bgmNoteIndex];
       playTone(note, 'square', 0.12, 0.03);
       bgmNoteIndex = (bgmNoteIndex + 1) % bgmNotes.length;
@@ -511,10 +553,31 @@ function startBGM() {
   }, 180);
 }
 
+// MELODI KEMENANGAN (VICTORY FANFARE / ACHIEVEMENT SOUND)
+function playVictoryFanfare() {
+  if (!audioCtx || !bgmEnabled) return;
+  const notes = [
+    { f: 523.25, d: 0.15, t: 0 },    // C5
+    { f: 659.25, d: 0.15, t: 0.15 }, // E5
+    { f: 783.99, d: 0.15, t: 0.30 }, // G5
+    { f: 1046.50, d: 0.35, t: 0.45 },// C6
+    { f: 880.00, d: 0.15, t: 0.80 }, // A5
+    { f: 1046.50, d: 0.60, t: 0.95 } // C6 (Melodi Utama Kemenangan!)
+  ];
+
+  notes.forEach(n => {
+    setTimeout(() => {
+      playTone(n.f, 'triangle', n.d, 0.2);
+      playTone(n.f / 2, 'square', n.d, 0.1); // Harmoni Bass
+    }, n.t * 1000);
+  });
+}
+
 function toggleBGM() {
   initAudio();
   bgmEnabled = !bgmEnabled;
   playSFX('button');
+  if (bgmEnabled) startBGM();
 }
 
 function playSFX(type) {
@@ -624,6 +687,7 @@ let isGameStarted = false;
 let isTerminalOpen = false;
 let isVictoryOpen = false;
 let isGameOver = false;
+let selectedControl = 'dpad'; // 'dpad' ATAU 'joystick'
 
 let questionTimer = 30;
 let timerInterval = null;
@@ -633,6 +697,70 @@ const keyObj = { x: 150, y: 35 };
 const door = { x: 280, y: 80, w: 12, h: 50 };
 let zombies = [];
 let bullets = [];
+
+// SCRIPT JOYSTICK ANALOG SENTUH
+let joyActive = false;
+let joyCenterX = 0, joyCenterY = 0;
+let joyVector = { x: 0, y: 0 };
+
+function setupJoystick() {
+  const joyBox = document.getElementById("joystick-box");
+  const joyStick = document.getElementById("joystick-stick");
+
+  const joyStart = (e) => {
+    joyActive = true;
+    const rect = joyBox.getBoundingClientRect();
+    joyCenterX = rect.left + rect.width / 2;
+    joyCenterY = rect.top + rect.height / 2;
+    const touch = e.touches ? e.touches[0] : e;
+    handleJoyMove(touch);
+  };
+
+  const joyMove = (e) => {
+    if (joyActive) {
+      if (e.cancelable) e.preventDefault();
+      const touch = e.touches ? e.touches[0] : e;
+      handleJoyMove(touch);
+    }
+  };
+
+  const joyEnd = () => {
+    joyActive = false;
+    joyVector = { x: 0, y: 0 };
+    joyStick.style.transform = `translate(0px, 0px)`;
+  };
+
+  joyBox.addEventListener("touchstart", joyStart, { passive: false });
+  joyBox.addEventListener("touchmove", joyMove, { passive: false });
+  joyBox.addEventListener("touchend", joyEnd);
+  joyBox.addEventListener("touchcancel", joyEnd);
+
+  joyBox.addEventListener("mousedown", joyStart);
+  window.addEventListener("mousemove", joyMove);
+  window.addEventListener("mouseup", joyEnd);
+}
+
+function handleJoyMove(touch) {
+  const dx = touch.clientX - joyCenterX;
+  const dy = touch.clientY - joyCenterY;
+  const dist = Math.hypot(dx, dy);
+  const maxRadius = 26;
+
+  let normX = dx / (dist || 1);
+  let normY = dy / (dist || 1);
+
+  let clampedDist = Math.min(dist, maxRadius);
+  const joyStick = document.getElementById("joystick-stick");
+  joyStick.style.transform = `translate(${normX * clampedDist}px, ${normY * clampedDist}px)`;
+
+  if (dist > 6) {
+    joyVector.x = normX;
+    joyVector.y = normY;
+  } else {
+    joyVector.x = 0;
+    joyVector.y = 0;
+  }
+}
 
 function generateSessionQuestions() {
   sessionQuestions = [];
@@ -673,7 +801,6 @@ function relocateKey() {
   keyObj.y = newY;
 }
 
-// ZOMBIE RESPAWN DI SEBELAH KANAN JAUH DARI PEMAIN (x: 260)
 function resetZombies() {
   zombies = [];
   const baseSpeed = 0.55 + (currentRoom * 0.1);
@@ -720,19 +847,41 @@ function isCollidingWithObstacle(x, y, radius) {
   return false;
 }
 
-function startGame() {
+// BGM DEPAN DAN MODAL PILIHAN KAWALAN
+function openControlSelection() {
   initAudio();
   playSFX('button');
-  isGameStarted = true;
+  startBGM(); // MUZIK LATAR BERMULA TERUS DI HOMEPAGE
   document.getElementById("start-modal").classList.remove("active");
-  startBGM();
+  document.getElementById("control-modal").classList.add("active");
+}
+
+function setControlMode(mode) {
+  initAudio();
+  playSFX('button');
+  selectedControl = mode;
+
+  if (mode === 'joystick') {
+    document.getElementById("dpad-ui").style.display = "none";
+    document.getElementById("joystick-ui").style.display = "block";
+  } else {
+    document.getElementById("dpad-ui").style.display = "grid";
+    document.getElementById("joystick-ui").style.display = "none";
+  }
+
+  document.getElementById("control-modal").classList.remove("active");
+  isGameStarted = true;
 }
 
 function useButtonA() {
   initAudio();
 
   if (!isGameStarted) {
-    startGame();
+    if (document.getElementById("start-modal").classList.contains("active")) {
+      openControlSelection();
+    } else if (document.getElementById("control-modal").classList.contains("active")) {
+      setControlMode('dpad');
+    }
     return;
   }
 
@@ -843,6 +992,8 @@ function openGameOverModal() {
 
 function openVictoryModal() {
   isVictoryOpen = true;
+  playVictoryFanfare(); // MAIN NADA KEMENANGAN (ACHIEVEMENT SOUND)
+
   let lostLives = 3 - playerLives;
   let penalty = lostLives * 40;
   let finalScore = Math.max(0, totalScore - penalty);
@@ -872,9 +1023,11 @@ function restartGame() {
   playSFX('button');
   stopTimer();
   closeModals();
-  
+  startBGM();
+
   isGameStarted = true;
   document.getElementById("start-modal").classList.remove("active");
+  document.getElementById("control-modal").classList.remove("active");
 
   currentRoom = 0;
   totalScore = 0;
@@ -955,10 +1108,16 @@ function movePlayer(dx, dy) {
 function update() {
   if (!isGameStarted) return;
 
+  // PERGERAKAN KEYBOARD
   if (keys["w"] || keys["arrowup"]) movePlayer(0, -1);
   if (keys["s"] || keys["arrowdown"]) movePlayer(0, 1);
   if (keys["a"] || keys["arrowleft"]) movePlayer(-1, 0);
   if (keys["d"] || keys["arrowright"]) movePlayer(1, 0);
+
+  // PERGERAKAN JOYSTICK SENTUH
+  if (joyActive && (joyVector.x !== 0 || joyVector.y !== 0)) {
+    movePlayer(joyVector.x, joyVector.y);
+  }
 
   if (!isTerminalOpen && !isVictoryOpen && !isGameOver) {
     zombies.forEach(z => {
@@ -985,7 +1144,7 @@ function update() {
             player.x = 40;
             player.y = 105;
             bullets = [];
-            resetZombies(); // RESET KEDUDUKAN ZOMBIE DI HUJUNG KANAN
+            resetZombies();
           }
         }
       }
@@ -1041,7 +1200,6 @@ function update() {
       playSFX('door');
       currentRoom++;
       if (currentRoom >= 5) {
-        playSFX('correct');
         openVictoryModal();
         return;
       }
@@ -1203,6 +1361,7 @@ generateSessionQuestions();
 updateKeyLocation();
 resetZombies();
 updateLivesDisplay();
+setupJoystick();
 gameLoop();
 </script>
 </body>

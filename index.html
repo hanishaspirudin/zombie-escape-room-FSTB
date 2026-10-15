@@ -141,6 +141,7 @@
       border-radius: 4px;
       text-align: center;
       font-weight: bold;
+      user-select: text;
     }
     .term-btn-group {
       display: flex;
@@ -394,9 +395,10 @@
         <div id="start-modal" class="active">
           <div class="vic-title" style="font-size: 0.9rem; margin-bottom:4px;">🧟 FSTB ZOMBIE ESCAPE 🗝️</div>
           <div class="vic-text" style="color:#cbd5e1; margin-bottom:6px;">
-            Masukkan nama pemain sebelum mula:
+            Masukkan nama pemain (Maks 10 huruf):
           </div>
-          <input type="text" id="player-name-input" class="term-input" style="width:85%; margin-bottom:8px; font-size:0.8rem;" placeholder="NAMA PEMAIN" maxlength="12" value="Pemain 1" oninput="playTypingSFX()" onclick="initAudio(); startBGM();">
+          <!-- HAD NAMA DILIMITKAN KEPADA 10 HURUF (MAXLENGTH=10) -->
+          <input type="text" id="player-name-input" class="term-input" style="width:85%; margin-bottom:8px; font-size:0.8rem;" placeholder="NAMA (MAX 10)" maxlength="10" value="Pemain 1" oninput="playTypingSFX()" onclick="initAudio(); startBGM();">
           
           <div class="term-btn-group" style="width:85%; flex-direction:column; gap:5px;">
             <button class="term-btn" onclick="openGuideModal()">▶️ TERUSKAN</button>
@@ -610,7 +612,7 @@ const bgmNotes = [
 let bgmNoteIndex = 0;
 
 function startBGM() {
-  if (bgmInterval) return; // ELAK BERLAPIS
+  if (bgmInterval) return;
   bgmInterval = setInterval(() => {
     if (bgmEnabled && audioCtx && audioCtx.state === 'running' && !isVictoryOpen) {
       const note = bgmNotes[bgmNoteIndex];
@@ -622,7 +624,7 @@ function startBGM() {
 
 function playTypingSFX() {
   initAudio();
-  startBGM(); // MULA LAGU SEBAIK SAHAJA NAMA DITAIP
+  startBGM();
   playTone(500 + Math.random() * 250, 'triangle', 0.03, 0.05);
 }
 
@@ -677,7 +679,7 @@ function playSFX(type) {
 }
 
 // ==========================================
-// BANK SOALAN MATEMATIK FSTB TINGKATAN 1
+// BANK SOALAN MATEMATIK FSTB (10 SET PER STAGE = 50 SOALAN)
 // ==========================================
 const questionPool = {
   1: [
@@ -686,7 +688,11 @@ const questionPool = {
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 10 dan 25.", code: "5" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 14 dan 21.", code: "7" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 16 dan 24.", code: "8" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 15 dan 20.", code: "5" }
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 15 dan 20.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 9 dan 15.", code: "3" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 18 dan 27.", code: "9" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 30.", code: "10" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 12 dan 20.", code: "4" }
   ],
   2: [
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 36.", code: "12" },
@@ -694,7 +700,11 @@ const questionPool = {
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 50.", code: "10" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 36 dan 54.", code: "18" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 40 dan 60.", code: "20" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 28 dan 42.", code: "14" }
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 28 dan 42.", code: "14" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 32 dan 48.", code: "16" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 45 dan 60.", code: "15" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 25 dan 75.", code: "25" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 35 dan 49.", code: "7" }
   ],
   3: [
     { q: "Cari FSTB bagi tiga nombor: 12, 18, dan 24.", code: "6" },
@@ -702,7 +712,11 @@ const questionPool = {
     { q: "Cari FSTB bagi tiga nombor: 16, 32, dan 48.", code: "16" },
     { q: "Cari FSTB bagi tiga nombor: 20, 40, dan 60.", code: "20" },
     { q: "Cari FSTB bagi tiga nombor: 18, 27, dan 36.", code: "9" },
-    { q: "Cari FSTB bagi tiga nombor: 24, 36, dan 48.", code: "12" }
+    { q: "Cari FSTB bagi tiga nombor: 24, 36, dan 48.", code: "12" },
+    { q: "Cari FSTB bagi tiga nombor: 10, 20, dan 30.", code: "10" },
+    { q: "Cari FSTB bagi tiga nombor: 14, 28, dan 42.", code: "14" },
+    { q: "Cari FSTB bagi tiga nombor: 8, 16, dan 24.", code: "8" },
+    { q: "Cari FSTB bagi tiga nombor: 21, 35, dan 42.", code: "7" }
   ],
   4: [
     { q: "Cari FSTB bagi nombor 32, 48, dan 80.", code: "16" },
@@ -710,7 +724,11 @@ const questionPool = {
     { q: "Cari FSTB bagi nombor 28, 56, dan 84.", code: "28" },
     { q: "Cari FSTB bagi nombor 45, 75, dan 105.", code: "15" },
     { q: "Cari FSTB bagi nombor 42, 70, dan 98.", code: "14" },
-    { q: "Cari FSTB bagi nombor 48, 72, dan 120.", code: "24" }
+    { q: "Cari FSTB bagi nombor 48, 72, dan 120.", code: "24" },
+    { q: "Cari FSTB bagi nombor 30, 60, dan 90.", code: "30" },
+    { q: "Cari FSTB bagi nombor 24, 40, dan 56.", code: "8" },
+    { q: "Cari FSTB bagi nombor 36, 60, dan 84.", code: "12" },
+    { q: "Cari FSTB bagi nombor 40, 80, dan 120.", code: "40" }
   ],
   5: [
     { q: "Soalan Akhir! Cari FSTB bagi 56, 84, dan 140.", code: "28" },
@@ -718,7 +736,11 @@ const questionPool = {
     { q: "Soalan Akhir! Cari FSTB bagi 60, 90, dan 150.", code: "30" },
     { q: "Soalan Akhir! Cari FSTB bagi 72, 108, dan 180.", code: "36" },
     { q: "Soalan Akhir! Cari FSTB bagi 80, 120, dan 200.", code: "40" },
-    { q: "Soalan Akhir! Cari FSTB bagi 96, 144, dan 240.", code: "48" }
+    { q: "Soalan Akhir! Cari FSTB bagi 96, 144, dan 240.", code: "48" },
+    { q: "Soalan Akhir! Cari FSTB bagi 50, 100, dan 150.", code: "50" },
+    { q: "Soalan Akhir! Cari FSTB bagi 48, 96, dan 144.", code: "48" },
+    { q: "Soalan Akhir! Cari FSTB bagi 70, 105, dan 175.", code: "35" },
+    { q: "Soalan Akhir! Cari FSTB bagi 84, 126, dan 210.", code: "42" }
   ]
 };
 
@@ -1275,6 +1297,18 @@ function stopMove() {
 
 const keys = {};
 window.addEventListener("keydown", (e) => {
+  // ELAKKAN PERGERAKAN GAMEBOY DARIPADA MENGANGGU APABILA TAIPING DALAM INPUT
+  if (document.activeElement.tagName === "INPUT") {
+    if (e.key === "Enter") {
+      if (document.activeElement.id === "passcode-input") {
+        submitPasscode();
+      } else if (document.activeElement.id === "player-name-input") {
+        openGuideModal();
+      }
+    }
+    return; // JANGAN EXECUTE SHORTCUT KAWALAN GAMEBOY
+  }
+
   initAudio();
   const k = e.key.toLowerCase();
 
@@ -1392,7 +1426,6 @@ function update() {
     });
   }
 
-  // LARI KELUAR KE PINTU RAHSIA (TERUS BOLEH ESCAPE)
   if (doorUnlocked && door.isVisible) {
     let touchDoor = player.x + player.size >= door.x && player.x - player.size <= door.x + door.w &&
                     player.y + player.size >= door.y && player.y - player.size <= door.y + door.h;

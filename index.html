@@ -156,8 +156,8 @@
       color: #ffffff;
     }
 
-    /* PAGE SKRIN KEMENANGAN (VICTORY MODAL) & GAME OVER MODAL */
-    #victory-modal, #gameover-modal {
+    /* MODAL OVERLAYS (START / VICTORY / GAME OVER) */
+    #start-modal, #victory-modal, #gameover-modal {
       display: none;
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -170,10 +170,11 @@
       text-align: center;
       z-index: 30;
     }
-    #victory-modal.active, #gameover-modal.active { display: flex; }
+    #start-modal.active, #victory-modal.active, #gameover-modal.active { display: flex; }
+    
     .vic-title { color: #f59e0b; font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; text-shadow: 0 0 6px #f59e0b; }
     .go-title { color: #ef4444; font-size: 0.95rem; font-weight: bold; margin-bottom: 6px; text-shadow: 0 0 6px #ef4444; }
-    .vic-text { font-size: 0.62rem; color: #a7f3d0; line-height: 1.3; margin-bottom: 6px; }
+    .vic-text { font-size: 0.62rem; color: #a7f3d0; line-height: 1.35; margin-bottom: 8px; }
     .vic-details {
       background: #022c22;
       border: 1px solid #059669;
@@ -336,6 +337,20 @@
           <div>PINTU:<span id="door-status" style="color:#ef4444">KUNCI</span></div>
         </div>
         <canvas id="gameCanvas" width="300" height="210"></canvas>
+
+        <!-- PAGE SKRIN MULA (START SCREEN MODAL) -->
+        <div id="start-modal" class="active">
+          <div class="vic-title" style="font-size: 1rem; margin-bottom:6px;">🧟 FSTB ZOMBIE ESCAPE 🗝️</div>
+          <div class="vic-text" style="color:#cbd5e1; margin-bottom:10px;">
+            Jawab soalan Faktor Sepunya Terbesar (FSTB), ambil senjata & hapuskan semua Zombie untuk meloloskan diri!
+          </div>
+          <div style="font-size:0.58rem; color:#fbbf24; margin-bottom:12px; font-weight:bold;">
+            PRESS [ENTER] / [A] TO START
+          </div>
+          <div class="term-btn-group" style="width:85%;">
+            <button class="term-btn" onclick="startGame()">▶️ START GAME</button>
+          </div>
+        </div>
 
         <!-- Terminal Modal Soalan -->
         <div id="terminal-modal">
@@ -601,9 +616,12 @@ const roomObstacles = {
 
 let currentRoom = 0;
 let totalScore = 0;
-let playerLives = 3; // SISTEM 3 NYAWA
+let playerLives = 3;
 let sessionQuestions = [];
 let doorUnlocked = false;
+
+// STATUS SKRIN
+let isGameStarted = false;
 let isTerminalOpen = false;
 let isVictoryOpen = false;
 let isGameOver = false;
@@ -702,8 +720,22 @@ function isCollidingWithObstacle(x, y, radius) {
   return false;
 }
 
+function startGame() {
+  initAudio();
+  playSFX('button');
+  isGameStarted = true;
+  document.getElementById("start-modal").classList.remove("active");
+  startBGM();
+}
+
 function useButtonA() {
   initAudio();
+
+  if (!isGameStarted) {
+    startGame();
+    return;
+  }
+
   playSFX('button');
 
   if (isVictoryOpen || isGameOver) return;
@@ -722,7 +754,7 @@ function useButtonA() {
 function useButtonB() {
   initAudio();
 
-  if (isVictoryOpen || isGameOver) return;
+  if (!isGameStarted || isVictoryOpen || isGameOver) return;
 
   if (isTerminalOpen) {
     closeTerminal();
@@ -841,6 +873,9 @@ function restartGame() {
   stopTimer();
   closeModals();
   
+  isGameStarted = true;
+  document.getElementById("start-modal").classList.remove("active");
+
   currentRoom = 0;
   totalScore = 0;
   playerLives = 3;
@@ -896,7 +931,7 @@ window.addEventListener("keyup", (e) => {
 });
 
 function movePlayer(dx, dy) {
-  if (isTerminalOpen || isVictoryOpen || isGameOver) return;
+  if (!isGameStarted || isTerminalOpen || isVictoryOpen || isGameOver) return;
   let nextX = player.x + dx * player.speed;
   let nextY = player.y + dy * player.speed;
 
@@ -918,6 +953,8 @@ function movePlayer(dx, dy) {
 }
 
 function update() {
+  if (!isGameStarted) return;
+
   if (keys["w"] || keys["arrowup"]) movePlayer(0, -1);
   if (keys["s"] || keys["arrowdown"]) movePlayer(0, 1);
   if (keys["a"] || keys["arrowleft"]) movePlayer(-1, 0);
@@ -934,7 +971,6 @@ function update() {
         if (!isCollidingWithObstacle(nextZX, z.y, z.size)) z.x = nextZX;
         if (!isCollidingWithObstacle(z.x, nextZY, z.size)) z.y = nextZY;
 
-        // Tangkap pemain (TOLAK NYAWA)
         let dist = Math.hypot(player.x - z.x, player.y - z.y);
         if (dist < player.size + z.size) {
           playerLives--;
@@ -1166,7 +1202,6 @@ generateSessionQuestions();
 updateKeyLocation();
 resetZombies();
 updateLivesDisplay();
-startBGM();
 gameLoop();
 </script>
 </body>

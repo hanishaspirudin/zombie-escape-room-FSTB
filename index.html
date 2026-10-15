@@ -163,8 +163,8 @@
       color: #ffffff;
     }
 
-    /* MODAL OVERLAYS (START / CONTROL / CHOICE / VICTORY / SCOREBOARD) */
-    #start-modal, #control-modal, #choice-modal, #victory-modal, #gameover-modal, #leaderboard-modal {
+    /* MODAL OVERLAYS (START / GUIDE / CONTROL / CHOICE / VICTORY / SCOREBOARD) */
+    #start-modal, #guide-modal, #control-modal, #choice-modal, #victory-modal, #gameover-modal, #leaderboard-modal {
       display: none;
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -177,7 +177,7 @@
       text-align: center;
       z-index: 30;
     }
-    #start-modal.active, #control-modal.active, #choice-modal.active, #victory-modal.active, #gameover-modal.active, #leaderboard-modal.active { display: flex; }
+    #start-modal.active, #guide-modal.active, #control-modal.active, #choice-modal.active, #victory-modal.active, #gameover-modal.active, #leaderboard-modal.active { display: flex; }
     
     .vic-title { color: #f59e0b; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; text-shadow: 0 0 6px #f59e0b; }
     .go-title { color: #ef4444; font-size: 0.95rem; font-weight: bold; margin-bottom: 6px; text-shadow: 0 0 6px #ef4444; }
@@ -390,7 +390,7 @@
         </div>
         <canvas id="gameCanvas" width="300" height="210"></canvas>
 
-        <!-- PAGE SKRIN MULA (START & NAMA PEMAIN) -->
+        <!-- PAGE 1: SKRIN MULA & NAMA PEMAIN -->
         <div id="start-modal" class="active">
           <div class="vic-title" style="font-size: 0.9rem; margin-bottom:4px;">🧟 FSTB ZOMBIE ESCAPE 🗝️</div>
           <div class="vic-text" style="color:#cbd5e1; margin-bottom:6px;">
@@ -399,12 +399,31 @@
           <input type="text" id="player-name-input" class="term-input" style="width:85%; margin-bottom:8px; font-size:0.8rem;" placeholder="NAMA PEMAIN" maxlength="12" value="Pemain 1">
           
           <div class="term-btn-group" style="width:85%; flex-direction:column; gap:5px;">
-            <button class="term-btn" onclick="openControlSelection()">▶️ START GAME</button>
+            <button class="term-btn" onclick="openGuideModal()">▶️ TERUSKAN</button>
             <button class="term-btn" style="background:#38bdf8; color:#0f172a;" onclick="openLeaderboard()">📜 SCOREBOARD</button>
           </div>
         </div>
 
-        <!-- PAGE PILIHAN KAEDAH KAWALAN -->
+        <!-- PAGE 2: PANDUAN CARA MAIN & PERATURAN -->
+        <div id="guide-modal">
+          <div class="vic-title" style="font-size: 0.8rem; margin-bottom:2px;">📜 MISI & PERATURAN</div>
+          <div class="vic-details" style="font-size: 0.52rem; line-height: 1.25; margin-bottom: 6px; padding: 4px 6px;">
+            <div style="color:#fbbf24; font-weight:bold;">🎯 MISI UTAMA:</div>
+            <div>• Escape 5 Stage Bilik Berzombie!</div>
+            <div style="color:#4ade80; font-weight:bold; margin-top:2px;">🔄 CARA MAIN:</div>
+            <div>1. Cari Kunci Emas 🗝️</div>
+            <div>2. Jawab Soalan FSTB (Masa: 30s) 🧮</div>
+            <div>3. Pilih: Lawan Zombie 🔫 / Lari terus 🏃</div>
+            <div>4. Cari Pintu Rahsia & Escape! 🚪</div>
+            <div style="color:#ef4444; font-weight:bold; margin-top:2px;">❤️ PERATURAN:</div>
+            <div>• 3 Nyawa (Kena gigit = -1 HP). 0 HP = Game Over!</div>
+          </div>
+          <div class="term-btn-group" style="width:90%;">
+            <button class="term-btn" onclick="openControlSelection()">▶️ PILIH KAWALAN</button>
+          </div>
+        </div>
+
+        <!-- PAGE 3: PILIHAN KAEDAH KAWALAN -->
         <div id="control-modal">
           <div class="vic-title" style="font-size: 0.85rem; margin-bottom:6px;">🕹️ PILIH MODE KAWALAN</div>
           <div class="vic-text" style="color:#cbd5e1; margin-bottom:10px;">Pilih gaya kawalan pergerakan:</div>
@@ -752,7 +771,7 @@ let totalScore = 0;
 let playerLives = 3;
 let sessionQuestions = [];
 let doorUnlocked = false;
-let strategyMode = null; // 'fight' ATAU 'escape'
+let strategyMode = null;
 
 let isGameStarted = false;
 let isTerminalOpen = false;
@@ -770,21 +789,18 @@ let timerInterval = null;
 const player = { x: 40, y: 105, size: 10, speed: 2.2, facingX: 1, facingY: 0, hasWeapon: false };
 const keyObj = { x: 140, y: 35 };
 
-// PINTU RAHSIA DYNAMIC (MUNCUL RAWAK)
 let door = { x: 255, y: 80, w: 14, h: 45, isVisible: false };
 
 let zombies = [];
 let bullets = [];
 
-// SCRIPT PENJANA PINTU RAHSIA RAWAK
 function spawnRandomDoor() {
   const wallPositions = [
-    { x: 255, y: Math.floor(Math.random() * 100) + 35, w: 14, h: 45 }, // Dinding Kanan
-    { x: Math.floor(Math.random() * 140) + 70, y: 12, w: 45, h: 14 },  // Dinding Atas
-    { x: Math.floor(Math.random() * 140) + 70, y: 182, w: 45, h: 14 }  // Dinding Bawah
+    { x: 255, y: Math.floor(Math.random() * 100) + 35, w: 14, h: 45 },
+    { x: Math.floor(Math.random() * 140) + 70, y: 12, w: 45, h: 14 },
+    { x: Math.floor(Math.random() * 140) + 70, y: 182, w: 45, h: 14 }
   ];
   
-  // Pilih lokasi dinding secara rawak
   const chosen = wallPositions[Math.floor(Math.random() * wallPositions.length)];
   door.x = chosen.x;
   door.y = chosen.y;
@@ -793,7 +809,6 @@ function spawnRandomDoor() {
   door.isVisible = true;
 }
 
-// SCRIPT JOYSTICK ANALOG SENTUH
 let joyActive = false;
 let joyCenterX = 0, joyCenterY = 0;
 let joyVector = { x: 0, y: 0 };
@@ -942,7 +957,6 @@ function isCollidingWithObstacle(x, y, radius) {
   return false;
 }
 
-// SCRIPT JAM RANDIK MASA PERMAINAN
 function formatTime(totalSec) {
   const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
   const s = (totalSec % 60).toString().padStart(2, '0');
@@ -965,7 +979,6 @@ function stopGameTimer() {
   if (gameTimeTimer) clearInterval(gameTimeTimer);
 }
 
-// SCOREBOARD LOCALSTORAGE
 function getLeaderboard() {
   try {
     const data = localStorage.getItem("fstb_leaderboard");
@@ -1028,15 +1041,23 @@ function closeLeaderboard() {
   }
 }
 
-function openControlSelection() {
+// BUKA SKRIN 2: PANDUAN PERMAINAN
+function openGuideModal() {
   initAudio();
   playSFX('button');
-  
   const inputElem = document.getElementById("player-name-input");
   playerName = inputElem.value.trim() || "Pemain 1";
 
   startBGM();
   document.getElementById("start-modal").classList.remove("active");
+  document.getElementById("guide-modal").classList.add("active");
+}
+
+// BUKA SKRIN 3: PILIHAN MODE KAWALAN
+function openControlSelection() {
+  initAudio();
+  playSFX('button');
+  document.getElementById("guide-modal").classList.remove("active");
   document.getElementById("control-modal").classList.add("active");
 }
 
@@ -1063,6 +1084,8 @@ function useButtonA() {
 
   if (!isGameStarted) {
     if (document.getElementById("start-modal").classList.contains("active")) {
+      openGuideModal();
+    } else if (document.getElementById("guide-modal").classList.contains("active")) {
       openControlSelection();
     } else if (document.getElementById("control-modal").classList.contains("active")) {
       setControlMode('dpad');
@@ -1168,7 +1191,6 @@ function submitPasscode() {
     addScore(100);
     closeTerminal();
     
-    // MUNCULKAN PINTU RAHSIA RAWAK & BUKA MODAL PILIHAN STRATEGI
     spawnRandomDoor();
     document.getElementById("choice-modal").classList.add("active");
   } else {
@@ -1177,7 +1199,6 @@ function submitPasscode() {
   }
 }
 
-// PILIHAN STRATEGI PEMAIN
 function chooseStrategy(mode) {
   initAudio();
   playSFX('button');
@@ -1227,6 +1248,7 @@ function closeModals() {
   document.getElementById("gameover-modal").classList.remove("active");
   document.getElementById("leaderboard-modal").classList.remove("active");
   document.getElementById("choice-modal").classList.remove("active");
+  document.getElementById("guide-modal").classList.remove("active");
 }
 
 function restartGame() {
@@ -1323,13 +1345,11 @@ function movePlayer(dx, dy) {
 function update() {
   if (!isGameStarted) return;
 
-  // PERGERAKAN KEYBOARD
   if (keys["w"] || keys["arrowup"]) movePlayer(0, -1);
   if (keys["s"] || keys["arrowdown"]) movePlayer(0, 1);
   if (keys["a"] || keys["arrowleft"]) movePlayer(-1, 0);
   if (keys["d"] || keys["arrowright"]) movePlayer(1, 0);
 
-  // PERGERAKAN JOYSTICK SENTUH
   if (joyActive && (joyVector.x !== 0 || joyVector.y !== 0)) {
     movePlayer(joyVector.x, joyVector.y);
   }
@@ -1409,7 +1429,6 @@ function update() {
     });
   }
 
-  // SEMAKAN PELARIAN KE PINTU RAHSIA
   if (doorUnlocked && door.isVisible) {
     let touchDoor = player.x + player.size >= door.x && player.x - player.size <= door.x + door.w &&
                     player.y + player.size >= door.y && player.y - player.size <= door.y + door.h;
@@ -1538,7 +1557,6 @@ function draw() {
   ctx.lineWidth = 8;
   ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
 
-  // LUKIS PINTU RAHSIA (JIKA DIPAPARKAN)
   if (door.isVisible) {
     let isFullyOpen = doorUnlocked && (strategyMode === 'escape' || areAllZombiesDead());
     ctx.fillStyle = isFullyOpen ? "#22c55e" : "#f59e0b";

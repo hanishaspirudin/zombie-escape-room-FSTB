@@ -85,8 +85,8 @@
       justify-content: space-between;
       background: #020617;
       color: #38bdf8;
-      font-size: 0.48rem;
-      padding: 4px 5px;
+      font-size: 0.44rem;
+      padding: 3px 4px;
       font-weight: bold;
       border-bottom: 2px solid #334155;
     }
@@ -380,7 +380,7 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
     .guide-grid {
-      display grid;
+      display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px 12px;
       margin-top: 5px;
@@ -405,9 +405,11 @@
 
       <!-- Canvas LCD -->
       <div id="canvas-container">
+        <!-- BAR STATUS HUD -->
         <div id="gb-status">
           <div>STG:<span id="room-num" style="color:#f59e0b">1</span>/5</div>
           <div>MATA:<span id="score-num" style="color:#4ade80">0</span></div>
+          <div>MSA:<span id="game-timer-display" style="color:#38bdf8">00:00</span></div>
           <div>PLR:<span id="ammo-num" style="color:#fbbf24">0/3</span></div>
           <div>HP:<span id="lives-num" style="color:#ef4444">❤️❤️❤️❤️❤️</span></div>
           <div>PTR:<span id="door-status" style="color:#ef4444">KUNCI</span></div>
@@ -461,7 +463,7 @@
 
         <!-- PAGE SCOREBOARD -->
         <div id="leaderboard-modal">
-          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:6px;">🏆 CARTA SCOREBOARD TOP 5</div>
+          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:4px;">🏆 CARTA SCOREBOARD TOP 5</div>
           <table class="sb-table">
             <thead>
               <tr>
@@ -473,8 +475,9 @@
             </thead>
             <tbody id="sb-tbody"></tbody>
           </table>
-          <div class="term-btn-group" style="width:85%;">
+          <div class="term-btn-group" style="width:90%; gap:4px;">
             <button class="term-btn term-btn-close" onclick="closeLeaderboard()">TUTUP [B]</button>
+            <button class="term-btn" style="background:#ef4444; color:#ffffff; max-width:85px;" onclick="resetLeaderboard()">PADAM</button>
           </div>
         </div>
 
@@ -675,34 +678,52 @@ function playTypingSFX() {
   playTone(500 + Math.random() * 250, 'triangle', 0.03, 0.05);
 }
 
+// SUPER MARIO BROS VICTORY FANFARE (TEPAT ~2.0 SAAT)
 let victoryFanfareTimer = null;
 function playVictoryFanfare() {
   if (!audioCtx || !bgmEnabled) return;
   stopBGM();
 
-  const notes = [
-    { f: 523.25, d: 0.12, t: 0.0 },
-    { f: 659.25, d: 0.12, t: 0.15 },
-    { f: 783.99, d: 0.12, t: 0.30 },
-    { f: 1046.50, d: 0.25, t: 0.50 },
-    { f: 880.00, d: 0.15, t: 0.85 },
-    { f: 1046.50, d: 0.45, t: 1.05 }
+  const marioNotes = [
+    { f: 392.00, d: 0.07, t: 0.00 }, // G4
+    { f: 523.25, d: 0.07, t: 0.07 }, // C5
+    { f: 659.25, d: 0.07, t: 0.14 }, // E5
+    { f: 783.99, d: 0.07, t: 0.21 }, // G5
+    { f: 1046.50, d: 0.07, t: 0.28 },// C6
+    { f: 1318.51, d: 0.07, t: 0.35 },// E6
+    { f: 1567.98, d: 0.20, t: 0.42 },// G6
+    { f: 1318.51, d: 0.20, t: 0.62 },// E6
+
+    { f: 415.30, d: 0.07, t: 0.80 }, // Ab4
+    { f: 523.25, d: 0.07, t: 0.87 }, // C5
+    { f: 622.25, d: 0.07, t: 0.94 }, // Eb5
+    { f: 830.61, d: 0.07, t: 1.01 }, // Ab5
+    { f: 1046.50, d: 0.07, t: 1.08 },// C6
+    { f: 1244.51, d: 0.07, t: 1.15 },// Eb6
+    { f: 1661.22, d: 0.20, t: 1.22 },// Ab6
+    { f: 1244.51, d: 0.20, t: 1.42 },// Eb6
+
+    { f: 466.16, d: 0.07, t: 1.60 }, // Bb4
+    { f: 587.33, d: 0.07, t: 1.67 }, // D5
+    { f: 698.46, d: 0.07, t: 1.74 }, // F5
+    { f: 932.33, d: 0.07, t: 1.81 }, // Bb5
+    { f: 1174.66, d: 0.07, t: 1.88 },// D6
+    { f: 1396.91, d: 0.07, t: 1.95 },// F6
+    { f: 1864.66, d: 0.35, t: 2.02 } // Bb6
   ];
 
-  notes.forEach(n => {
+  marioNotes.forEach(n => {
     setTimeout(() => {
       if (isVictoryOpen && bgmEnabled) {
-        playTone(n.f, 'triangle', n.d, 0.2);
-        playTone(n.f / 2, 'square', n.d, 0.1);
+        playTone(n.f, 'square', n.d, 0.15);
       }
     }, n.t * 1000);
   });
 
-  // PEMOTONG MUZIK KEMENANGAN TEPAT 2.0 SAAT
   if (victoryFanfareTimer) clearTimeout(victoryFanfareTimer);
   victoryFanfareTimer = setTimeout(() => {
     stopBGM();
-  }, 2000);
+  }, 2400);
 }
 
 function toggleBGM() {
@@ -737,7 +758,7 @@ function playSFX(type) {
 }
 
 // ==========================================
-// BANK SOALAN MATEMATIK FSTB (2 NOMBOR & BAWAH 50)
+// BANK SOALAN MATEMATIK FSTB (2 NOMBOR <50)
 // ==========================================
 const questionPool = {
   1: [
@@ -1033,7 +1054,6 @@ function relocateKey() {
 function resetZombies() {
   zombies = [];
   if (currentRoom === 4) {
-    // BOSS STAGE 5: 1 Zombi Gergasi Merah Hitam (5 HP, Speed 1.2)
     zombies.push({
       x: 220, y: 105, size: 16, speed: 1.2,
       hp: 5, maxHp: 5, isBoss: true, active: true
@@ -1080,12 +1100,15 @@ function formatTime(totalSec) {
 
 function startGameTimer() {
   totalGameSeconds = 0;
-  document.getElementById("game-timer-display").innerText = "00:00";
+  const timerElem = document.getElementById("game-timer-display");
+  if (timerElem) timerElem.innerText = "00:00";
+  
   if (gameTimeTimer) clearInterval(gameTimeTimer);
   gameTimeTimer = setInterval(() => {
     if (isGameStarted && !isTerminalOpen && !isVictoryOpen && !isGameOver) {
       totalGameSeconds++;
-      document.getElementById("game-timer-display").innerText = formatTime(totalGameSeconds);
+      const elem = document.getElementById("game-timer-display");
+      if (elem) elem.innerText = formatTime(totalGameSeconds);
     }
   }, 1000);
 }
@@ -1094,6 +1117,7 @@ function stopGameTimer() {
   if (gameTimeTimer) clearInterval(gameTimeTimer);
 }
 
+// SCOREBOARD MEMORI LOKAL
 function getLeaderboard() {
   try {
     const data = localStorage.getItem("fstb_leaderboard");
@@ -1111,11 +1135,23 @@ function saveScore(name, score, timeSec) {
     timeSec: timeSec,
     timeFormatted: formatTime(timeSec)
   });
+  // Susun mengikut skor tertinggi, kemudian masa terpantas
   lb.sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
   lb = lb.slice(0, 5);
   try {
     localStorage.setItem("fstb_leaderboard", JSON.stringify(lb));
   } catch(e){}
+}
+
+function resetLeaderboard() {
+  initAudio();
+  playSFX('button');
+  if (confirm("Adakah anda pasti ingin memadam semua rekod scoreboard?")) {
+    try {
+      localStorage.removeItem("fstb_leaderboard");
+    } catch(e){}
+    openLeaderboard();
+  }
 }
 
 function openLeaderboard() {
@@ -1132,7 +1168,7 @@ function openLeaderboard() {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${i + 1}</td>
-        <td>${row.name}</td>
+        <td style="font-weight:bold;">${row.name}</td>
         <td style="color:#fbbf24; font-weight:bold;">${row.score}</td>
         <td style="color:#38bdf8;">${row.timeFormatted}</td>
       `;
@@ -1161,7 +1197,11 @@ function openGuideModal() {
   startBGM();
   playSFX('button');
   const inputElem = document.getElementById("player-name-input");
-  playerName = inputElem.value.trim() || "Pemain 1";
+  if (inputElem && inputElem.value.trim()) {
+    playerName = inputElem.value.trim().substring(0, 10);
+  } else {
+    playerName = "Pemain 1";
+  }
 
   document.getElementById("start-modal").classList.remove("active");
   document.getElementById("guide-modal").classList.add("active");
@@ -1234,7 +1274,6 @@ function useButtonA() {
   }
 }
 
-// PENGEHAD TEMBAKAN TUNGGAL (SINGLE SHOT LOCK)
 let isShootLocked = false;
 function unlockShoot() {
   isShootLocked = false;
@@ -1387,6 +1426,7 @@ function openVictoryModal() {
   document.getElementById("vic-penalty").innerText = penalty;
   document.getElementById("final-score").innerText = finalScore;
 
+  // SIMPAN REKOD KE SCOREBOARD
   saveScore(playerName, finalScore, totalGameSeconds);
 
   document.getElementById("victory-modal").classList.add("active");
@@ -1418,6 +1458,7 @@ function restartGame() {
   totalScore = 0;
   playerLives = 5;
   playerAmmo = 0;
+  totalGameSeconds = 0;
   addScore(0);
   updateLivesDisplay();
   updateAmmoDisplay();

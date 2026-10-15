@@ -380,7 +380,7 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
     .guide-grid {
-      display: grid;
+      display grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px 12px;
       margin-top: 5px;
@@ -437,8 +437,8 @@
             <div style="color:#fbbf24; font-weight:bold;">🎯 MISI UTAMA:</div>
             <div>• Escape 5 Stage Bilik Berzombie!</div>
             <div style="color:#4ade80; font-weight:bold; margin-top:2px;">🔄 PERATURAN ITEM & SOALAN:</div>
-            <div>• 🗝️ <b>Kunci</b>: Jawab soalan FSTB -> Pintu Buka!</div>
-            <div>• 📦 <b>Peluru</b>: Jawab soalan FSTB -> Dpt 3 Peluru!</div>
+            <div>• 🗝️ <b>Kunci</b>: Jawab FSTB (2 nombor <50) -> Pintu Buka!</div>
+            <div>• 📦 <b>Peluru</b>: Jawab FSTB -> Dpt 3 Peluru!</div>
             <div>• Baki peluru dibolehkan bawa ke Stage seterusnya.</div>
             <div>• Peluru habis? Imej peluru baharu akan muncul!</div>
             <div style="color:#ef4444; font-weight:bold; margin-top:2px;">👺 BOSS STAGE 5:</div>
@@ -698,6 +698,7 @@ function playVictoryFanfare() {
     }, n.t * 1000);
   });
 
+  // PEMOTONG MUZIK KEMENANGAN TEPAT 2.0 SAAT
   if (victoryFanfareTimer) clearTimeout(victoryFanfareTimer);
   victoryFanfareTimer = setTimeout(() => {
     stopBGM();
@@ -736,68 +737,68 @@ function playSFX(type) {
 }
 
 // ==========================================
-// BANK SOALAN MATEMATIK FSTB
+// BANK SOALAN MATEMATIK FSTB (2 NOMBOR & BAWAH 50)
 // ==========================================
 const questionPool = {
   1: [
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 8 dan 12.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 6 dan 9.", code: "3" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 10 dan 15.", code: "5" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 12 dan 18.", code: "6" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 10 dan 25.", code: "5" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 14 dan 21.", code: "7" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 16 dan 24.", code: "8" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 15 dan 20.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 16 dan 20.", code: "4" },
     { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 9 dan 15.", code: "3" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 18 dan 27.", code: "9" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 30.", code: "10" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 12 dan 20.", code: "4" }
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 10 dan 25.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 8 dan 20.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 15 dan 25.", code: "5" }
   ],
   2: [
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 36.", code: "12" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 30 dan 45.", code: "15" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 50.", code: "10" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 36 dan 54.", code: "18" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 40 dan 60.", code: "20" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 28 dan 42.", code: "14" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 32 dan 48.", code: "16" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 45 dan 60.", code: "15" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 25 dan 75.", code: "25" },
-    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 35 dan 49.", code: "7" }
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 18 dan 24.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 16 dan 24.", code: "8" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 30.", code: "10" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 21 dan 28.", code: "7" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 15 dan 30.", code: "15" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 32.", code: "8" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 18 dan 27.", code: "9" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 35.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 22 dan 33.", code: "11" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 12 dan 30.", code: "6" }
   ],
   3: [
-    { q: "Cari FSTB bagi tiga nombor: 12, 18, dan 24.", code: "6" },
-    { q: "Cari FSTB bagi tiga nombor: 15, 30, dan 45.", code: "15" },
-    { q: "Cari FSTB bagi tiga nombor: 16, 32, dan 48.", code: "16" },
-    { q: "Cari FSTB bagi tiga nombor: 20, 40, dan 60.", code: "20" },
-    { q: "Cari FSTB bagi tiga nombor: 18, 27, dan 36.", code: "9" },
-    { q: "Cari FSTB bagi tiga nombor: 24, 36, dan 48.", code: "12" },
-    { q: "Cari FSTB bagi tiga nombor: 10, 20, dan 30.", code: "10" },
-    { q: "Cari FSTB bagi tiga nombor: 14, 28, dan 42.", code: "14" },
-    { q: "Cari FSTB bagi tiga nombor: 8, 16, dan 24.", code: "8" },
-    { q: "Cari FSTB bagi tiga nombor: 21, 35, dan 42.", code: "7" }
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 36.", code: "12" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 28 dan 42.", code: "14" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 25 dan 40.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 30 dan 45.", code: "15" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 27 dan 36.", code: "9" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 32 dan 48.", code: "16" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 45.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 40.", code: "8" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 18 dan 42.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 21 dan 35.", code: "7" }
   ],
   4: [
-    { q: "Cari FSTB bagi nombor 32, 48, dan 80.", code: "16" },
-    { q: "Cari FSTB bagi nombor 36, 54, dan 90.", code: "18" },
-    { q: "Cari FSTB bagi nombor 28, 56, dan 84.", code: "28" },
-    { q: "Cari FSTB bagi nombor 45, 75, dan 105.", code: "15" },
-    { q: "Cari FSTB bagi nombor 42, 70, dan 98.", code: "14" },
-    { q: "Cari FSTB bagi nombor 48, 72, dan 120.", code: "24" },
-    { q: "Cari FSTB bagi nombor 30, 60, dan 90.", code: "30" },
-    { q: "Cari FSTB bagi nombor 24, 40, dan 56.", code: "8" },
-    { q: "Cari FSTB bagi nombor 36, 60, dan 84.", code: "12" },
-    { q: "Cari FSTB bagi nombor 40, 80, dan 120.", code: "40" }
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 30 dan 42.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 35 dan 49.", code: "7" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 32 dan 40.", code: "8" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 36 dan 45.", code: "9" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 48.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 28 dan 49.", code: "7" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 36 dan 48.", code: "12" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 44.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 30 dan 48.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 26 dan 39.", code: "13" }
   ],
   5: [
-    { q: "Soalan Akhir! Cari FSTB bagi 56, 84, dan 140.", code: "28" },
-    { q: "Soalan Akhir! Cari FSTB bagi 64, 96, dan 160.", code: "32" },
-    { q: "Soalan Akhir! Cari FSTB bagi 60, 90, dan 150.", code: "30" },
-    { q: "Soalan Akhir! Cari FSTB bagi 72, 108, dan 180.", code: "36" },
-    { q: "Soalan Akhir! Cari FSTB bagi 80, 120, dan 200.", code: "40" },
-    { q: "Soalan Akhir! Cari FSTB bagi 96, 144, dan 240.", code: "48" },
-    { q: "Soalan Akhir! Cari FSTB bagi 50, 100, dan 150.", code: "50" },
-    { q: "Soalan Akhir! Cari FSTB bagi 48, 96, dan 144.", code: "48" },
-    { q: "Soalan Akhir! Cari FSTB bagi 70, 105, dan 175.", code: "35" },
-    { q: "Soalan Akhir! Cari FSTB bagi 84, 126, dan 210.", code: "42" }
+    { q: "Soalan Akhir! Cari FSTB bagi 36 dan 48.", code: "12" },
+    { q: "Soalan Akhir! Cari FSTB bagi 28 dan 42.", code: "14" },
+    { q: "Soalan Akhir! Cari FSTB bagi 30 dan 45.", code: "15" },
+    { q: "Soalan Akhir! Cari FSTB bagi 32 dan 48.", code: "16" },
+    { q: "Soalan Akhir! Cari FSTB bagi 25 dan 45.", code: "5" },
+    { q: "Soalan Akhir! Cari FSTB bagi 27 dan 45.", code: "9" },
+    { q: "Soalan Akhir! Cari FSTB bagi 35 dan 42.", code: "7" },
+    { q: "Soalan Akhir! Cari FSTB bagi 40 dan 48.", code: "8" },
+    { q: "Soalan Akhir! Cari FSTB bagi 24 dan 36.", code: "12" },
+    { q: "Soalan Akhir! Cari FSTB bagi 33 dan 44.", code: "11" }
   ]
 };
 

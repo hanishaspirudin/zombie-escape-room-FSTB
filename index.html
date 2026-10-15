@@ -644,10 +644,17 @@ const bgmNotes = [
 ];
 let bgmNoteIndex = 0;
 
+function stopBGM() {
+  if (bgmInterval) {
+    clearInterval(bgmInterval);
+    bgmInterval = null;
+  }
+}
+
 function startBGM() {
   if (bgmInterval) return;
   bgmInterval = setInterval(() => {
-    if (bgmEnabled && audioCtx && audioCtx.state === 'running' && !isVictoryOpen) {
+    if (bgmEnabled && audioCtx && audioCtx.state === 'running' && !isVictoryOpen && !isGameOver) {
       const note = bgmNotes[bgmNoteIndex];
       playTone(note, 'square', 0.12, 0.03);
       bgmNoteIndex = (bgmNoteIndex + 1) % bgmNotes.length;
@@ -661,22 +668,26 @@ function playTypingSFX() {
   playTone(500 + Math.random() * 250, 'triangle', 0.03, 0.05);
 }
 
-// FANFARE MENANG RINGKAS (SEKITAR 2 SAAT SAHAJA)
+// LAGU KEMENANGAN TERUS DIBERHENTIKAN TEPAT 2 SAAT
 function playVictoryFanfare() {
   if (!audioCtx || !bgmEnabled) return;
+  stopBGM(); // HENTIKAN BGM LATAR BELAKANG TERUS
+
   const notes = [
-    { f: 523.25, d: 0.15, t: 0 },
-    { f: 659.25, d: 0.15, t: 0.18 },
-    { f: 783.99, d: 0.15, t: 0.36 },
-    { f: 1046.50, d: 0.30, t: 0.54 },
-    { f: 880.00, d: 0.20, t: 0.84 },
-    { f: 1046.50, d: 0.60, t: 1.05 }
+    { f: 523.25, d: 0.12, t: 0.0 },   // C5
+    { f: 659.25, d: 0.12, t: 0.15 },  // E5
+    { f: 783.99, d: 0.12, t: 0.30 },  // G5
+    { f: 1046.50, d: 0.25, t: 0.50 }, // C6
+    { f: 880.00, d: 0.15, t: 0.85 },  // A5
+    { f: 1046.50, d: 0.70, t: 1.05 }  // C6 (Tamat pada 1.75 saat)
   ];
 
   notes.forEach(n => {
     setTimeout(() => {
-      playTone(n.f, 'triangle', n.d, 0.2);
-      playTone(n.f / 2, 'square', n.d, 0.1);
+      if (isVictoryOpen && bgmEnabled) {
+        playTone(n.f, 'triangle', n.d, 0.2);
+        playTone(n.f / 2, 'square', n.d, 0.1);
+      }
     }, n.t * 1000);
   });
 }
@@ -814,7 +825,7 @@ const roomObstacles = {
 
 let currentRoom = 0;
 let totalScore = 0;
-let playerLives = 5; // DITETAPKAN KEPADA 5 NYAWA
+let playerLives = 5;
 let sessionQuestions = [];
 let doorUnlocked = false;
 
@@ -917,7 +928,6 @@ function handleJoyMove(touch) {
   }
 }
 
-// ROMBAK KESELURUHAN SOALAN RAWAK BAGI SETIAP PERMAINAN BAHARU
 function generateSessionQuestions() {
   sessionQuestions = [];
   for (let stage = 1; stage <= 5; stage++) {
@@ -933,7 +943,6 @@ function updateKeyLocation() {
   keyObj.y = pos.y;
 }
 
-// PAPARAN NYAWA BERSIH (HATI HILANG KEBANYAKAN BILA TERKENA GIGITAN)
 function updateLivesDisplay() {
   const elem = document.getElementById("lives-num");
   if (playerLives > 0) {
@@ -959,8 +968,6 @@ function relocateKey() {
   keyObj.y = newY;
 }
 
-// TETAPAN KELAJUAN ZOMBI:
-// STAGE 1 = 0.75 | STAGE 2 = 1.00 | STAGE 3 = 0.75 | STAGE 4 = 1.00 | STAGE 5 = 1.00
 function resetZombies() {
   zombies = [];
   const stageSpeeds = [0.75, 1.00, 0.75, 1.00, 1.00];
@@ -1251,6 +1258,7 @@ function submitPasscode() {
 function openGameOverModal() {
   isGameOver = true;
   stopGameTimer();
+  stopBGM(); // HENTIKAN BGM BILA KALAH
   document.getElementById("gameover-modal").classList.add("active");
 }
 
@@ -1283,12 +1291,12 @@ function closeModals() {
   document.getElementById("guide-modal").classList.remove("active");
 }
 
-// FUNGSI RESTART & ROMBAK SEMULA SET SOALAN & NYAWA
 function restartGame() {
   initAudio();
   playSFX('button');
   stopTimer();
   stopGameTimer();
+  stopBGM();
   closeModals();
   startBGM();
 
@@ -1298,7 +1306,7 @@ function restartGame() {
 
   currentRoom = 0;
   totalScore = 0;
-  playerLives = 5; // DITETAPKAN SEMULA KEPADA 5 HP
+  playerLives = 5;
   addScore(0);
   updateLivesDisplay();
 
@@ -1315,7 +1323,6 @@ function restartGame() {
   document.getElementById("door-status").style.color = "#ef4444";
   document.getElementById("terminal-modal").classList.remove("active");
   
-  // ROMBAK SET SOALAN FSTB UNTUK PERMAINAN BAHARU
   generateSessionQuestions();
   updateKeyLocation();
   resetZombies();
@@ -1400,7 +1407,6 @@ function update() {
     movePlayer(joyVector.x, joyVector.y);
   }
 
-  // LOGIK PERGERAKAN ZOMBI DENGAN SMART WALL-SLIDING (TIDAK TERSANGKUT)
   if (!isTerminalOpen && !isVictoryOpen && !isGameOver) {
     zombies.forEach(z => {
       if (z.active) {
@@ -1413,22 +1419,18 @@ function update() {
           let vx = (dx / dist) * zSpeed;
           let vy = (dy / dist) * zSpeed;
 
-          // Cubaan bergerak paksi X
           if (!isCollidingWithObstacle(z.x + vx, z.y, z.size)) {
             z.x += vx;
           } else {
-            // Jika terhalang di X, luncurkan ke paksi Y
             let slideY = vy > 0 ? zSpeed : -zSpeed;
             if (!isCollidingWithObstacle(z.x, z.y + slideY, z.size)) {
               z.y += slideY * 0.5;
             }
           }
 
-          // Cubaan bergerak paksi Y
           if (!isCollidingWithObstacle(z.x, z.y + vy, z.size)) {
             z.y += vy;
           } else {
-            // Jika terhalang di Y, luncurkan ke paksi X
             let slideX = vx > 0 ? zSpeed : -zSpeed;
             if (!isCollidingWithObstacle(z.x + slideX, z.y, z.size)) {
               z.x += slideX * 0.5;
@@ -1515,7 +1517,7 @@ function update() {
 }
 
 // ==========================================
-// LUKISAN GRAFIK RETRO GBA (POKEMON RPG STYLE)
+// LUKISAN GRAFIK RETRO GBA
 // ==========================================
 function drawMapEnvironment() {
   const tileSize = 20;

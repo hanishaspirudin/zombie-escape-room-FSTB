@@ -163,8 +163,8 @@
       color: #ffffff;
     }
 
-    /* MODAL OVERLAYS (START / GUIDE / CONTROL / CHOICE / VICTORY / SCOREBOARD) */
-    #start-modal, #guide-modal, #control-modal, #choice-modal, #victory-modal, #gameover-modal, #leaderboard-modal {
+    /* MODAL OVERLAYS (START / GUIDE / CONTROL / VICTORY / SCOREBOARD) */
+    #start-modal, #guide-modal, #control-modal, #victory-modal, #gameover-modal, #leaderboard-modal {
       display: none;
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -177,7 +177,7 @@
       text-align: center;
       z-index: 30;
     }
-    #start-modal.active, #guide-modal.active, #control-modal.active, #choice-modal.active, #victory-modal.active, #gameover-modal.active, #leaderboard-modal.active { display: flex; }
+    #start-modal.active, #guide-modal.active, #control-modal.active, #victory-modal.active, #gameover-modal.active, #leaderboard-modal.active { display: flex; }
     
     .vic-title { color: #f59e0b; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; text-shadow: 0 0 6px #f59e0b; }
     .go-title { color: #ef4444; font-size: 0.95rem; font-weight: bold; margin-bottom: 6px; text-shadow: 0 0 6px #ef4444; }
@@ -369,7 +369,7 @@
     }
   </style>
 </head>
-<body>
+<body onclick="initAudio(); startBGM();">
 
   <div id="gameboy">
     <!-- Bezel Skrin Game Boy -->
@@ -396,7 +396,7 @@
           <div class="vic-text" style="color:#cbd5e1; margin-bottom:6px;">
             Masukkan nama pemain sebelum mula:
           </div>
-          <input type="text" id="player-name-input" class="term-input" style="width:85%; margin-bottom:8px; font-size:0.8rem;" placeholder="NAMA PEMAIN" maxlength="12" value="Pemain 1">
+          <input type="text" id="player-name-input" class="term-input" style="width:85%; margin-bottom:8px; font-size:0.8rem;" placeholder="NAMA PEMAIN" maxlength="12" value="Pemain 1" oninput="playTypingSFX()" onclick="initAudio(); startBGM();">
           
           <div class="term-btn-group" style="width:85%; flex-direction:column; gap:5px;">
             <button class="term-btn" onclick="openGuideModal()">▶️ TERUSKAN</button>
@@ -413,8 +413,8 @@
             <div style="color:#4ade80; font-weight:bold; margin-top:2px;">🔄 CARA MAIN:</div>
             <div>1. Cari Kunci Emas 🗝️</div>
             <div>2. Jawab Soalan FSTB (Masa: 30s) 🧮</div>
-            <div>3. Pilih: Lawan Zombie 🔫 / Lari terus 🏃</div>
-            <div>4. Cari Pintu Rahsia & Escape! 🚪</div>
+            <div>3. Pintu Rahsia Terus Buka! 🚪</div>
+            <div>4. Lari ke Pintu ATAU Tembak Zombie (+50 PTS) 🔫</div>
             <div style="color:#ef4444; font-weight:bold; margin-top:2px;">❤️ PERATURAN:</div>
             <div>• 3 Nyawa (Kena gigit = -1 HP). 0 HP = Game Over!</div>
           </div>
@@ -430,22 +430,6 @@
           <div class="term-btn-group" style="flex-direction:column; gap:6px; width:90%;">
             <button class="term-btn" style="background:#38bdf8; color:#0f172a;" onclick="setControlMode('joystick')">🕹️ VIRTUAL JOYSTICK (SENTUH 360°)</button>
             <button class="term-btn" style="background:#22c55e; color:#052e16;" onclick="setControlMode('dpad')">🎛️ D-PAD BUTTONS (BUTANG 4-ARAH)</button>
-          </div>
-        </div>
-
-        <!-- MODAL PILIHAN STRATEGI (FIGHT VS ESCAPE) -->
-        <div id="choice-modal">
-          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:4px; color:#4ade80;">🎉 JAWAPAN FSTB BETUL! (+100 PTS)</div>
-          <div class="vic-text" style="color:#cbd5e1; margin-bottom:8px;">Pintu Rahsia telah muncul secara rawak! Pilih strategi anda:</div>
-          <div class="term-btn-group" style="flex-direction:column; gap:6px; width:92%;">
-            <button class="term-btn" style="background:#f59e0b; color:#0f172a; padding:7px;" onclick="chooseStrategy('fight')">
-              🔫 LAWAN ZOMBIE (+DAPAT GUN)<br>
-              <span style="font-size:0.48rem; font-weight:normal;">Tembak zombie untuk +50 PTS bonus setiap satu!</span>
-            </button>
-            <button class="term-btn" style="background:#38bdf8; color:#0f172a; padding:7px;" onclick="chooseStrategy('escape')">
-              🏃 LARI SEGERA (PINTU TERBUKA)<br>
-              <span style="font-size:0.48rem; font-weight:normal;">Pintu terus terbuka! Kena tangkas elak zombie.</span>
-            </button>
           </div>
         </div>
 
@@ -476,7 +460,7 @@
           <div class="term-timer">⏳ MASA: <span id="timer-sec">30</span>s</div>
           <div class="term-warning">PAUSKAN ZOMBIE! JAWAB SEBELUM MASA TAMAT.</div>
           <div class="term-question" id="modal-q">Cari FSTB...</div>
-          <input type="number" id="passcode-input" class="term-input" placeholder="JAWAPAN FSTB" autocomplete="off">
+          <input type="number" id="passcode-input" class="term-input" placeholder="JAWAPAN FSTB" autocomplete="off" oninput="playTypingSFX()">
           <div class="term-btn-group">
             <button class="term-btn" onclick="submitPasscode()">[ A ] HANTAR (ENTER)</button>
             <button class="term-btn term-btn-close" onclick="closeTerminal()">[ B ] TUTUP (SHIFT)</button>
@@ -626,7 +610,7 @@ const bgmNotes = [
 let bgmNoteIndex = 0;
 
 function startBGM() {
-  if (bgmInterval) clearInterval(bgmInterval);
+  if (bgmInterval) return; // ELAK BERLAPIS
   bgmInterval = setInterval(() => {
     if (bgmEnabled && audioCtx && audioCtx.state === 'running' && !isVictoryOpen) {
       const note = bgmNotes[bgmNoteIndex];
@@ -634,6 +618,12 @@ function startBGM() {
       bgmNoteIndex = (bgmNoteIndex + 1) % bgmNotes.length;
     }
   }, 180);
+}
+
+function playTypingSFX() {
+  initAudio();
+  startBGM(); // MULA LAGU SEBAIK SAHAJA NAMA DITAIP
+  playTone(500 + Math.random() * 250, 'triangle', 0.03, 0.05);
 }
 
 function playVictoryFanfare() {
@@ -771,7 +761,6 @@ let totalScore = 0;
 let playerLives = 3;
 let sessionQuestions = [];
 let doorUnlocked = false;
-let strategyMode = null;
 
 let isGameStarted = false;
 let isTerminalOpen = false;
@@ -1041,19 +1030,17 @@ function closeLeaderboard() {
   }
 }
 
-// BUKA SKRIN 2: PANDUAN PERMAINAN
 function openGuideModal() {
   initAudio();
+  startBGM();
   playSFX('button');
   const inputElem = document.getElementById("player-name-input");
   playerName = inputElem.value.trim() || "Pemain 1";
 
-  startBGM();
   document.getElementById("start-modal").classList.remove("active");
   document.getElementById("guide-modal").classList.add("active");
 }
 
-// BUKA SKRIN 3: PILIHAN MODE KAWALAN
 function openControlSelection() {
   initAudio();
   playSFX('button');
@@ -1081,6 +1068,7 @@ function setControlMode(mode) {
 
 function useButtonA() {
   initAudio();
+  startBGM();
 
   if (!isGameStarted) {
     if (document.getElementById("start-modal").classList.contains("active")) {
@@ -1191,27 +1179,14 @@ function submitPasscode() {
     addScore(100);
     closeTerminal();
     
+    doorUnlocked = true;
+    player.hasWeapon = true;
     spawnRandomDoor();
-    document.getElementById("choice-modal").classList.add("active");
+
+    alert("SYABAS! JAWAPAN BETUL! (+100 PTS)\n\n🚪 PINTU RAHSIA TERBUKA & 🔫 SENJATA DIAKTIFKAN!\nAnda boleh terus LARI ke pintu atau TEMBAK ZOMBIE untuk bonus +50 PTS!");
   } else {
     playSFX('wrong');
     alert("JAWAPAN SALAH! Sila semak semula pengiraan FSTB anda.");
-  }
-}
-
-function chooseStrategy(mode) {
-  initAudio();
-  playSFX('button');
-  strategyMode = mode;
-  doorUnlocked = true;
-  document.getElementById("choice-modal").classList.remove("active");
-
-  if (mode === 'fight') {
-    player.hasWeapon = true;
-    alert("🔫 ANDA MEMILIH UNTUK LAWAN!\nSenjata Gun diaktifkan! Tumbangkan semua zombie untuk membuka laluan pintu sepenuhnya (+50 PTS/Zombie)!");
-  } else {
-    player.hasWeapon = false;
-    alert("🏃 ANDA MEMILIH UNTUK LARI!\nPintu Rahsia TERUS TERBUKA! Lari dan elak zombie terus ke pintu!");
   }
 }
 
@@ -1247,7 +1222,6 @@ function closeModals() {
   document.getElementById("victory-modal").classList.remove("active");
   document.getElementById("gameover-modal").classList.remove("active");
   document.getElementById("leaderboard-modal").classList.remove("active");
-  document.getElementById("choice-modal").classList.remove("active");
   document.getElementById("guide-modal").classList.remove("active");
 }
 
@@ -1321,7 +1295,7 @@ window.addEventListener("keyup", (e) => {
 });
 
 function movePlayer(dx, dy) {
-  if (!isGameStarted || isTerminalOpen || isVictoryOpen || isGameOver || document.getElementById("choice-modal").classList.contains("active")) return;
+  if (!isGameStarted || isTerminalOpen || isVictoryOpen || isGameOver) return;
   let nextX = player.x + dx * player.speed;
   let nextY = player.y + dy * player.speed;
 
@@ -1354,7 +1328,7 @@ function update() {
     movePlayer(joyVector.x, joyVector.y);
   }
 
-  if (!isTerminalOpen && !isVictoryOpen && !isGameOver && !document.getElementById("choice-modal").classList.contains("active")) {
+  if (!isTerminalOpen && !isVictoryOpen && !isGameOver) {
     zombies.forEach(z => {
       if (z.active) {
         let zSpeed = z.speed;
@@ -1388,19 +1362,8 @@ function update() {
 
   const doorElem = document.getElementById("door-status");
   if (doorUnlocked) {
-    if (strategyMode === 'fight') {
-      const activeZCount = zombies.filter(z => z.active).length;
-      if (activeZCount > 0) {
-        doorElem.innerText = `ZMB(${activeZCount})`;
-        doorElem.style.color = "#f59e0b";
-      } else {
-        doorElem.innerText = "BUKA";
-        doorElem.style.color = "#4ade80";
-      }
-    } else {
-      doorElem.innerText = "BUKA";
-      doorElem.style.color = "#4ade80";
-    }
+    doorElem.innerText = "BUKA";
+    doorElem.style.color = "#4ade80";
   } else {
     doorElem.innerText = "KUNCI";
     doorElem.style.color = "#ef4444";
@@ -1429,35 +1392,29 @@ function update() {
     });
   }
 
+  // LARI KELUAR KE PINTU RAHSIA (TERUS BOLEH ESCAPE)
   if (doorUnlocked && door.isVisible) {
     let touchDoor = player.x + player.size >= door.x && player.x - player.size <= door.x + door.w &&
                     player.y + player.size >= door.y && player.y - player.size <= door.y + door.h;
 
     if (touchDoor) {
-      if (strategyMode === 'fight' && !areAllZombiesDead()) {
-        playSFX('wrong');
-        player.x -= (player.facingX * 10);
-        player.y -= (player.facingY * 10);
-        alert("⚠️ PINTU DILINDUNGI!\nAnda memilih mode Lawan, tumpaskan KESEMUA zombie terlebih dahulu!");
-      } else {
-        playSFX('door');
-        currentRoom++;
-        if (currentRoom >= 5) {
-          openVictoryModal();
-          return;
-        }
-        player.x = 40;
-        player.y = 105;
-        player.hasWeapon = false;
-        doorUnlocked = false;
-        door.isVisible = false;
-        bullets = [];
-
-        document.getElementById("room-num").innerText = currentRoom + 1;
-        
-        updateKeyLocation();
-        resetZombies();
+      playSFX('door');
+      currentRoom++;
+      if (currentRoom >= 5) {
+        openVictoryModal();
+        return;
       }
+      player.x = 40;
+      player.y = 105;
+      player.hasWeapon = false;
+      doorUnlocked = false;
+      door.isVisible = false;
+      bullets = [];
+
+      document.getElementById("room-num").innerText = currentRoom + 1;
+      
+      updateKeyLocation();
+      resetZombies();
     }
   }
 }
@@ -1558,8 +1515,7 @@ function draw() {
   ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
 
   if (door.isVisible) {
-    let isFullyOpen = doorUnlocked && (strategyMode === 'escape' || areAllZombiesDead());
-    ctx.fillStyle = isFullyOpen ? "#22c55e" : "#f59e0b";
+    ctx.fillStyle = "#22c55e";
     ctx.fillRect(door.x, door.y, door.w, door.h);
     ctx.strokeStyle = "#0f172a";
     ctx.lineWidth = 2;

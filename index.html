@@ -463,7 +463,7 @@
 
         <!-- PAGE SCOREBOARD -->
         <div id="leaderboard-modal">
-          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:4px;">🏆 CARTA SCOREBOARD (MAX 5)</div>
+          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:4px;">🏆 CARTA SCOREBOARD TOP 5</div>
           <table class="sb-table">
             <thead>
               <tr>
@@ -504,9 +504,9 @@
             <div>• Penalti Nyawa: -<span id="vic-penalty" style="color:#ef4444">0</span> PTS</div>
           </div>
           <div class="vic-score">JUMLAH MATA AKHIR: <span id="final-score" style="color:#fbbf24;">0</span> PTS</div>
-          <!-- PAPARAN KEDUDUKAN MAKSIMUM 5 PEMAIN -->
+          <!-- PAPARAN KEDUDUKAN STATIK (DIBUAT SEKALI SAHAJA) -->
           <div id="vic-rank-badge" style="font-size:0.65rem; color:#4ade80; font-weight:bold; margin-bottom:8px; background:#0f172a; padding:4px 8px; border-radius:4px; border:1px solid #4ade80;">
-            🎖️ Kedudukan Anda: Ke-1 daripada 1
+            🏆 TAHNIAH! KEDUDUKAN KE-1 DALAM CARTA TOP 5
           </div>
           <div class="term-btn-group" style="margin-top:2px;">
             <button class="term-btn" onclick="openLeaderboard()">📜 SCOREBOARD</button>
@@ -682,7 +682,6 @@ function playTypingSFX() {
   playTone(500 + Math.random() * 250, 'triangle', 0.03, 0.05);
 }
 
-// BGM KEMENANGAN DIBUANG SEPERTI PERMINTAAN
 function playVictoryFanfare() {
   stopBGM();
 }
@@ -792,6 +791,7 @@ const keyPositions = [
   { x: 150, y: 105 }
 ];
 
+// PENGHADANG STAGE 5 (INDEX 4) DIBERIKAN LALUAN LUAS AGAR BOSS TIDAK TERSANGKUT
 const roomObstacles = {
   0: [{ x: 125, y: 85, w: 50, h: 30, type: 'table' }],
   1: [
@@ -811,10 +811,8 @@ const roomObstacles = {
     { x: 190, y: 45, w: 22, h: 22, type: 'barrel' }
   ],
   4: [
-    { x: 105, y: 70, w: 28, h: 28, type: 'crate' },
-    { x: 165, y: 70, w: 28, h: 28, type: 'crate' },
-    { x: 135, y: 145, w: 30, h: 22, type: 'table' },
-    { x: 60, y: 55, w: 22, h: 22, type: 'barrel' }
+    { x: 80, y: 45, w: 24, h: 24, type: 'barrel' },
+    { x: 190, y: 140, w: 24, h: 24, type: 'barrel' }
   ]
 };
 
@@ -1078,15 +1076,12 @@ function stopGameTimer() {
   if (gameTimeTimer) clearInterval(gameTimeTimer);
 }
 
-// SCOREBOARD MEMORI LOKAL & AUTO-RESET JIKA LEBIH 5 PEMAIN
+// SCOREBOARD MEMORI LOKAL TOP 5 (BEBAS DARI PASTORAN / RESET TIDAK SENGAJA)
 function getLeaderboard() {
   try {
     const data = localStorage.getItem("fstb_leaderboard");
     let parsed = data ? JSON.parse(data) : [];
-    if (!Array.isArray(parsed) || parsed.length > 5) {
-      localStorage.removeItem("fstb_leaderboard");
-      return [];
-    }
+    if (!Array.isArray(parsed)) return [];
     return parsed;
   } catch (e) {
     return [];
@@ -1095,32 +1090,31 @@ function getLeaderboard() {
 
 function saveScore(name, score, timeSec) {
   let lb = getLeaderboard();
-  
-  // Jika sudah cukup/lebih 5 pemain, reset semula pusingan baharu
-  if (lb.length >= 5) {
-    lb = [];
-  }
 
-  const entryId = Date.now();
+  const entryId = Date.now() + "_" + Math.floor(Math.random() * 1000);
   const newEntry = {
     id: entryId,
-    name: name || "Pemain 1",
+    name: (name || "Pemain 1").substring(0, 10),
     score: score,
     timeSec: timeSec,
     timeFormatted: formatTime(timeSec)
   };
 
   lb.push(newEntry);
+  // Susun mengikut skor tertinggi, kemudian masa terpantas
   lb.sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
 
+  // Cari kedudukan tepat rekod ini
   const rank = lb.findIndex(e => e.id === entryId) + 1;
-  const totalEntries = lb.length;
+
+  // Simpan Top 5 terbaik sahaja
+  lb = lb.slice(0, 5);
 
   try {
     localStorage.setItem("fstb_leaderboard", JSON.stringify(lb));
   } catch(e){}
 
-  return { rank: rank, total: totalEntries };
+  return { rank: rank, isTop5: rank <= 5 };
 }
 
 function resetLeaderboard() {
@@ -1406,13 +1400,19 @@ function openVictoryModal() {
   document.getElementById("vic-penalty").innerText = penalty;
   document.getElementById("final-score").innerText = finalScore;
 
-  // SIMPAN SKOR TERHAD 5 PEMAIN
+  // DIKIRA SEKALI SAHAJA (STATIK)
   let rankInfo = saveScore(playerName, finalScore, totalGameSeconds);
 
   const badge = document.getElementById("vic-rank-badge");
-  badge.style.borderColor = "#4ade80";
-  badge.style.color = "#4ade80";
-  badge.innerText = `🎖️ Kedudukan Anda: Ke-${rankInfo.rank} daripada ${rankInfo.total} pemain`;
+  if (rankInfo.isTop5) {
+    badge.style.borderColor = "#4ade80";
+    badge.style.color = "#4ade80";
+    badge.innerText = `🏆 TAHNIAH! KEDUDUKAN KE-${rankInfo.rank} DALAM CARTA TOP 5`;
+  } else {
+    badge.style.borderColor = "#f59e0b";
+    badge.style.color = "#fbbf24";
+    badge.innerText = `🎖️ KEDUDUKAN: KE-${rankInfo.rank} (DI LUAR CARTA TOP 5)`;
+  }
 
   document.getElementById("victory-modal").classList.add("active");
 }
@@ -1426,7 +1426,7 @@ function closeModals() {
   document.getElementById("guide-modal").classList.remove("active");
 }
 
-// TEKAN RESTART AKAN KEMBALI KE MUKA HADAPAN (ISIKAN NAMA PEMAIN)
+// BUKA KEMBALI MUKA HADAPAN (SKRIN MULA / ISI NAMA) SELEPAS TEKAN SEMULA/RESTART
 function restartGame() {
   initAudio();
   playSFX('button');
@@ -1435,7 +1435,7 @@ function restartGame() {
   stopBGM();
   closeModals();
 
-  isGameStarted = false; // Kembalikan keadaan ke skrin asal
+  isGameStarted = false; // Kembalikan ke keadaan skrin mendaftar nama
 
   currentRoom = 0;
   totalScore = 0;
@@ -1465,7 +1465,7 @@ function restartGame() {
   respawnAmmoItem();
   resetZombies();
 
-  // BUKAKAN SKRIN UTAMA (MUKA HADAPAN ISI NAMA)
+  // PAPARKAN SKRIN ISI NAMA (MUKA HADAPAN)
   document.getElementById("start-modal").classList.add("active");
 }
 

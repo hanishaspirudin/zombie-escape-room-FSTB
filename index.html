@@ -7,228 +7,248 @@
 <title>Misi Escape Room: Kod FSTB</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101629;color:white;font-family:Arial;text-align:center}
-header{padding:12px;background:#202d48}
-h1{color:#ffd166;font-size:25px;margin:8px}
-.stats{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:12px}
-#game{width:min(94vw,640px);height:auto;border:4px solid #7184a8;border-radius:8px;image-rendering:pixelated;background:#263c43}
-p{margin:10px}
-.controls{display:grid;grid-template-columns:58px 58px 58px;gap:5px;justify-content:center;margin:12px}
-button{background:#ffd166;border:0;border-radius:9px;padding:13px;font-size:19px;font-weight:bold;cursor:pointer;touch-action:manipulation}
-.controls button{height:53px}
-#up{grid-column:2}
-#left{grid-column:1;grid-row:2}
-#down{grid-column:2;grid-row:2}
-#right{grid-column:3;grid-row:2}
-#message{min-height:26px;color:#ffe29a;font-weight:bold}
-#panel{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;padding:18px}
-.box{background:#202d48;border:2px solid #ffd166;border-radius:16px;padding:24px;width:min(100%,360px)}
-#answer{width:100px;padding:10px;font-size:20px;margin:12px}
-.small{font-size:13px;color:#c4d0e7}
+body{
+  margin:0;background:#101827;color:white;
+  font-family:Arial,sans-serif;text-align:center;
+}
+header{padding:18px 8px;background:#172554}
+h1{font-size:23px;margin:4px}
+p{margin:8px}
+#info{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;padding:12px}
+#room{
+  display:grid;grid-template-columns:repeat(9,min(9.5vw,48px));
+  grid-template-rows:repeat(7,min(9.5vw,48px));
+  gap:3px;justify-content:center;margin:10px auto;
+}
+.cell{
+  display:flex;align-items:center;justify-content:center;
+  background:#dbeafe;border-radius:6px;
+  font-size:clamp(17px,5vw,27px);
+}
+.wall{background:#475569}
+.floor{background:#dbeafe}
+.station{background:#fbbf24}
+.exit{background:#22c55e}
+#message{padding:10px;min-height:42px;color:#fde68a}
+#controls{
+  display:grid;grid-template-columns:repeat(3,60px);
+  gap:7px;justify-content:center;margin:12px auto;
+}
+button{
+  padding:13px;border:0;border-radius:10px;
+  font-size:20px;font-weight:bold;cursor:pointer;
+  background:#2563eb;color:white;
+}
+button:active{background:#1d4ed8}
+#controls button{height:54px}
+#panel{
+  display:none;position:fixed;inset:0;
+  background:#000b;align-items:center;justify-content:center;
+  padding:18px;z-index:5;
+}
+#box{
+  background:#1e293b;padding:24px;border-radius:16px;
+  width:min(100%,360px);
+}
+#question{font-size:18px;line-height:1.5}
+input{
+  width:100%;padding:12px;margin:12px 0;
+  font-size:18px;border-radius:8px;border:0;
+}
+#submit{width:100%;font-size:16px}
+#restart{font-size:15px;margin-bottom:15px}
+small{color:#cbd5e1}
 </style>
 </head>
 <body>
+
 <header>
-<h1>🔐 MISI ESCAPE ROOM</h1>
-<div>KOD FSTB · Matematik Tingkatan 1</div>
+<h1>🗝️ MISI ESCAPE ROOM</h1>
+<p>Kod FSTB — Matematik Tingkatan 1</p>
 </header>
 
-<div class="stats">
-<span>❤️ Nyawa: <b id="lives">3</b></span>
-<span>⭐ Markah: <b id="score">0</b></span>
-<span>⏱️ Masa: <b id="time">120</b>s</span>
+<div id="info">
+  <span>⭐ Markah: <b id="score">0</b>/5</span>
+  <span>🔓 Kunci: <b id="keys">0</b>/5</span>
 </div>
 
-<canvas id="game" width="480" height="320"></canvas>
-<p id="message">Cari kunci 🗝️, kemudian pergi ke pintu!</p>
-<p class="small">Guna WASD / anak panah atau butang di bawah.</p>
+<p>Gerakkan watak dan jawab soalan untuk membuka pintu!</p>
 
-<div class="controls">
-<button id="up">⬆️</button>
-<button id="left">⬅️</button>
-<button id="down">⬇️</button>
-<button id="right">➡️</button>
+<div id="room"></div>
+
+<div id="message">Gunakan butang arah untuk bergerak.</div>
+
+<div id="controls">
+  <span></span><button onclick="move(0,-1)">⬆️</button><span></span>
+  <button onclick="move(-1,0)">⬅️</button>
+  <button onclick="move(0,1)">⬇️</button>
+  <button onclick="move(1,0)">➡️</button>
 </div>
 
-<button onclick="restart()">🔄 Mula Semula</button>
+<p><small>Komputer: guna kekunci anak panah atau WASD.</small></p>
+<button id="restart" onclick="resetGame()">🔄 Mula Semula</button>
 
 <div id="panel">
-<div class="box">
-<h2 id="panelTitle">🔒 Pintu Berkunci</h2>
-<p id="question"></p>
-<input id="answer" type="number" placeholder="Jawapan">
-<br>
-<button id="submit">Semak Jawapan</button>
-<p id="feedback"></p>
-<button onclick="closePanel()">Sambung</button>
-</div>
+  <div id="box">
+    <h2 id="qtitle">🔐 Soalan</h2>
+    <p id="question"></p>
+    <input id="answer" type="number" inputmode="numeric"
+      placeholder="Masukkan jawapan" />
+    <button id="submit" onclick="checkAnswer()">Hantar Jawapan</button>
+    <p id="feedback"></p>
+  </div>
 </div>
 
 <script>
-const c=document.getElementById("game");
-const ctx=c.getContext("2d");
-const $=id=>document.getElementById(id);
+const W=9,H=7;
+const start={x:1,y:1};
+const door={x:7,y:5};
 
-let player={x:35,y:35,size:18};
-let key={x:420,y:55};
-let hasKey=false,score=0,lives=3,time=120;
-let level=0,ended=false,asking=false;
-let opened=[],last=0;
-let questions=[
- {q:"Cari FSTB bagi 12 dan 18.",a:6},
- {q:"Cari FSTB bagi 20 dan 30.",a:10},
- {q:"Cari FSTB bagi 24 dan 36.",a:12}
-];
-let walls=[
- {x:100,y:0,w:12,h:200},
- {x:200,y:120,w:12,h:200},
- {x:300,y:0,w:12,h:180},
- {x:100,y:200,w:112,h:12},
- {x:300,y:220,w:120,h:12}
+const questions=[
+ {x:2,y:1,q:"Cari FSTB bagi 8 dan 12.",a:4},
+ {x:5,y:1,q:"Cari FSTB bagi 10 dan 15.",a:5},
+ {x:2,y:3,q:"Cari FSTB bagi 12 dan 18.",a:6},
+ {x:6,y:3,q:"Cari FSTB bagi 6, 12 dan 18.",a:6},
+ {x:4,y:5,q:"Ali mempunyai 12 epal dan 16 oren. Kedua-duanya dibahagikan sama banyak tanpa baki. Berapakah bilangan kumpulan maksimum?",a:4}
 ];
 
-function draw(){
- ctx.clearRect(0,0,480,320);
- ctx.fillStyle="#29464a";ctx.fillRect(0,0,480,320);
- // Lantai gaya retro
- for(let y=0;y<320;y+=32)for(let x=0;x<480;x+=32){
-  ctx.strokeStyle="#35565a";ctx.strokeRect(x,y,32,32);
- }
- // Dinding
- walls.forEach(w=>{
-  ctx.fillStyle="#7184a8";ctx.fillRect(w.x,w.y,w.w,w.h);
-  ctx.fillStyle="#93a4c2";ctx.fillRect(w.x,w.y,w.w,4);
- });
- // Pintu keluar
- ctx.fillStyle=hasKey?"#20c997":"#b94b59";
- ctx.fillRect(430,250,34,55);
- ctx.fillStyle="white";ctx.font="12px Arial";
- ctx.fillText("PINTU",428,244);
- // Kunci
- if(!hasKey){
-  ctx.font="25px Arial";ctx.fillText("🗝️",key.x,key.y);
- }
- // Watak
- ctx.fillStyle="#ffd166";
- ctx.fillRect(player.x,player.y,player.size,player.size);
- ctx.fillStyle="#172033";
- ctx.fillRect(player.x+4,player.y+4,3,3);
- ctx.fillRect(player.x+12,player.y+4,3,3);
- ctx.fillStyle="#e98a65";
- ctx.fillRect(player.x+5,player.y+12,9,3);
+let player={...start};
+let solved=[];
+let active=-1;
+let finished=false;
+
+function isWall(x,y){
+ return x<0||x>=W||y<0||y>=H||
+        x===0||x===W-1||y===0||y===H-1;
 }
 
-function hits(x,y){
- if(x<0||y<0||x+18>480||y+18>320)return true;
- return walls.some(w=>x<w.x+w.w&&x+18>w.x&&y<w.y+w.h&&y+18>w.y);
+function draw(){
+ const room=document.getElementById("room");
+ room.innerHTML="";
+ for(let y=0;y<H;y++){
+  for(let x=0;x<W;x++){
+   const cell=document.createElement("div");
+   cell.className="cell "+(isWall(x,y)?"wall":"floor");
+   cell.textContent=isWall(x,y)?"🧱":"";
+   const qi=questions.findIndex(q=>q.x===x&&q.y===y);
+   if(qi>=0){
+    cell.className="cell station";
+    cell.textContent=solved.includes(qi)?"✅":"🔐";
+   }
+   if(x===door.x&&y===door.y){
+    cell.className="cell exit";
+    cell.textContent=finished?"🏆":"🚪";
+   }
+   if(x===player.x&&y===player.y){
+    cell.textContent="🧑‍🎓";
+    cell.style.background="#93c5fd";
+   }
+   room.appendChild(cell);
+  }
+ }
+ document.getElementById("score").textContent=solved.length;
+ document.getElementById("keys").textContent=solved.length;
+}
+
+function say(msg){
+ document.getElementById("message").textContent=msg;
 }
 
 function move(dx,dy){
- if(ended||asking)return;
- let nx=player.x+dx,ny=player.y+dy;
- if(!hits(nx,player.y))player.x=nx;
- if(!hits(player.x,ny))player.y=ny;
-
- if(!hasKey&&Math.abs(player.x-key.x)<22&&Math.abs(player.y-key.y)<22){
-  hasKey=true;
-  $("message").textContent="Kunci dijumpai! Pergi ke pintu merah/hijau.";
+ if(finished||active!==-1)return;
+ const nx=player.x+dx,ny=player.y+dy;
+ if(isWall(nx,ny)){
+  say("🧱 Ada dinding di situ! Cuba laluan lain.");
+  return;
  }
- if(player.x>410&&player.y>235&&hasKey){
-  asking=true;
-  $("panelTitle").textContent="🔐 Cabaran FSTB";
-  $("question").textContent=questions[level].q;
-  $("answer").value="";
-  $("feedback").textContent="";
-  $("panel").style.display="flex";
-  $("answer").focus();
- }
+ player={x:nx,y:ny};
+ const qi=questions.findIndex(q=>q.x===nx&&q.y===ny);
  draw();
-}
 
-function closePanel(){
- if(!ended)$("panel").style.display="none";
- asking=false;
-}
-
-$("submit").onclick=()=>{
- if(ended)return;
- let val=$("answer").value;
- if(val===""){$("feedback").textContent="Masukkan jawapan dahulu!";return}
- if(Number(val)===questions[level].a){
-  score+=10;
-  level++;
-  $("score").textContent=score;
-  $("feedback").textContent="Betul! Pintu berjaya dibuka! 🎉";
-  if(level===questions.length){
-   finish("🏆 TAHNIAH! MISI SELESAI!");
-   return;
-  }
-  setTimeout(()=>{
-   hasKey=false;
-   key={x:50+Math.random()*360,y:40+Math.random()*230};
-   player={x:25,y:25,size:18};
-   $("panel").style.display="none";
-   asking=false;
-   $("message").textContent="Bilik seterusnya! Cari kunci baru.";
+ if(qi>=0&&!solved.includes(qi)){
+  openQuestion(qi);
+ }else if(nx===door.x&&ny===door.y){
+  if(solved.length===questions.length){
+   finished=true;
    draw();
-  },900);
+   say("🎉 Tahniah! Kau berjaya keluar!");
+   document.getElementById("panel").style.display="flex";
+   document.getElementById("qtitle").textContent="🏆 MISI BERJAYA!";
+   document.getElementById("question").textContent=
+    "Semua soalan FSTB dijawab dengan betul. Markah: 5/5!";
+   document.getElementById("answer").style.display="none";
+   document.getElementById("submit").style.display="none";
+   document.getElementById("feedback").textContent=
+    "Tekan Mula Semula untuk bermain lagi.";
+  }else{
+   say("🔒 Pintu terkunci! Cari dan jawab semua 5 soalan.");
+  }
  }else{
-  lives--;
-  $("lives").textContent=lives;
-  $("feedback").textContent="Belum betul! Cuba lagi.";
-  if(lives<=0)finish("💔 Nyawa habis! Cuba lagi.");
+  say("Teruskan mencari kunci 🔐");
  }
-};
-
-function finish(msg){
- ended=true;
- $("panelTitle").textContent=msg;
- $("question").textContent="Markah akhir: "+score;
- $("answer").style.display="none";
- $("submit").style.display="none";
- $("feedback").textContent="Tekan Mula Semula untuk bermain lagi.";
- $("panel").style.display="flex";
 }
 
-function restart(){
- player={x:35,y:35,size:18};
- key={x:420,y:55};
- hasKey=false;score=0;lives=3;time=120;level=0;
- ended=false;asking=false;
- $("lives").textContent=lives;
- $("score").textContent=score;
- $("time").textContent=time;
- $("answer").style.display="";
- $("submit").style.display="";
- $("panel").style.display="none";
- $("message").textContent="Cari kunci, kemudian pergi ke pintu!";
- draw();
+function openQuestion(i){
+ active=i;
+ document.getElementById("qtitle").textContent=
+  "🔐 Misi "+(i+1);
+ document.getElementById("question").textContent=questions[i].q;
+ document.getElementById("answer").value="";
+ document.getElementById("answer").style.display="block";
+ document.getElementById("submit").style.display="block";
+ document.getElementById("feedback").textContent="";
+ document.getElementById("panel").style.display="flex";
+ setTimeout(()=>document.getElementById("answer").focus(),100);
 }
+
+function checkAnswer(){
+ if(active<0)return;
+ const value=document.getElementById("answer").value.trim();
+ if(value===""){
+  document.getElementById("feedback").textContent=
+   "Masukkan jawapan dahulu!";
+  return;
+ }
+ if(Number(value)===questions[active].a){
+  solved.push(active);
+  document.getElementById("panel").style.display="none";
+  active=-1;
+  draw();
+  say("✅ Betul! Kau mendapat satu kunci.");
+ }else{
+  document.getElementById("feedback").textContent=
+   "❌ Belum tepat. Cuba kira semula!";
+ }
+}
+
+document.getElementById("answer").addEventListener("keydown",e=>{
+ if(e.key==="Enter")checkAnswer();
+});
 
 document.addEventListener("keydown",e=>{
- const k=e.key.toLowerCase();
- const map={arrowup:[0,-12],w:[0,-12],arrowdown:[0,12],s:[0,12],
- arrowleft:[-12,0],a:[-12,0],arrowright:[12,0],d:[12,0]};
- if(map[k]){
+ if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight",
+     "w","a","s","d","W","A","S","D"].includes(e.key)){
+  if(active!==-1)return;
   e.preventDefault();
-  move(...map[k]);
+  if(e.key==="ArrowUp"||e.key.toLowerCase()==="w")move(0,-1);
+  if(e.key==="ArrowDown"||e.key.toLowerCase()==="s")move(0,1);
+  if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")move(-1,0);
+  if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")move(1,0);
  }
- if(k==="enter"&&asking)$("submit").click();
 });
 
-[["up",0,-12],["down",0,12],["left",-12,0],["right",12,0]]
-.forEach(([id,dx,dy])=>{
- $(id).addEventListener("click",()=>move(dx,dy));
-});
-
-setInterval(()=>{
- if(ended)return;
- if(!asking){
-  time--;
-  $("time").textContent=time;
-  if(time<=0)finish("⏰ Masa tamat!");
- }
-},1000);
+function resetGame(){
+ player={...start};
+ solved=[];
+ active=-1;
+ finished=false;
+ document.getElementById("panel").style.display="none";
+ document.getElementById("answer").style.display="block";
+ document.getElementById("submit").style.display="block";
+ document.getElementById("answer").value="";
+ draw();
+ say("Misi bermula! Cari semua 5 kunci 🔐");
+}
 
 draw();
 </script>

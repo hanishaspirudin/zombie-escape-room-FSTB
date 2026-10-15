@@ -442,7 +442,7 @@
             <div>• Baki peluru dibolehkan bawa ke Stage seterusnya.</div>
             <div>• Peluru habis? Imej peluru baharu akan muncul!</div>
             <div style="color:#ef4444; font-weight:bold; margin-top:2px;">👺 BOSS STAGE 5:</div>
-            <div>• Zombi Merah Hitam Gergasi (5 HP & Laju 1.5)!</div>
+            <div>• Zombi Merah Hitam Gergasi (5 HP & Laju 1.2)!</div>
           </div>
           <div class="term-btn-group" style="width:90%;">
             <button class="term-btn" onclick="openControlSelection()">▶️ PILIH KAWALAN</button>
@@ -698,7 +698,6 @@ function playVictoryFanfare() {
     }, n.t * 1000);
   });
 
-  // PEMOTONG MASA MUZIK TEPAK 2 SAAT
   if (victoryFanfareTimer) clearTimeout(victoryFanfareTimer);
   victoryFanfareTimer = setTimeout(() => {
     stopBGM();
@@ -1033,8 +1032,9 @@ function relocateKey() {
 function resetZombies() {
   zombies = [];
   if (currentRoom === 4) {
+    // BOSS STAGE 5: 1 Zombi Gergasi Merah Hitam (5 HP, Speed 1.2)
     zombies.push({
-      x: 220, y: 105, size: 16, speed: 1.5,
+      x: 220, y: 105, size: 16, speed: 1.2,
       hp: 5, maxHp: 5, isBoss: true, active: true
     });
   } else {
@@ -1260,7 +1260,6 @@ function useButtonB() {
     return;
   }
 
-  // KUNCI TEMBAKAN SEHINGGA BUTANG DILEPAS
   isShootLocked = true;
 
   playerAmmo--;
@@ -1471,7 +1470,6 @@ window.addEventListener("keydown", (e) => {
     e.preventDefault();
   }
 
-  // MENGELAKKAN TEMBAKAN BERTUBI-TUBI APABILA KEKUNCI DITAHAN LAMA
   if (e.repeat) return;
 
   keys[k] = true;
@@ -1661,17 +1659,14 @@ function drawMapEnvironment() {
 
   const wallThick = 18;
 
-  // Dinding Belakang
   ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, canvas.width, wallThick + 10);
   ctx.fillStyle = "#475569"; ctx.fillRect(0, 0, canvas.width, 8);
   ctx.fillStyle = "#334155"; ctx.fillRect(0, 8, canvas.width, wallThick + 2);
   ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.fillRect(0, wallThick + 6, canvas.width, 4);
 
-  // Dinding Bawah
   ctx.fillStyle = "#0f172a"; ctx.fillRect(0, canvas.height - wallThick, canvas.width, wallThick);
   ctx.fillStyle = "#475569"; ctx.fillRect(0, canvas.height - wallThick, canvas.width, 6);
 
-  // Dinding Kiri & Kanan
   ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, wallThick, canvas.height);
   ctx.fillStyle = "#475569"; ctx.fillRect(0, 0, 6, canvas.height);
 

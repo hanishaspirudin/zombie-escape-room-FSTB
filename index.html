@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FSTB Game Boy Zombie Escape</title>
+  <title>FSTB Zombie Escape</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
@@ -18,7 +18,7 @@
       padding: 15px 10px;
     }
 
-    /* Rangka Game Boy Color Emulator */
+    /* Rangka Emulator */
     #gameboy {
       background: #6b21a8;
       border: 5px solid #4c1d95;
@@ -83,6 +83,7 @@
       font-weight: bold;
     }
 
+    /* Penukaran Tajuk Game */
     .brand-title {
       color: #cbd5e1;
       font-size: 0.85rem;
@@ -392,12 +393,12 @@
 
       </div>
 
-      <div class="brand-title">GAME BOY <span>COLOR</span></div>
+      <!-- TAJUK BARU PADA FRAME -->
+      <div class="brand-title">FSTB <span>ZOMBIE ESCAPE</span></div>
     </div>
 
     <!-- Kawalan Emulator (D-Pad & Buttons) -->
     <div id="controls">
-      <!-- D-Pad dengan Lencana Key Keyboard -->
       <div class="dpad-container">
         <div class="dpad">
           <div class="btn-dpad dpad-up" onmousedown="startMove(0,-1)" onmouseup="stopMove()" ontouchstart="startMove(0,-1)" ontouchend="stopMove()">▲</div>
@@ -409,7 +410,6 @@
         <div class="kb-hint" style="bottom:-18px; left:18px;">WASD / 🠄🠅🠆C</div>
       </div>
 
-      <!-- Action Buttons dengan Lencana Key Keyboard -->
       <div class="action-container">
         <div class="action-buttons">
           <div class="btn-action" onclick="useButtonB()">
@@ -620,7 +620,6 @@ let playerLives = 3;
 let sessionQuestions = [];
 let doorUnlocked = false;
 
-// STATUS SKRIN
 let isGameStarted = false;
 let isTerminalOpen = false;
 let isVictoryOpen = false;
@@ -674,6 +673,7 @@ function relocateKey() {
   keyObj.y = newY;
 }
 
+// ZOMBIE RESPAWN DI SEBELAH KANAN JAUH DARI PEMAIN (x: 260)
 function resetZombies() {
   zombies = [];
   const baseSpeed = 0.55 + (currentRoom * 0.1);
@@ -687,11 +687,11 @@ function resetZombies() {
     zombies.push({ x: 260, y: 160, size: 10, speed: baseSpeed, active: true });
   } else if (currentRoom === 3) {
     zombies.push({ x: 260, y: 40, size: 10, speed: baseSpeed + 0.1, active: true });
-    zombies.push({ x: 50, y: 160, size: 10, speed: baseSpeed + 0.1, active: true });
+    zombies.push({ x: 260, y: 160, size: 10, speed: baseSpeed + 0.1, active: true });
   } else if (currentRoom === 4) {
     zombies.push({ x: 260, y: 40, size: 10, speed: baseSpeed + 0.05, active: true });
     zombies.push({ x: 260, y: 160, size: 10, speed: baseSpeed + 0.05, active: true });
-    zombies.push({ x: 50, y: 160, size: 10, speed: baseSpeed + 0.05, active: true });
+    zombies.push({ x: 260, y: 100, size: 10, speed: baseSpeed + 0.05, active: true });
   }
 }
 
@@ -984,7 +984,8 @@ function update() {
             alert(`⚠️ ZOMBIE TANGKAP ANDA!\nNyawa terkurang 1! (Baki Nyawa: ${playerLives})`);
             player.x = 40;
             player.y = 105;
-            resetZombies();
+            bullets = [];
+            resetZombies(); // RESET KEDUDUKAN ZOMBIE DI HUJUNG KANAN
           }
         }
       }

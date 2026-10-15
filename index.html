@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Misi Escape Room: Kod FSTB</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #10172a;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+    }
+    .game {
+      max-width: 500px;
+      margin: 20px auto;
+      background: #202d48;
+      padding: 25px;
+      border-radius: 20px;
+    }
+    h1 { color: #ffd166; }
+    .door {
+      font-size: 75px;
+      margin: 15px;
+    }
+    .question {
+      font-size: 23px;
+      margin: 20px 0;
+    }
+    input {
+      padding: 12px;
+      width: 100px;
+      font-size: 20px;
+      text-align: center;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      padding: 12px 22px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #ffd166;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #message {
+      min-height: 45px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 MISI ESCAPE ROOM</h1>
+  <p>KOD FSTB — Matematik Tingkatan 1</p>
+
+  <div class="game">
+    <div class="door" id="door">🚪</div>
+    <h2 id="level">Bilik 1</h2>
+    <p>Selesaikan soalan untuk membuka pintu!</p>
+
+    <div class="question" id="question">
+      Cari FSTB bagi 12 dan 18.
+    </div>
+
+    <input id="answer" type="number" placeholder="Jawapan">
+    <br>
+    <button onclick="checkAnswer()">Buka Pintu 🔑</button>
+
+    <p id="message">Masukkan jawapan FSTB ko!</p>
+    <p id="score">Markah: 0</p>
+  </div>
+
+  <script>
+    let level = 0;
+    let score = 0;
+
+    const questions = [
+      { q: "Cari FSTB bagi 12 dan 18.", a: 6 },
+      { q: "Cari FSTB bagi 20 dan 30.", a: 10 },
+      { q: "Cari FSTB bagi 24 dan 36.", a: 12 },
+      { q: "Cari FSTB bagi 16 dan 40.", a: 8 },
+      { q: "Cari FSTB bagi 42 dan 56.", a: 14 }
+    ];
+
+    function checkAnswer() {
+      const input = document.getElementById("answer");
+      const message = document.getElementById("message");
+
+      if (input.value === "") {
+        message.textContent = "Masukkan jawapan dahulu!";
+        return;
+      }
+
+      if (Number(input.value) === questions[level].a) {
+        score += 10;
+        document.getElementById("score").textContent =
+          "Markah: " + score;
+        document.getElementById("door").textContent = "🔓";
+        message.textContent = "Betul! Pintu berjaya dibuka! 🎉";
+
+        setTimeout(() => {
+          level++;
+
+          if (level === questions.length) {
+            document.getElementById("level").textContent =
+              "MISI SELESAI!";
+            document.getElementById("question").textContent =
+              "Tahniah! Ko berjaya melarikan diri!";
+            document.getElementById("door").textContent = "🏆";
+            message.textContent = "Jumlah markah: " + score;
+            input.style.display = "none";
+            document.querySelector("button").textContent =
+              "Main Semula 🔄";
+            document.querySelector("button").onclick = restart;
+            return;
+          }
+
+          document.getElementById("level").textContent =
+            "Bilik " + (level + 1);
+          document.getElementById("question").textContent =
+            questions[level].q;
+          document.getElementById("door").textContent = "🚪";
+          message.textContent = "Teruskan misi ko!";
+          input.value = "";
+        }, 1000);
+      } else {
+        message.textContent = "Salah! Cuba kira semula FSTB. 💪";
+      }
+    }
+
+    function restart() {
+      level = 0;
+      score = 0;
+      document.getElementById("level").textContent = "Bilik 1";
+      document.getElementById("question").textContent =
+        questions[0].q;
+      document.getElementById("door").textContent = "🚪";
+      document.getElementById("message").textContent =
+        "Masukkan jawapan FSTB ko!";
+      document.getElementById("score").textContent = "Markah: 0";
+      document.getElementById("answer").style.display = "";
+      document.getElementById("answer").value = "";
+      document.querySelector("button").textContent = "Buka Pintu 🔑";
+      document.querySelector("button").onclick = checkAnswer;
+    }
+  </script>
+</body>
+</html>

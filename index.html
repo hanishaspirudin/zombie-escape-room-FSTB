@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FSTB Zombie Escape - GBA Edition</title>
+  <title>FSTB Zombie Escape</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
@@ -18,7 +18,7 @@
       padding: 15px 10px;
     }
 
-    /* Rangka Emulator Game Boy Advance */
+    /* Rangka Emulator */
     #gameboy {
       background: #4c1d95;
       border: 5px solid #3b0764;
@@ -34,7 +34,7 @@
       position: relative;
     }
 
-    /* Bezel Skrin GBA */
+    /* Bezel Skrin */
     #screen-bezel {
       background: #1e293b;
       border-radius: 12px 12px 35px 12px;
@@ -123,7 +123,7 @@
       white-space: nowrap;
     }
 
-    /* Modal Dialog Box ala Pokemon */
+    /* Modal Dialog Box */
     #terminal-modal {
       display: none;
       position: absolute;
@@ -395,7 +395,6 @@
 <body onclick="initAudio(); startBGM();">
 
   <div id="gameboy">
-    <!-- Bezel Skrin Game Boy Advance -->
     <div id="screen-bezel">
       <div class="screen-header">
         <div><span class="power-led"></span>POWER</div>
@@ -413,7 +412,6 @@
         </div>
         <canvas id="gameCanvas" width="300" height="210"></canvas>
 
-        <!-- BANNER NOTIFIKASI DALAM GAME -->
         <div id="game-notice">🔑 KUNCI BERTUKAR LOKASI!</div>
 
         <!-- PAGE 1: SKRIN MULA & NAMA PEMAIN -->
@@ -430,7 +428,7 @@
           </div>
         </div>
 
-        <!-- PAGE 2: PANDUAN CARA MAIN & PERATURAN -->
+        <!-- PAGE 2: PANDUAN CARA MAIN -->
         <div id="guide-modal">
           <div class="vic-title" style="font-size: 0.8rem; margin-bottom:2px;">📜 MISI & PERATURAN</div>
           <div class="vic-details" style="font-size: 0.52rem; line-height: 1.25; margin-bottom: 6px; padding: 4px 6px;">
@@ -449,7 +447,7 @@
           </div>
         </div>
 
-        <!-- PAGE 3: PILIHAN KAEDAH KAWALAN -->
+        <!-- PAGE 3: PILIHAN MODE KAWALAN -->
         <div id="control-modal">
           <div class="vic-title" style="font-size: 0.85rem; margin-bottom:6px;">🕹️ PILIH MODE KAWALAN</div>
           <div class="vic-text" style="color:#cbd5e1; margin-bottom:10px;">Pilih gaya kawalan pergerakan:</div>
@@ -459,7 +457,7 @@
           </div>
         </div>
 
-        <!-- PAGE SCOREBOARD / LEADERBOARD -->
+        <!-- PAGE SCOREBOARD -->
         <div id="leaderboard-modal">
           <div class="vic-title" style="font-size: 0.85rem; margin-bottom:6px;">🏆 CARTA SCOREBOARD TOP 5</div>
           <table class="sb-table">
@@ -471,9 +469,7 @@
                 <th>MASA</th>
               </tr>
             </thead>
-            <tbody id="sb-tbody">
-              <!-- Senarai Skor Ditambah melalui JS -->
-            </tbody>
+            <tbody id="sb-tbody"></tbody>
           </table>
           <div class="term-btn-group" style="width:85%;">
             <button class="term-btn term-btn-close" onclick="closeLeaderboard()">TUTUP [B]</button>
@@ -493,7 +489,7 @@
           </div>
         </div>
 
-        <!-- PAGE SKRIN KEMENANGAN (VICTORY MODAL) -->
+        <!-- PAGE VICTORY -->
         <div id="victory-modal">
           <div class="vic-title">🏆 VICTORY! SYABAS! 🏆</div>
           <div class="vic-text">Pemain: <b id="vic-player-name" style="color:#fbbf24;">Pemain 1</b></div>
@@ -509,7 +505,7 @@
           </div>
         </div>
 
-        <!-- PAGE GAME OVER MODAL -->
+        <!-- PAGE GAME OVER -->
         <div id="gameover-modal">
           <div class="go-title">💀 GAME OVER 💀</div>
           <div class="vic-text">Nyawa anda telah habis ditangkap oleh Zombie!</div>
@@ -523,10 +519,9 @@
       <div class="brand-title">FSTB <span>ZOMBIE ESCAPE</span></div>
     </div>
 
-    <!-- Kawalan Emulator (D-Pad / Joystick & Buttons) -->
+    <!-- Kawalan Emulator -->
     <div id="controls">
       <div class="dpad-container">
-        <!-- MODE D-PAD BUTTONS -->
         <div id="dpad-ui" class="dpad">
           <div class="btn-dpad dpad-up" onmousedown="startMove(0,-1)" onmouseup="stopMove()" ontouchstart="startMove(0,-1)" ontouchend="stopMove()">▲</div>
           <div class="btn-dpad dpad-left" onmousedown="startMove(-1,0)" onmouseup="stopMove()" ontouchstart="startMove(-1,0)" ontouchend="stopMove()">◄</div>
@@ -535,7 +530,6 @@
           <div class="btn-dpad dpad-down" onmousedown="startMove(0,1)" onmouseup="stopMove()" ontouchstart="startMove(0,1)" ontouchend="stopMove()">▼</div>
         </div>
 
-        <!-- MODE VIRTUAL JOYSTICK SENTUH -->
         <div id="joystick-ui" style="display:none;">
           <div id="joystick-box">
             <div id="joystick-stick"></div>
@@ -561,7 +555,6 @@
       </div>
     </div>
 
-    <!-- Select, Sound, & Start -->
     <div class="meta-buttons">
       <div class="btn-pill-box">
         <div class="btn-pill" onclick="restartGame()"></div>
@@ -795,14 +788,14 @@ const keyPositions = [
 const roomObstacles = {
   0: [{ x: 125, y: 85, w: 50, h: 30, type: 'table' }],
   1: [
-    { x: 70, y: 55, w: 22, h: 22, type: 'barrel' },
+    { x: 80, y: 55, w: 22, h: 22, type: 'barrel' },
     { x: 140, y: 110, w: 28, h: 28, type: 'crate' },
-    { x: 200, y: 45, w: 22, h: 22, type: 'barrel' },
+    { x: 200, y: 55, w: 22, h: 22, type: 'barrel' },
     { x: 80, y: 135, w: 28, h: 28, type: 'crate' }
   ],
   2: [
-    { x: 160, y: 35, w: 20, h: 80, type: 'table' },
-    { x: 95, y: 95, w: 28, h: 28, type: 'crate' }
+    { x: 140, y: 45, w: 35, h: 22, type: 'table' },
+    { x: 150, y: 125, w: 28, h: 28, type: 'crate' }
   ],
   3: [
     { x: 75, y: 45, w: 25, h: 50, type: 'table' },
@@ -923,12 +916,13 @@ function handleJoyMove(touch) {
   }
 }
 
+// ROMBAK KESELURUHAN SOALAN RAWAK BAGI SETIAP PERMAINAN BAHARU
 function generateSessionQuestions() {
   sessionQuestions = [];
   for (let stage = 1; stage <= 5; stage++) {
     const list = questionPool[stage];
-    const randomChoice = list[Math.floor(Math.random() * list.length)];
-    sessionQuestions.push(randomChoice);
+    const randomIndex = Math.floor(Math.random() * list.length);
+    sessionQuestions.push(list[randomIndex]);
   }
 }
 
@@ -962,24 +956,27 @@ function relocateKey() {
   keyObj.y = newY;
 }
 
+// TETAPAN KELAJUAN ZOMBI:
+// STAGE 1 = 0.75 | STAGE 2 = 1.00 | STAGE 3 = 0.75 | STAGE 4 = 1.00 | STAGE 5 = 1.00
 function resetZombies() {
   zombies = [];
-  const baseSpeed = 0.55 + (currentRoom * 0.1);
+  const stageSpeeds = [0.75, 1.00, 0.75, 1.00, 1.00];
+  const speed = stageSpeeds[currentRoom] || 0.75;
 
   if (currentRoom === 0) {
-    zombies.push({ x: 230, y: 50, size: 10, speed: baseSpeed, active: true });
+    zombies.push({ x: 230, y: 50, size: 10, speed: speed, active: true });
   } else if (currentRoom === 1) {
-    zombies.push({ x: 230, y: 50, size: 10, speed: baseSpeed + 0.1, active: true });
+    zombies.push({ x: 230, y: 50, size: 10, speed: speed, active: true });
   } else if (currentRoom === 2) {
-    zombies.push({ x: 230, y: 50, size: 10, speed: baseSpeed, active: true });
-    zombies.push({ x: 230, y: 155, size: 10, speed: baseSpeed, active: true });
+    zombies.push({ x: 230, y: 50, size: 10, speed: speed, active: true });
+    zombies.push({ x: 230, y: 155, size: 10, speed: speed, active: true });
   } else if (currentRoom === 3) {
-    zombies.push({ x: 230, y: 50, size: 10, speed: baseSpeed + 0.1, active: true });
-    zombies.push({ x: 230, y: 155, size: 10, speed: baseSpeed + 0.1, active: true });
+    zombies.push({ x: 230, y: 50, size: 10, speed: speed, active: true });
+    zombies.push({ x: 230, y: 155, size: 10, speed: speed, active: true });
   } else if (currentRoom === 4) {
-    zombies.push({ x: 230, y: 50, size: 10, speed: baseSpeed + 0.05, active: true });
-    zombies.push({ x: 230, y: 155, size: 10, speed: baseSpeed + 0.05, active: true });
-    zombies.push({ x: 230, y: 105, size: 10, speed: baseSpeed + 0.05, active: true });
+    zombies.push({ x: 230, y: 50, size: 10, speed: speed, active: true });
+    zombies.push({ x: 230, y: 155, size: 10, speed: speed, active: true });
+    zombies.push({ x: 230, y: 105, size: 10, speed: speed, active: true });
   }
 }
 
@@ -1283,6 +1280,7 @@ function closeModals() {
   document.getElementById("guide-modal").classList.remove("active");
 }
 
+// FUNGSI RESTART & ROMBAK SEMULA SET SOALAN
 function restartGame() {
   initAudio();
   playSFX('button');
@@ -1314,6 +1312,7 @@ function restartGame() {
   document.getElementById("door-status").style.color = "#ef4444";
   document.getElementById("terminal-modal").classList.remove("active");
   
+  // ROMBAK SET SOALAN FSTB UNTUK PERMAINAN BAHARU
   generateSessionQuestions();
   updateKeyLocation();
   resetZombies();
@@ -1398,18 +1397,42 @@ function update() {
     movePlayer(joyVector.x, joyVector.y);
   }
 
+  // LOGIK PERGERAKAN ZOMBI DENGAN SMART WALL-SLIDING (TIDAK TERSANGKUT)
   if (!isTerminalOpen && !isVictoryOpen && !isGameOver) {
     zombies.forEach(z => {
       if (z.active) {
         let zSpeed = z.speed;
-        let angle = Math.atan2(player.y - z.y, player.x - z.x);
-        let nextZX = z.x + Math.cos(angle) * zSpeed;
-        let nextZY = z.y + Math.sin(angle) * zSpeed;
+        let dx = player.x - z.x;
+        let dy = player.y - z.y;
+        let dist = Math.hypot(dx, dy);
 
-        if (!isCollidingWithObstacle(nextZX, z.y, z.size)) z.x = nextZX;
-        if (!isCollidingWithObstacle(z.x, nextZY, z.size)) z.y = nextZY;
+        if (dist > 0) {
+          let vx = (dx / dist) * zSpeed;
+          let vy = (dy / dist) * zSpeed;
 
-        let dist = Math.hypot(player.x - z.x, player.y - z.y);
+          // Cubaan bergerak paksi X
+          if (!isCollidingWithObstacle(z.x + vx, z.y, z.size)) {
+            z.x += vx;
+          } else {
+            // Jika terhalang di X, luncurkan ke paksi Y
+            let slideY = vy > 0 ? zSpeed : -zSpeed;
+            if (!isCollidingWithObstacle(z.x, z.y + slideY, z.size)) {
+              z.y += slideY * 0.5;
+            }
+          }
+
+          // Cubaan bergerak paksi Y
+          if (!isCollidingWithObstacle(z.x, z.y + vy, z.size)) {
+            z.y += vy;
+          } else {
+            // Jika terhalang di Y, luncurkan ke paksi X
+            let slideX = vx > 0 ? zSpeed : -zSpeed;
+            if (!isCollidingWithObstacle(z.x + slideX, z.y, z.size)) {
+              z.x += slideX * 0.5;
+            }
+          }
+        }
+
         if (dist < player.size + z.size) {
           playerLives--;
           updateLivesDisplay();
@@ -1492,7 +1515,6 @@ function update() {
 // LUKISAN GRAFIK RETRO GBA (POKEMON RPG STYLE)
 // ==========================================
 function drawMapEnvironment() {
-  // 1. LANTAI JUBIN POKEMON GYM / BILIK
   const tileSize = 20;
   for (let x = 0; x < canvas.width; x += tileSize) {
     for (let y = 0; y < canvas.height; y += tileSize) {
@@ -1506,14 +1528,13 @@ function drawMapEnvironment() {
     }
   }
 
-  // 2. DINDING TEBAL ALA POKEMON (TOP-DOWN 2.5D WALLS)
   const wallThick = 18;
 
-  // Dinding Belakang (Atas dengan Bucu Highlight)
+  // Dinding Belakang
   ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, canvas.width, wallThick + 10);
-  ctx.fillStyle = "#475569"; ctx.fillRect(0, 0, canvas.width, 8); // Wall top ridge
-  ctx.fillStyle = "#334155"; ctx.fillRect(0, 8, canvas.width, wallThick + 2); // Wall face
-  ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.fillRect(0, wallThick + 6, canvas.width, 4); // Shadow under top wall
+  ctx.fillStyle = "#475569"; ctx.fillRect(0, 0, canvas.width, 8);
+  ctx.fillStyle = "#334155"; ctx.fillRect(0, 8, canvas.width, wallThick + 2);
+  ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.fillRect(0, wallThick + 6, canvas.width, 4);
 
   // Dinding Bawah
   ctx.fillStyle = "#0f172a"; ctx.fillRect(0, canvas.height - wallThick, canvas.width, wallThick);
@@ -1530,22 +1551,18 @@ function drawMapEnvironment() {
 function drawObstacles25D() {
   const obstacles = roomObstacles[currentRoom] || [];
   for (let obs of obstacles) {
-    // Bayang Perabot di Lantai
     ctx.fillStyle = "rgba(0,0,0,0.35)";
     ctx.fillRect(obs.x + 3, obs.y + obs.h - 2, obs.w, 6);
 
     if (obs.type === 'table') {
-      // Meja Kayu RPG
-      ctx.fillStyle = "#78350f"; ctx.fillRect(obs.x, obs.y + 6, obs.w, obs.h - 6); // Front
-      ctx.fillStyle = "#b45309"; ctx.fillRect(obs.x, obs.y, obs.w, 8); // Top surface
-      ctx.fillStyle = "#d97706"; ctx.fillRect(obs.x + 1, obs.y + 1, obs.w - 2, 2); // Highlight
+      ctx.fillStyle = "#78350f"; ctx.fillRect(obs.x, obs.y + 6, obs.w, obs.h - 6);
+      ctx.fillStyle = "#b45309"; ctx.fillRect(obs.x, obs.y, obs.w, 8);
+      ctx.fillStyle = "#d97706"; ctx.fillRect(obs.x + 1, obs.y + 1, obs.w - 2, 2);
     } else if (obs.type === 'barrel') {
-      // Tong Keluli/Eksperimen
       ctx.fillStyle = "#334155"; ctx.fillRect(obs.x, obs.y + 4, obs.w, obs.h - 4);
       ctx.fillStyle = "#64748b"; ctx.beginPath(); ctx.ellipse(obs.x + obs.w/2, obs.y + 4, obs.w/2, 4, 0, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = "#ef4444"; ctx.fillRect(obs.x, obs.y + 10, obs.w, 3); // Strip Merah
+      ctx.fillStyle = "#ef4444"; ctx.fillRect(obs.x, obs.y + 10, obs.w, 3);
     } else if (obs.type === 'crate') {
-      // Peti Kayu Pokemon
       ctx.fillStyle = "#92400e"; ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
       ctx.fillStyle = "#d97706"; ctx.fillRect(obs.x + 2, obs.y + 2, obs.w - 4, obs.h - 4);
       ctx.strokeStyle = "#78350f"; ctx.lineWidth = 2; ctx.strokeRect(obs.x + 2, obs.y + 2, obs.w - 4, obs.h - 4);
@@ -1558,19 +1575,16 @@ function drawGoldenKey25D(x, y) {
 
   let floatY = y + Math.sin(Date.now() / 200) * 3;
 
-  // Bayang Kunci di Lantai
   ctx.fillStyle = "rgba(0,0,0,0.35)";
   ctx.beginPath();
   ctx.ellipse(x, y + 10, 7, 3, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Aura Kilauan Kunci
   ctx.fillStyle = "rgba(251, 191, 36, 0.25)";
   ctx.beginPath();
   ctx.arc(x, floatY - 2, 12 + Math.sin(Date.now() / 150)*3, 0, Math.PI * 2);
   ctx.fill();
 
-  // Kunci Emas Pixel 2.5D
   ctx.fillStyle = "#fbbf24";
   ctx.strokeStyle = "#92400e";
   ctx.lineWidth = 1.5;
@@ -1586,7 +1600,6 @@ function drawGoldenKey25D(x, y) {
 function drawDoor25D() {
   if (!door.isVisible) return;
 
-  // Pintu Double-Door RPG
   ctx.fillStyle = "#052e16";
   ctx.fillRect(door.x, door.y, door.w, door.h);
 
@@ -1606,29 +1619,24 @@ function drawPlayerPokemonStyle() {
   const px = player.x;
   const py = player.y;
 
-  // Bayang Pemain
   ctx.fillStyle = "rgba(0,0,0,0.35)";
   ctx.beginPath();
   ctx.ellipse(px, py + 8, 8, 3.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Kaki/Kasut
   let legOffset = Math.sin(player.animFrame) * 2;
   ctx.fillStyle = "#1e293b";
   ctx.fillRect(px - 5, py + 4 + legOffset, 4, 4);
   ctx.fillRect(px + 1, py + 4 - legOffset, 4, 4);
 
-  // Badan / Baju Trainer
-  ctx.fillStyle = "#ec4899"; // Baju Merah Jambu GBA
+  ctx.fillStyle = "#ec4899";
   ctx.fillRect(px - 6, py - 4, 12, 9);
-  ctx.fillStyle = "#f8fafc"; // Jaket Putih
+  ctx.fillStyle = "#f8fafc";
   ctx.fillRect(px - 3, py - 4, 6, 9);
 
-  // Kepala & Muka Chibi
-  ctx.fillStyle = "#fed7aa"; // Warna Kulit
+  ctx.fillStyle = "#fed7aa";
   ctx.fillRect(px - 5, py - 12, 10, 8);
 
-  // Mata Chibi
   ctx.fillStyle = "#0f172a";
   if (player.facingX >= 0) {
     ctx.fillRect(px + 1, py - 9, 2, 3);
@@ -1638,12 +1646,10 @@ function drawPlayerPokemonStyle() {
     ctx.fillRect(px + 1, py - 9, 2, 3);
   }
 
-  // Topi Pokemon Trainer (Cap)
-  ctx.fillStyle = "#38bdf8"; // Topi Biru
+  ctx.fillStyle = "#38bdf8";
   ctx.fillRect(px - 6, py - 15, 12, 4);
-  ctx.fillRect(px + (player.facingX * 2) - 4, py - 12, 8, 2); // Visor topi
+  ctx.fillRect(px + (player.facingX * 2) - 4, py - 12, 8, 2);
 
-  // Senjata Penembak FSTB
   if (player.hasWeapon) {
     ctx.fillStyle = "#f59e0b";
     ctx.fillRect(px + (player.facingX * 7) - 2, py - 1, 6, 3);
@@ -1656,21 +1662,17 @@ function drawZombiePokemonStyle(z) {
   const zx = z.x;
   const zy = z.y;
 
-  // Bayang Zombie
   ctx.fillStyle = "rgba(0,0,0,0.35)";
   ctx.beginPath();
   ctx.ellipse(zx, zy + 8, 8, 3.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Badan Zombie (Baju Koyak)
   ctx.fillStyle = "#15803d";
   ctx.fillRect(zx - 6, zy - 4, 12, 9);
 
-  // Kepala Zombie
   ctx.fillStyle = "#4ade80";
   ctx.fillRect(zx - 5, zy - 12, 10, 8);
 
-  // Mata Bersinar Merah
   ctx.fillStyle = "#ef4444";
   ctx.fillRect(zx - 3, zy - 9, 2, 2);
   ctx.fillRect(zx + 1, zy - 9, 2, 2);
@@ -1684,10 +1686,8 @@ function draw() {
   drawObstacles25D();
   drawGoldenKey25D(keyObj.x, keyObj.y);
 
-  // Lukis Zombie
   zombies.forEach(z => drawZombiePokemonStyle(z));
 
-  // Lukis Peluru
   ctx.fillStyle = "#fbbf24";
   bullets.forEach(b => {
     ctx.beginPath();
@@ -1695,7 +1695,6 @@ function draw() {
     ctx.fill();
   });
 
-  // Lukis Pemain
   drawPlayerPokemonStyle();
 }
 

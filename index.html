@@ -463,7 +463,7 @@
 
         <!-- PAGE SCOREBOARD -->
         <div id="leaderboard-modal">
-          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:4px;">🏆 CARTA SCOREBOARD TOP 5</div>
+          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:4px;">🏆 CARTA SCOREBOARD (MAX 5)</div>
           <table class="sb-table">
             <thead>
               <tr>
@@ -504,9 +504,9 @@
             <div>• Penalti Nyawa: -<span id="vic-penalty" style="color:#ef4444">0</span> PTS</div>
           </div>
           <div class="vic-score">JUMLAH MATA AKHIR: <span id="final-score" style="color:#fbbf24;">0</span> PTS</div>
-          <!-- DIPAPARKAN KEDUDUKAN PEMAIN SAMA ADA TOP 5 ATAU TIDAK -->
-          <div id="vic-rank-badge" style="font-size:0.65rem; color:#38bdf8; font-weight:bold; margin-bottom:8px; background:#0f172a; padding:3px 6px; border-radius:4px; border:1px solid #38bdf8;">
-            🎖️ Kedudukan: Ke-1 daripada 1
+          <!-- PAPARAN KEDUDUKAN MAKSIMUM 5 PEMAIN -->
+          <div id="vic-rank-badge" style="font-size:0.65rem; color:#4ade80; font-weight:bold; margin-bottom:8px; background:#0f172a; padding:4px 8px; border-radius:4px; border:1px solid #4ade80;">
+            🎖️ Kedudukan Anda: Ke-1 daripada 1
           </div>
           <div class="term-btn-group" style="margin-top:2px;">
             <button class="term-btn" onclick="openLeaderboard()">📜 SCOREBOARD</button>
@@ -682,52 +682,9 @@ function playTypingSFX() {
   playTone(500 + Math.random() * 250, 'triangle', 0.03, 0.05);
 }
 
-// SUPER MARIO BROS VICTORY FANFARE (TEPAT ~2.0 SAAT)
-let victoryFanfareTimer = null;
+// BGM KEMENANGAN DIBUANG SEPERTI PERMINTAAN
 function playVictoryFanfare() {
-  if (!audioCtx || !bgmEnabled) return;
   stopBGM();
-
-  const marioNotes = [
-    { f: 392.00, d: 0.07, t: 0.00 },
-    { f: 523.25, d: 0.07, t: 0.07 },
-    { f: 659.25, d: 0.07, t: 0.14 },
-    { f: 783.99, d: 0.07, t: 0.21 },
-    { f: 1046.50, d: 0.07, t: 0.28 },
-    { f: 1318.51, d: 0.07, t: 0.35 },
-    { f: 1567.98, d: 0.20, t: 0.42 },
-    { f: 1318.51, d: 0.20, t: 0.62 },
-
-    { f: 415.30, d: 0.07, t: 0.80 },
-    { f: 523.25, d: 0.07, t: 0.87 },
-    { f: 622.25, d: 0.07, t: 0.94 },
-    { f: 830.61, d: 0.07, t: 1.01 },
-    { f: 1046.50, d: 0.07, t: 1.08 },
-    { f: 1244.51, d: 0.07, t: 1.15 },
-    { f: 1661.22, d: 0.20, t: 1.22 },
-    { f: 1244.51, d: 0.20, t: 1.42 },
-
-    { f: 466.16, d: 0.07, t: 1.60 },
-    { f: 587.33, d: 0.07, t: 1.67 },
-    { f: 698.46, d: 0.07, t: 1.74 },
-    { f: 932.33, d: 0.07, t: 1.81 },
-    { f: 1174.66, d: 0.07, t: 1.88 },
-    { f: 1396.91, d: 0.07, t: 1.95 },
-    { f: 1864.66, d: 0.35, t: 2.02 }
-  ];
-
-  marioNotes.forEach(n => {
-    setTimeout(() => {
-      if (isVictoryOpen && bgmEnabled) {
-        playTone(n.f, 'square', n.d, 0.15);
-      }
-    }, n.t * 1000);
-  });
-
-  if (victoryFanfareTimer) clearTimeout(victoryFanfareTimer);
-  victoryFanfareTimer = setTimeout(() => {
-    stopBGM();
-  }, 2400);
 }
 
 function toggleBGM() {
@@ -1121,11 +1078,16 @@ function stopGameTimer() {
   if (gameTimeTimer) clearInterval(gameTimeTimer);
 }
 
-// SCOREBOARD MEMORI LOKAL & PENGIRAAN KEDUDUKAN EXACT
+// SCOREBOARD MEMORI LOKAL & AUTO-RESET JIKA LEBIH 5 PEMAIN
 function getLeaderboard() {
   try {
     const data = localStorage.getItem("fstb_leaderboard");
-    return data ? JSON.parse(data) : [];
+    let parsed = data ? JSON.parse(data) : [];
+    if (!Array.isArray(parsed) || parsed.length > 5) {
+      localStorage.removeItem("fstb_leaderboard");
+      return [];
+    }
+    return parsed;
   } catch (e) {
     return [];
   }
@@ -1133,6 +1095,12 @@ function getLeaderboard() {
 
 function saveScore(name, score, timeSec) {
   let lb = getLeaderboard();
+  
+  // Jika sudah cukup/lebih 5 pemain, reset semula pusingan baharu
+  if (lb.length >= 5) {
+    lb = [];
+  }
+
   const entryId = Date.now();
   const newEntry = {
     id: entryId,
@@ -1141,12 +1109,10 @@ function saveScore(name, score, timeSec) {
     timeSec: timeSec,
     timeFormatted: formatTime(timeSec)
   };
-  
+
   lb.push(newEntry);
-  // Susun mengikut skor tertinggi, kemudian masa terpantas
   lb.sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
 
-  // Cari kedudukan pemain baharu ini dalam senarai penuh
   const rank = lb.findIndex(e => e.id === entryId) + 1;
   const totalEntries = lb.length;
 
@@ -1171,7 +1137,7 @@ function resetLeaderboard() {
 function openLeaderboard() {
   initAudio();
   playSFX('button');
-  const lb = getLeaderboard().slice(0, 5); // TAMPILKAN TOP 5 SAHAJA PADA JADUAL
+  const lb = getLeaderboard();
   const tbody = document.getElementById("sb-tbody");
   tbody.innerHTML = "";
 
@@ -1440,20 +1406,13 @@ function openVictoryModal() {
   document.getElementById("vic-penalty").innerText = penalty;
   document.getElementById("final-score").innerText = finalScore;
 
-  // SIMPAN SKOR DAN DAPATKAN KEDUDUKAN EXACT
+  // SIMPAN SKOR TERHAD 5 PEMAIN
   let rankInfo = saveScore(playerName, finalScore, totalGameSeconds);
 
-  // PAPARKAN LENCANA KEDUDUKAN SAMA ADA TOP 5 ATAU TIDAK
   const badge = document.getElementById("vic-rank-badge");
-  if (rankInfo.rank <= 5) {
-    badge.style.borderColor = "#4ade80";
-    badge.style.color = "#4ade80";
-    badge.innerText = `🏆 TAHNIAH! KEDUDUKAN KE-${rankInfo.rank} (TOP 5)!`;
-  } else {
-    badge.style.borderColor = "#38bdf8";
-    badge.style.color = "#cbd5e1";
-    badge.innerText = `🎖️ Kedudukan Anda: Ke-${rankInfo.rank} daripada ${rankInfo.total} percubaan`;
-  }
+  badge.style.borderColor = "#4ade80";
+  badge.style.color = "#4ade80";
+  badge.innerText = `🎖️ Kedudukan Anda: Ke-${rankInfo.rank} daripada ${rankInfo.total} pemain`;
 
   document.getElementById("victory-modal").classList.add("active");
 }
@@ -1467,6 +1426,7 @@ function closeModals() {
   document.getElementById("guide-modal").classList.remove("active");
 }
 
+// TEKAN RESTART AKAN KEMBALI KE MUKA HADAPAN (ISIKAN NAMA PEMAIN)
 function restartGame() {
   initAudio();
   playSFX('button');
@@ -1474,11 +1434,8 @@ function restartGame() {
   stopGameTimer();
   stopBGM();
   closeModals();
-  startBGM();
 
-  isGameStarted = true;
-  document.getElementById("start-modal").classList.remove("active");
-  document.getElementById("control-modal").classList.remove("active");
+  isGameStarted = false; // Kembalikan keadaan ke skrin asal
 
   currentRoom = 0;
   totalScore = 0;
@@ -1501,10 +1458,15 @@ function restartGame() {
   document.getElementById("door-status").style.color = "#ef4444";
   document.getElementById("terminal-modal").classList.remove("active");
   
+  const timerElem = document.getElementById("game-timer-display");
+  if (timerElem) timerElem.innerText = "00:00";
+
   updateKeyLocation();
   respawnAmmoItem();
   resetZombies();
-  startGameTimer();
+
+  // BUKAKAN SKRIN UTAMA (MUKA HADAPAN ISI NAMA)
+  document.getElementById("start-modal").classList.add("active");
 }
 
 let moveInterval = null;

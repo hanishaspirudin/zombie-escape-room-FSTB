@@ -1,260 +1,335 @@
-
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Misi Escape Room: Kod FSTB</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial;text-align:center}
-header{background:#20304e;padding:15px 5px}
-h1{font-size:23px;color:#ffd166;margin:4px}
-#stats{padding:12px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
-#stage{color:#ffd166;font-weight:bold}
-#maze{display:grid;grid-template-columns:repeat(11,min(8.3vw,48px));gap:3px;justify-content:center;margin:12px auto}
-.cell{width:min(8.3vw,48px);height:min(8.3vw,48px);display:flex;align-items:center;justify-content:center;font-size:clamp(16px,4.5vw,26px);background:#29464a;border:1px solid #36575a}
-.wall{background:#7789ad}
-.player{background:#f6c85f}
-.question{background:#9b7ede}
-.door{background:#b74659}
-#message{color:#ffd166;font-weight:bold;min-height:35px;padding:8px}
-#controls{display:grid;grid-template-columns:repeat(3,58px);gap:6px;justify-content:center}
-button{border:0;border-radius:9px;padding:13px;background:#3169c6;color:white;font-size:18px;font-weight:bold}
-#controls button{height:50px}
-#panel{display:none;position:fixed;inset:0;background:#000c;align-items:center;justify-content:center;padding:18px;z-index:2}
-#box{background:#20304e;padding:22px;border-radius:15px;width:min(100%,360px)}
-#questionText{line-height:1.6}
-input{width:90%;padding:12px;border:0;border-radius:7px;font-size:18px;margin:10px}
-#send{width:95%;font-size:16px}
-small{color:#cbd5e1}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FSTB Math Escape Room</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #ui-header {
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    h1 { color: #38bdf8; font-size: 1.5rem; letter-spacing: 1px; }
+    #sub-title { color: #fbbf24; font-size: 0.9rem; margin-top: 2px; }
+    #status {
+      display: flex;
+      gap: 20px;
+      margin-top: 8px;
+      font-weight: bold;
+      color: #cbd5e1;
+      justify-content: center;
+    }
+    #game-container {
+      position: relative;
+      border: 3px solid #334155;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
+    canvas { display: block; background: #0f172a; border-radius: 6px; }
+
+    /* Modal Terminal Soalan */
+    #terminal-modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 6px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+      z-index: 20;
+    }
+    #terminal-modal.active { display: flex; }
+    .term-box {
+      background: #1e293b;
+      border: 2px solid #38bdf8;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+    .term-title { color: #f59e0b; font-size: 1.1rem; margin-bottom: 10px; font-weight: bold; }
+    .term-question { font-size: 1rem; margin-bottom: 15px; color: #e2e8f0; line-height: 1.4; text-align: left; }
+    .term-hint { font-size: 0.85rem; color: #94a3b8; margin-bottom: 15px; text-align: left; }
+    .term-input {
+      width: 100%;
+      padding: 10px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #4ade80;
+      font-family: monospace;
+      font-size: 1.2rem;
+      border-radius: 4px;
+      text-align: center;
+      margin-bottom: 15px;
+      letter-spacing: 2px;
+    }
+    .term-btn {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+    }
+    .term-btn:hover { background: #0369a1; }
+    #controls-hint { margin-top: 10px; color: #64748b; font-size: 0.85rem; }
+  </style>
 </head>
 <body>
-<header>
-<h1>🔐 MISI ESCAPE ROOM</h1>
-<div>KOD FSTB · Matematik Tingkatan 1</div>
-</header>
 
-<div id="stats">
-<span id="stage">Stage 1/5</span>
-<span>❤️ Nyawa: <b id="lives">3</b></span>
-<span>⭐ Markah: <b id="score">0</b></span>
-<span>⏱️ Masa: <b id="time">120</b>s</span>
-</div>
+  <div id="ui-header">
+    <h1>FSTB ESCAPE ROOM</h1>
+    <div id="sub-title">Matematik Tingkatan 1: Faktor Sepunya Terbesar</div>
+    <div id="status">
+      <div>Bilik: <span id="room-num" style="color:#38bdf8">1</span> / 5</div>
+      <div>Status Pintu: <span id="door-status" style="color:#ef4444">TERKUNCI</span></div>
+    </div>
+  </div>
 
-<div id="maze"></div>
-<div id="message">Cari soalan, jawab dengan betul dan cari pintu!</div>
+  <div id="game-container">
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
 
-<div id="controls">
-<span></span><button onclick="move(0,-1)">⬆️</button><span></span>
-<button onclick="move(-1,0)">⬅️</button>
-<button onclick="move(0,1)">⬇️</button>
-<button onclick="move(1,0)">➡️</button>
-</div>
-<p><small>Guna butang arah atau kekunci anak panah / WASD.</small></p>
-<button onclick="restart()" style="font-size:15px">🔄 Mula Semula</button>
+    <!-- UI Terminal Soalan FSTB -->
+    <div id="terminal-modal">
+      <div class="term-box">
+        <div class="term-title">🔢 TERMINAL PINTU BILIK <span id="modal-room">1</span></div>
+        <div class="term-question" id="modal-q">Cari FSTB...</div>
+        <div class="term-hint">💡 Petunjuk: Masukkan NOMBOR FSTB sebagai kod pin pintu.</div>
+        <input type="number" id="passcode-input" class="term-input" placeholder="MASUKKAN NOMBOR..." autocomplete="off">
+        <button class="term-btn" onclick="submitPasscode()">NYAHTERKUNCI PINTU</button>
+      </div>
+    </div>
+  </div>
 
-<div id="panel">
-<div id="box">
-<h2 id="panelTitle">🔐 Soalan Stage 1</h2>
-<p id="questionText"></p>
-<input id="answer" type="number" inputmode="numeric" placeholder="Taip jawapan di sini">
-<button id="send" onclick="checkAnswer()">Hantar Jawapan</button>
-<p id="feedback"></p>
-</div>
-</div>
+  <div id="controls-hint">Guna **W, A, S, D** / **Arrow Keys** untuk gerak orang. Tekan **E** / **Spacebar** di Terminal Komputer.</div>
 
 <script>
-const maps=[
-[
-"###########",
-"#P..#....D#",
-"###.#.##..#",
-"#...#.....#",
-"#.###.###.#",
-"#Q........#",
-"###########"
-],
-[
-"###########",
-"#P....#...#",
-"###.#.#.#D#",
-"#...#...#.#",
-"#.#####.#.#",
-"#Q........#",
-"###########"
-],
-[
-"###########",
-"#P..#.....#",
-"#.#.#.###.#",
-"#.#...#...#",
-"#.###.#.#D#",
-"#Q........#",
-"###########"
-],
-[
-"###########",
-"#P....#...#",
-"#.##..#.#D#",
-"#....##.#.#",
-"####....#.#",
-"#Q........#",
-"###########"
-],
-[
-"###########",
-"#P..#.....#",
-"#.#.#.###.#",
-"#.#...#...#",
-"#.###...#D#",
-"#Q........#",
-"###########"
-]
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Data Soalan Matematik Tingkatan 1 (Faktor Sepunya Terbesar)
+const mathQuestions = [
+  {
+    room: 1,
+    q: "Cari Faktor Sepunya Terbesar (FSTB) bagi nombor 12 dan 18.",
+    // Faktor 12: 1,2,3,4,6,12 | Faktor 18: 1,2,3,6,9,18 | FSTB = 6
+    code: "6"
+  },
+  {
+    room: 2,
+    q: "Cari Faktor Sepunya Terbesar (FSTB) bagi nombor 24 dan 36.",
+    // FSTB = 12
+    code: "12"
+  },
+  {
+    room: 3,
+    q: "Cari Faktor Sepunya Terbesar (FSTB) bagi tiga nombor ini: 15, 30, dan 45.",
+    // FSTB = 15
+    code: "15"
+  },
+  {
+    room: 4,
+    q: "Diberi nombor 32, 48, dan 80. Berapakah nilai FSTB bagi ketiga-tiga nombor tersebut?",
+    // FSTB = 16
+    code: "16"
+  },
+  {
+    room: 5,
+    q: "Soalan Bilik Terakhir! Cari nilai FSTB bagi 56, 84, dan 140 untuk keluar dari bilik ini.",
+    // FSTB = 28
+    code: "28"
+  }
 ];
 
-const qs=[
-{q:"Cari FSTB bagi 8 dan 12.",a:4},
-{q:"Cari FSTB bagi 10 dan 15.",a:5},
-{q:"Cari FSTB bagi 12 dan 18.",a:6},
-{q:"Cari FSTB bagi 6, 12 dan 18.",a:6},
-{q:"12 biji epal dan 16 biji oren dibahagikan kepada kumpulan sama banyak tanpa baki. Berapakah bilangan kumpulan maksimum?",a:4}
-];
+let currentRoom = 0;
+let doorUnlocked = false;
+let isTerminalOpen = false;
 
-let level=0,lives=3,score=0,time=120;
-let player={x:1,y:1},questionDone=false,gameOver=false;
-let timer=null;
+// Objek Karakter Orang
+const player = {
+  x: 80,
+  y: 200,
+  size: 18,
+  speed: 4,
+  color: "#38bdf8"
+};
 
-function startTimer(){
- clearInterval(timer);
- timer=setInterval(()=>{
-  if(gameOver)return;
-  time--;
-  document.getElementById("time").textContent=time;
-  if(time<=0){
-   clearInterval(timer);
-   endGame("⏰ Masa tamat! Cuba lagi.");
+// Objek Terminal Komputer
+const terminal = {
+  x: 280,
+  y: 50,
+  w: 40,
+  h: 30
+};
+
+// Objek Pintu
+const door = {
+  x: 560,
+  y: 160,
+  w: 20,
+  h: 80
+};
+
+// Input Papan Kekunci
+const keys = {};
+
+window.addEventListener("keydown", (e) => {
+  keys[e.key.toLowerCase()] = true;
+  if (e.key === "e" || e.key === "E" || e.key === " ") {
+    interact();
   }
- },1000);
-}
+});
+window.addEventListener("keyup", (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
 
-function draw(){
- const maze=document.getElementById("maze");
- maze.innerHTML="";
- const map=maps[level];
- for(let y=0;y<map.length;y++){
-  for(let x=0;x<map[y].length;x++){
-   let c=document.createElement("div");
-   c.className="cell";
-   let tile=map[y][x];
-   if(tile==="#"){c.classList.add("wall");c.textContent="";}
-   else if(tile==="D"){c.classList.add("door");c.textContent="🚪";}
-   else if(tile==="Q"){
-    c.classList.add("question");
-    c.textContent=questionDone?"✅":"❓";
-   }
-   else c.textContent="";
-   if(player.x===x&&player.y===y){
-    c.className="cell player";c.textContent="🧑‍🎓";
-   }
-   maze.appendChild(c);
+function interact() {
+  let distToTerminal = Math.hypot((player.x) - (terminal.x + terminal.w/2), (player.y) - (terminal.y + terminal.h/2));
+  if (distToTerminal < 50 && !isTerminalOpen) {
+    openTerminal();
   }
- }
- document.getElementById("stage").textContent="Stage "+(level+1)+"/5";
- document.getElementById("lives").textContent=lives;
- document.getElementById("score").textContent=score;
 }
 
-function move(dx,dy){
- if(gameOver||document.getElementById("panel").style.display==="flex")return;
- const map=maps[level],nx=player.x+dx,ny=player.y+dy;
- if(!map[ny]||!map[ny][nx]||map[ny][nx]==="#")return;
- player={x:nx,y:ny};
- const tile=map[ny][nx];
- draw();
- if(tile==="Q"&&!questionDone)openQuestion();
- else if(tile==="D"){
-  if(!questionDone){
-   say("🔒 Jawab soalan dahulu untuk membuka pintu!");
-  }else nextStage();
- }
+function openTerminal() {
+  isTerminalOpen = true;
+  const data = mathQuestions[currentRoom];
+  document.getElementById("modal-room").innerText = currentRoom + 1;
+  document.getElementById("modal-q").innerText = data.q;
+  document.getElementById("passcode-input").value = "";
+  document.getElementById("terminal-modal").classList.add("active");
+  setTimeout(() => document.getElementById("passcode-input").focus(), 100);
 }
 
-function say(s){document.getElementById("message").textContent=s}
+function submitPasscode() {
+  const input = document.getElementById("passcode-input").value.trim();
+  const correctCode = mathQuestions[currentRoom].code;
 
-function openQuestion(){
- document.getElementById("panelTitle").textContent="🔐 Soalan Stage "+(level+1);
- document.getElementById("questionText").textContent=qs[level].q;
- document.getElementById("answer").value="";
- document.getElementById("feedback").textContent="";
- document.getElementById("panel").style.display="flex";
- document.getElementById("answer").focus();
+  if (input === correctCode) {
+    alert("SYABAS! Jawapan FSTB betul! Pintu dibuka.");
+    doorUnlocked = true;
+    document.getElementById("door-status").innerText = "TERBUKA";
+    document.getElementById("door-status").style.color = "#4ade80";
+    document.getElementById("terminal-modal").classList.remove("active");
+    isTerminalOpen = false;
+  } else {
+    alert("JAWAPAN SALAH! Sila semak semula pengiraan FSTB anda.");
+  }
 }
 
-function checkAnswer(){
- let v=document.getElementById("answer").value.trim();
- if(v===""){document.getElementById("feedback").textContent="Masukkan jawapan dahulu!";return}
- if(Number(v)===qs[level].a){
-  questionDone=true;score++;
-  document.getElementById("panel").style.display="none";
+function update() {
+  if (isTerminalOpen) return;
+
+  let nextX = player.x;
+  let nextY = player.y;
+
+  if (keys["w"] || keys["arrowup"]) nextY -= player.speed;
+  if (keys["s"] || keys["arrowdown"]) nextY += player.speed;
+  if (keys["a"] || keys["arrowleft"]) nextX -= player.speed;
+  if (keys["d"] || keys["arrowright"]) nextX += player.speed;
+
+  // Batasan Dinding Bilik
+  const padding = 30;
+  if (nextX - player.size > padding && nextX + player.size < canvas.width - padding) {
+    player.x = nextX;
+  }
+  if (nextY - player.size > padding && nextY + player.size < canvas.height - padding) {
+    player.y = nextY;
+  }
+
+  // Melepasi Pintu ke Bilik Seterusnya
+  if (player.x + player.size >= door.x && player.y > door.y && player.y < door.y + door.h) {
+    if (doorUnlocked) {
+      currentRoom++;
+      if (currentRoom >= 5) {
+        alert("TAHNIAH! Anda berjaya menguasai topik FSTB & keluar dari kesemua 5 Bilik!");
+        currentRoom = 0;
+      }
+      // Reset Lokasi Karakter
+      player.x = 70;
+      player.y = 200;
+      doorUnlocked = false;
+      document.getElementById("room-num").innerText = currentRoom + 1;
+      document.getElementById("door-status").innerText = "TERKUNCI";
+      document.getElementById("door-status").style.color = "#ef4444";
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 1. Dinding & Lantai Bilik
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+  ctx.strokeStyle = "#475569";
+  ctx.lineWidth = 8;
+  ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+  // 2. Pintu
+  ctx.fillStyle = doorUnlocked ? "#4ade80" : "#ef4444";
+  ctx.fillRect(door.x, door.y, door.w, door.h);
+  
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 10px sans-serif";
+  ctx.fillText(doorUnlocked ? "BUKA" : "KUNCI", door.x - 7, door.y - 8);
+
+  // 3. Terminal Komputer
+  ctx.fillStyle = "#0284c7";
+  ctx.fillRect(terminal.x, terminal.y, terminal.w, terminal.h);
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillRect(terminal.x + 4, terminal.y + 4, terminal.w - 8, terminal.h - 10);
+  
+  ctx.fillStyle = "#fbbf24";
+  ctx.font = "11px sans-serif";
+  ctx.fillText("💻 TERMINAL FSTB [Tekan E]", terminal.x - 40, terminal.y - 8);
+
+  // 4. Karakter Orang (Top-Down Sprite)
+  // Badan
+  ctx.fillStyle = player.color;
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Kepala
+  ctx.fillStyle = "#fbcfe8";
+  ctx.beginPath();
+  ctx.arc(player.x, player.y - 2, player.size * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Mata
+  ctx.fillStyle = "#0f172a";
+  ctx.beginPath();
+  ctx.arc(player.x + 4, player.y - 3, 2, 0, Math.PI * 2);
+  ctx.arc(player.x + 4, player.y + 1, 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function gameLoop() {
+  update();
   draw();
-  say("✅ Betul! Cari pintu 🚪 untuk ke stage seterusnya.");
- }else{
-  lives--;
-  document.getElementById("lives").textContent=lives;
-  document.getElementById("feedback").textContent="❌ Salah! Cuba lagi. Nyawa tinggal "+lives+".";
-  if(lives<=0){
-   document.getElementById("panel").style.display="none";
-   endGame("💔 Nyawa habis! Tekan Mula Semula.");
-  }
- }
+  requestAnimationFrame(gameLoop);
 }
 
-function nextStage(){
- if(level===4){
-  gameOver=true;clearInterval(timer);
-  document.getElementById("panelTitle").textContent="🏆 TAHNIAH!";
-  document.getElementById("questionText").textContent="Kau berjaya melepasi semua 5 stage FSTB! Markah: "+score+"/5";
-  document.getElementById("answer").style.display="none";
-  document.getElementById("send").style.display="none";
-  document.getElementById("feedback").textContent="Tekan Mula Semula untuk bermain lagi.";
-  document.getElementById("panel").style.display="flex";
-  say("🏆 Misi selesai!");
-  return;
- }
- level++;questionDone=false;player={x:1,y:1};
- draw();say("🎉 Stage seterusnya! Cari soalan baharu.");
-}
-
-function endGame(msg){
- gameOver=true;clearInterval(timer);say(msg);
-}
-
-function restart(){
- level=0;lives=3;score=0;time=120;questionDone=false;gameOver=false;
- player={x:1,y:1};
- document.getElementById("panel").style.display="none";
- document.getElementById("answer").style.display="inline-block";
- document.getElementById("send").style.display="inline-block";
- draw();say("Cari soalan, jawab dengan betul dan cari pintu!");
- startTimer();
-}
-
-document.getElementById("answer").addEventListener("keydown",e=>{
- if(e.key==="Enter")checkAnswer();
-});
-document.addEventListener("keydown",e=>{
- if(document.getElementById("panel").style.display==="flex")return;
- const k=e.key.toLowerCase();
- if(k==="arrowup"||k==="w")move(0,-1);
- if(k==="arrowdown"||k==="s")move(0,1);
- if(k==="arrowleft"||k==="a")move(-1,0);
- if(k==="arrowright"||k==="d")move(1,0);
-});
-function init(){draw();startTimer()}
-function endInit(){init()}
-init();
+gameLoop();
 </script>
 </body>
 </html>

@@ -625,7 +625,7 @@ function showGameNotice(msg, color='#f59e0b', duration=2500) {
 }
 
 // ==========================================
-// SYSTEM AUDIOS (WEB AUDIO API - STABLE STOP)
+// SYSTEM AUDIOS (WEB AUDIO API - STABLE RAMP)
 // ==========================================
 let audioCtx = null;
 let bgmInterval = null;
@@ -665,7 +665,7 @@ function playTone(freq, type, duration, volume = 0.1) {
     osc.type = type;
     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
     gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
     
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -713,7 +713,7 @@ function playTypingSFX() {
   playTone(500 + Math.random() * 250, 'triangle', 0.03, 0.05);
 }
 
-// MARIO VICTORY FANFARE (TANPA BUBBLE 'TETTTTTT')
+// MARIO VICTORY FANFARE (BEBAS BUNYI BINGIT)
 function playVictoryFanfare() {
   stopAllAudio();
   if (!bgmEnabled) return;
@@ -730,7 +730,9 @@ function playVictoryFanfare() {
 
   notes.forEach(n => {
     let t = setTimeout(() => {
-      playTone(n.f, 'triangle', n.d, 0.15);
+      if (isVictoryOpen) {
+        playTone(n.f, 'triangle', n.d, 0.12);
+      }
     }, n.delay);
     soundTimeouts.push(t);
   });
@@ -847,7 +849,6 @@ const keyPositions = [
   { x: 150, y: 105 }
 ];
 
-// PENGHADANG STAGE 5 (INDEX 4) DIBERIKAN LALUAN SELUSAH UNTUK BOSS
 const roomObstacles = {
   0: [{ x: 125, y: 85, w: 50, h: 30, type: 'table' }],
   1: [
@@ -1133,12 +1134,22 @@ function stopGameTimer() {
   if (gameTimeTimer) clearInterval(gameTimeTimer);
 }
 
-// SCOREBOARD MEMORI LOKAL TOP 5 (1 PEMAIN = 1 BARIS)
+// SCOREBOARD MEMORI LOKAL & AUTO-BERSIH DATA ROSAK
 function getLeaderboard() {
   try {
     const data = localStorage.getItem("fstb_leaderboard");
     let parsed = data ? JSON.parse(data) : [];
     if (!Array.isArray(parsed)) return [];
+
+    // AUTO-BERSIHKAN DATA PENDUA (OLD BUG FIX)
+    if (parsed.length > 1) {
+      let first = parsed[0];
+      let allDuplicates = parsed.every(e => e.name === first.name && e.score === first.score && e.timeSec === first.timeSec);
+      if (allDuplicates) {
+        parsed = [first];
+        localStorage.setItem("fstb_leaderboard", JSON.stringify(parsed));
+      }
+    }
     return parsed;
   } catch (e) {
     return [];
@@ -1438,15 +1449,23 @@ function submitPasscode() {
 }
 
 function openGameOverModal() {
+  if (isGameOver) return;
   isGameOver = true;
+  isGameStarted = false; // KUNCI UTAMA
   stopGameTimer();
   stopAllAudio();
   document.getElementById("gameover-modal").classList.add("active");
 }
 
 function openVictoryModal() {
+  if (isVictoryOpen) return; // ELAKKAN PEMICUAN BERULANG
   isVictoryOpen = true;
+  isGameStarted = false; // KUNCI UTAMA
+  doorUnlocked = false;
+  door.isVisible = false;
+
   stopGameTimer();
+  stopAllAudio();
   playVictoryFanfare();
 
   let lostLives = 5 - playerLives;

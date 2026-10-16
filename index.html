@@ -138,11 +138,11 @@
       z-index: 20;
     }
     #terminal-modal.active { display: flex; }
-    .term-title { color: #f59e0b; font-size: 0.68rem; font-weight: bold; }
-    .term-timer { color: #fbbf24; font-size: 0.75rem; font-weight: bold; background: #0f172a; padding: 2px 8px; border-radius: 4px; border: 1px solid #f59e0b; }
-    .term-warning { color: #38bdf8; font-size: 0.53rem; font-weight: bold; }
+    .term-title { color: #f59e0b; font-size: clamp(0.68rem, 1.5vw, 0.82rem); font-weight: bold; }
+    .term-timer { color: #fbbf24; font-size: clamp(0.68rem, 1.5vw, 0.82rem); font-weight: bold; background: #0f172a; padding: 2px 8px; border-radius: 4px; border: 1px solid #f59e0b; }
+    .term-warning { color: #38bdf8; font-size: clamp(0.68rem, 1.5vw, 0.82rem); font-weight: bold; line-height: 1.35; }
     .term-question { 
-      font-size: 0.65rem; 
+      font-size: clamp(0.68rem, 1.5vw, 0.82rem); 
       color: #f8fafc; 
       line-height: 1.35; 
       text-align: left; 
@@ -179,7 +179,7 @@
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
-      font-size: 0.65rem;
+      font-size: clamp(0.68rem, 1.5vw, 0.82rem);
       flex: 1;
     }
     .term-btn-close {
@@ -228,7 +228,7 @@
 
     .difficulty-choice, .back-btn { margin-top: 5px; }
     .difficulty-tabs { display:flex; gap:4px; width:100%; margin:4px 0 8px; }
-    .difficulty-tab { flex:1; padding:5px 2px; border:1px solid #334155; border-radius:4px; background:#1e293b; color:#cbd5e1; font: bold 0.55rem monospace; cursor:pointer; }
+    .difficulty-tab { flex:1; padding:5px 2px; border:1px solid #334155; border-radius:4px; background:#1e293b; color:#cbd5e1; font: bold clamp(0.68rem, 1.5vw, 0.82rem) monospace; cursor:pointer; }
     .difficulty-tab.active { border-color:#fbbf24; color:#fbbf24; background:#334155; }
     #countdown-overlay { display:none; position:absolute; inset:0; z-index:40; background:rgba(15,23,42,.84); align-items:center; justify-content:center; flex-direction:column; gap:8px; }
     #countdown-overlay.active { display:flex; }
@@ -239,14 +239,15 @@
     .sb-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.55rem;
+      font-size: clamp(0.68rem, 1.5vw, 0.82rem);
       color: #e2e8f0;
       margin-bottom: 8px;
     }
     .sb-table th, .sb-table td {
       border: 1px solid #334155;
-      padding: 3px 4px;
+      padding: 4px 3px;
       text-align: center;
+      overflow-wrap: anywhere;
     }
     .sb-table th {
       background: #1e293b;
@@ -1074,8 +1075,9 @@ const roomObstacles = {
     { x: 190, y: 45, w: 22, h: 22, type: 'barrel' }
   ],
   4: [
-    { x: 80, y: 45, w: 24, h: 24, type: 'barrel' },
-    { x: 190, y: 140, w: 24, h: 24, type: 'barrel' }
+    // Boss arena: halangan dialihkan ke penjuru dan dikecilkan supaya laluan luas.
+    { x: 48, y: 48, w: 18, h: 18, type: 'barrel' },
+    { x: 232, y: 142, w: 18, h: 18, type: 'barrel' }
   ]
 };
 
@@ -1930,22 +1932,30 @@ function update() {
           let vx = (dx / dist) * zSpeed;
           let vy = (dy / dist) * zSpeed;
 
-          if (!isCollidingWithObstacle(z.x + vx, z.y, z.size)) {
+          const zombieCollisionRadius = z.isBoss ? z.size * 0.72 : z.size;
+          if (!isCollidingWithObstacle(z.x + vx, z.y, zombieCollisionRadius)) {
             z.x += vx;
           } else {
-            let slideY = vy > 0 ? zSpeed : -zSpeed;
-            if (!isCollidingWithObstacle(z.x, z.y + slideY, z.size)) {
-              z.y += slideY * 0.5;
+            // Cuba menggelongsor sepanjang sisi halangan ke arah pemain.
+            const slideY = vy > 0 ? zSpeed : -zSpeed;
+            if (!isCollidingWithObstacle(z.x, z.y + slideY, zombieCollisionRadius)) {
+              z.y += slideY * 0.75;
             }
           }
 
-          if (!isCollidingWithObstacle(z.x, z.y + vy, z.size)) {
+          if (!isCollidingWithObstacle(z.x, z.y + vy, zombieCollisionRadius)) {
             z.y += vy;
           } else {
-            let slideX = vx > 0 ? zSpeed : -zSpeed;
-            if (!isCollidingWithObstacle(z.x + slideX, z.y, z.size)) {
-              z.x += slideX * 0.5;
+            const slideX = vx > 0 ? zSpeed : -zSpeed;
+            if (!isCollidingWithObstacle(z.x + slideX, z.y, zombieCollisionRadius)) {
+              z.x += slideX * 0.75;
             }
+          }
+
+          // Kekalkan Boss di dalam arena dan jauh daripada tembok luar.
+          if (z.isBoss) {
+            z.x = Math.max(30, Math.min(canvas.width - 30, z.x));
+            z.y = Math.max(32, Math.min(canvas.height - 30, z.y));
           }
         }
 

@@ -186,9 +186,16 @@
       background: #ef4444;
       color: #ffffff;
     }
+    .control-mode-btn.selected {
+      outline: 2px solid #e0f2fe;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.35), 0 0 16px rgba(56, 189, 248, 0.95);
+      position: relative;
+      z-index: 1;
+    }
 
     /* MODAL OVERLAYS */
-    #start-modal, #guide-modal, #control-modal, #victory-modal, #gameover-modal, #leaderboard-modal {
+    #start-modal, #difficulty-modal, #guide-modal, #control-modal, #final-start-modal, #victory-modal, #gameover-modal, #leaderboard-modal {
       display: none;
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -201,7 +208,7 @@
       text-align: center;
       z-index: 30;
     }
-    #start-modal.active, #guide-modal.active, #control-modal.active, #victory-modal.active, #gameover-modal.active, #leaderboard-modal.active { display: flex; }
+    #start-modal.active, #difficulty-modal.active, #guide-modal.active, #control-modal.active, #final-start-modal.active, #victory-modal.active, #gameover-modal.active, #leaderboard-modal.active { display: flex; }
     
     .vic-title { color: #f59e0b; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; text-shadow: 0 0 6px #f59e0b; }
     .go-title { color: #ef4444; font-size: 0.95rem; font-weight: bold; margin-bottom: 6px; text-shadow: 0 0 6px #ef4444; }
@@ -218,6 +225,15 @@
       text-align: left;
     }
     .vic-score { font-size: 0.72rem; color: #fbbf24; font-weight: bold; margin-bottom: 6px; }
+
+    .difficulty-choice, .back-btn { margin-top: 5px; }
+    .difficulty-tabs { display:flex; gap:4px; width:100%; margin:4px 0 8px; }
+    .difficulty-tab { flex:1; padding:5px 2px; border:1px solid #334155; border-radius:4px; background:#1e293b; color:#cbd5e1; font: bold 0.55rem monospace; cursor:pointer; }
+    .difficulty-tab.active { border-color:#fbbf24; color:#fbbf24; background:#334155; }
+    #countdown-overlay { display:none; position:absolute; inset:0; z-index:40; background:rgba(15,23,42,.84); align-items:center; justify-content:center; flex-direction:column; gap:8px; }
+    #countdown-overlay.active { display:flex; }
+    #countdown-number { font-size:2.2rem; font-weight:bold; color:#fbbf24; text-shadow:0 0 12px #f59e0b; }
+    #countdown-caption { font-size:.7rem; font-weight:bold; color:#f8fafc; }
 
     /* SCOREBOARD TABLE */
     .sb-table {
@@ -392,6 +408,60 @@
       border-radius: 3px;
       font-weight: bold;
     }
+
+    /* MOD PAPARAN PENUH: permainan memenuhi skrin laptop, PC dan telefon */
+    html, body { width:100%; height:100%; min-height:100%; overflow:hidden; }
+    body { padding:0; margin:0; align-items:stretch; justify-content:stretch; }
+    #gameboy {
+      width:100vw; max-width:none; height:100vh; height:100dvh; min-height:0;
+      border:0; border-radius:0; padding:0; margin:0; box-shadow:none;
+      background:#1e1b4b; align-items:stretch; overflow:hidden;
+    }
+    #screen-bezel {
+      width:100%; height:100%; min-height:0; flex:1; display:flex; flex-direction:column;
+      border-radius:0; padding:0; box-shadow:none; background:#1e1b4b; position:relative;
+    }
+    .screen-header, .brand-title, .kb-hint { display:none !important; }
+    #canvas-container {
+      width:100%; height:100%; min-height:0; flex:1; border:0; border-radius:0;
+      overflow:hidden; position:relative; background:#1e1b4b;
+    }
+    #gb-status { position:absolute; z-index:6; top:0; left:0; width:100%; font-size:clamp(8px,1.6vw,13px); padding:4px 6px; }
+    canvas { width:100%; height:100%; object-fit:fill; }
+    #controls {
+      position:absolute; z-index:12; left:0; right:0; bottom:clamp(8px,2.2vh,22px);
+      width:100%; margin:0; padding:0 clamp(12px,3vw,34px); pointer-events:none;
+      align-items:flex-end; opacity:.78;
+    }
+    #controls > * { pointer-events:auto; }
+    .dpad { grid-template-columns:repeat(3,clamp(28px,7vw,52px)); grid-template-rows:repeat(3,clamp(28px,7vw,52px)); }
+    #joystick-box { width:clamp(76px,18vw,118px); height:clamp(76px,18vw,118px); }
+    #joystick-stick { width:clamp(32px,7vw,48px); height:clamp(32px,7vw,48px); }
+    .btn-action { width:clamp(40px,10vw,62px); height:clamp(40px,10vw,62px); font-size:clamp(12px,2.4vw,18px); }
+    .btn-label-sub { font-size:clamp(7px,1.2vw,10px); }
+    .action-buttons { gap:clamp(8px,2vw,18px); }
+    .meta-buttons {
+      position:absolute; z-index:13; top:38px; right:8px; margin:0; gap:7px;
+      padding:4px 6px; border-radius:8px; background:rgba(2,6,23,.52);
+    }
+    .btn-pill { width:34px; height:10px; }
+    .pill-label { font-size:8px; }
+    #fullscreen-toggle {
+      position:absolute; z-index:16; top:38px; left:8px; border:1px solid #38bdf8;
+      border-radius:6px; padding:5px 8px; color:#fff; background:rgba(2,6,23,.75);
+      font:bold 12px monospace; cursor:pointer;
+    }
+    #countdown-overlay { z-index:40; }
+    @media (orientation:landscape) and (max-height:520px) {
+      #controls { bottom:5px; padding:0 14px; }
+      .dpad { grid-template-columns:repeat(3,30px); grid-template-rows:repeat(3,30px); }
+      #joystick-box { width:78px; height:78px; }
+      #joystick-stick { width:32px; height:32px; }
+      .btn-action { width:42px; height:42px; }
+      .meta-buttons { top:30px; }
+      #fullscreen-toggle { top:30px; }
+    }
+
   </style>
 </head>
 <body onclick="initAudio(); startBGM();">
@@ -411,12 +481,75 @@
           <div>MATA:<span id="score-num" style="color:#4ade80">0</span></div>
           <div>MSA:<span id="game-timer-display" style="color:#38bdf8">00:00</span></div>
           <div>PLR:<span id="ammo-num" style="color:#fbbf24">0/3</span></div>
-          <div>HP:<span id="lives-num" style="color:#ef4444">❤️❤️❤️❤️❤️</span></div>
+          <div>HP:<span id="lives-num" style="color:#ef4444">❤️❤️❤️</span></div>
           <div>PTR:<span id="door-status" style="color:#ef4444">KUNCI</span></div>
         </div>
         <canvas id="gameCanvas" width="300" height="210"></canvas>
 
         <div id="game-notice">🔑 KUNCI BERTUKAR LOKASI!</div>
+        <div id="countdown-overlay"><div id="countdown-number">3</div><div id="countdown-caption">SEDIA...</div></div>
+
+    <!-- Kawalan atas skrin permainan -->
+    <button id="fullscreen-toggle" onclick="toggleFullscreen(event)" aria-label="Paparan penuh">⛶ FULLSCREEN</button>
+    <div id="controls">
+      <div class="dpad-container">
+        <div id="dpad-ui" class="dpad">
+          <div class="btn-dpad dpad-up" onmousedown="startMove(0,-1)" onmouseup="stopMove()" ontouchstart="startMove(0,-1)" ontouchend="stopMove()">▲</div>
+          <div class="btn-dpad dpad-left" onmousedown="startMove(-1,0)" onmouseup="stopMove()" ontouchstart="startMove(-1,0)" ontouchend="stopMove()">◄</div>
+          <div class="btn-dpad dpad-center"></div>
+          <div class="btn-dpad dpad-right" onmousedown="startMove(1,0)" onmouseup="stopMove()" ontouchstart="startMove(1,0)" ontouchend="stopMove()">►</div>
+          <div class="btn-dpad dpad-down" onmousedown="startMove(0,1)" onmouseup="stopMove()" ontouchstart="startMove(0,1)" ontouchend="stopMove()">▼</div>
+        </div>
+
+        <div id="joystick-ui" style="display:none;">
+          <div id="joystick-box">
+            <div id="joystick-stick"></div>
+          </div>
+        </div>
+
+        <div class="kb-hint" style="bottom:-18px; left:18px;">WASD / 🠄🠅🠆C</div>
+      </div>
+
+      <div class="action-container">
+        <div class="action-buttons">
+          <div class="btn-action" 
+               onclick="useButtonB()" 
+               ontouchstart="event.preventDefault(); useButtonB();" 
+               ontouchend="event.preventDefault(); unlockShoot();" 
+               onmouseup="unlockShoot();" 
+               onmouseleave="unlockShoot();">
+            B
+            <span class="btn-label-sub">SHOOT</span>
+            <div class="kb-hint" style="top:-18px; left:-2px;">SHIFT / J</div>
+          </div>
+          <div class="btn-action" 
+               onclick="useButtonA()" 
+               ontouchstart="event.preventDefault(); useButtonA();">
+            A
+            <span class="btn-label-sub">AMBIL</span>
+            <div class="kb-hint" style="top:-18px; right:-2px;">SPACE / E</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-buttons">
+      <div class="btn-pill-box">
+        <div class="btn-pill" onclick="restartGame()"></div>
+        <div class="pill-label">RESET</div>
+        <div class="kb-hint" style="bottom:-15px;">[R]</div>
+      </div>
+      <div class="btn-pill-box">
+        <div class="btn-pill" onclick="toggleBGM()"></div>
+        <div class="pill-label">SOUND</div>
+        <div class="kb-hint" style="bottom:-15px;">[M]</div>
+      </div>
+      <div class="btn-pill-box">
+        <div class="btn-pill" onclick="useButtonA()"></div>
+        <div class="pill-label">START</div>
+        <div class="kb-hint" style="bottom:-15px;">[ENTER]</div>
+      </div>
+    </div>
 
         <!-- PAGE 1: SKRIN MULA & NAMA PEMAIN -->
         <div id="start-modal" class="active">
@@ -432,7 +565,21 @@
           </div>
         </div>
 
-        <!-- PAGE 2: PANDUAN CARA MAIN -->
+        <!-- PAGE 2: PILIH DIFFICULTY -->
+        <div id="difficulty-modal">
+          <div class="vic-title" style="font-size:0.85rem; margin-bottom:6px;">🎯 PILIH DIFFICULTY</div>
+          <div class="vic-text" style="color:#cbd5e1;">Pilih tahap soalan FSTB:</div>
+          <div class="term-btn-group" style="flex-direction:column; gap:8px; width:92%;">
+            <button class="term-btn" style="background:#22c55e;color:#052e16;padding:10px;font-size:0.78rem;min-height:40px;" onclick="selectDifficulty('easy')">EASY</button>
+            <button class="term-btn" style="background:#fbbf24;color:#422006;padding:10px;font-size:0.78rem;min-height:40px;" onclick="selectDifficulty('medium')">MEDIUM</button>
+            <button class="term-btn" style="background:#ef4444;color:#ffffff;padding:10px;font-size:0.78rem;min-height:40px;" onclick="selectDifficulty('hard')">HARD</button>
+          </div>
+          <div class="term-btn-group" style="width:90%;justify-content:center;margin-top:8px;">
+            <button class="term-btn term-btn-close back-btn" style="flex:0 1 48%;margin-top:0;" onclick="backToName()">⬅️ KEMBALI</button>
+          </div>
+        </div>
+
+        <!-- PAGE 3: PANDUAN CARA MAIN -->
         <div id="guide-modal">
           <div class="vic-title" style="font-size: 0.8rem; margin-bottom:4px;">📜 MISI & PERATURAN</div>
           <div class="vic-details" style="font-size: 0.52rem; line-height: 1.35; margin-bottom: 8px; padding: 6px 8px;">
@@ -441,29 +588,54 @@
             <div style="color:#4ade80; font-weight:bold; margin-top:3px;">🔄 PERATURAN ITEM & SOALAN:</div>
             <div>• 🗝️ <b>Kunci</b>: Jawab soalan FSTB -> Pintu Buka!</div>
             <div>• 📦 <b>Peluru</b>: Jawab soalan FSTB -> Dpt 3 Peluru!</div>
+            <div>• ❤️ Nyawa: mula 3 HP, maksimum 5 HP. Jawab soalan ❤️ untuk +1 HP (sekali setiap stage).</div>
             <div>• Baki peluru dibolehkan bawa ke Stage seterusnya.</div>
             <div>• Peluru habis? Imej peluru baharu akan muncul!</div>
             <div style="color:#ef4444; font-weight:bold; margin-top:3px;">👹 BOSS STAGE 5:</div>
             <div>• Zombi BOSS (5 HP & Laju 1.2)!</div>
           </div>
           <div class="term-btn-group" style="width:90%;">
+            <button class="term-btn term-btn-close" onclick="backToDifficulty()">⬅️ KEMBALI</button>
             <button class="term-btn" onclick="openControlSelection()">▶️ PILIH KAWALAN</button>
           </div>
         </div>
 
-        <!-- PAGE 3: PILIHAN MODE KAWALAN -->
+        <!-- PAGE 4: PILIHAN MODE KAWALAN -->
         <div id="control-modal">
           <div class="vic-title" style="font-size: 0.85rem; margin-bottom:6px;">🕹️ PILIH MODE KAWALAN</div>
           <div class="vic-text" style="color:#cbd5e1; margin-bottom:10px;">Pilih gaya kawalan pergerakan:</div>
           <div class="term-btn-group" style="flex-direction:column; gap:6px; width:90%;">
-            <button class="term-btn" style="background:#38bdf8; color:#0f172a;" onclick="setControlMode('joystick')">🕹️ VIRTUAL JOYSTICK (SENTUH 360°)</button>
-            <button class="term-btn" style="background:#22c55e; color:#052e16;" onclick="setControlMode('dpad')">🎛️ D-PAD BUTTONS (BUTANG 4-ARAH)</button>
+            <button id="control-joystick" class="term-btn control-mode-btn" style="background:#38bdf8; color:#0f172a;" onclick="setControlMode('joystick')">🕹️ VIRTUAL JOYSTICK (SENTUH 360°)</button>
+            <button id="control-dpad" class="term-btn control-mode-btn" style="background:#22c55e; color:#052e16;" onclick="setControlMode('dpad')">🎛️ D-PAD BUTTONS (BUTANG 4-ARAH)</button>
+            <button class="term-btn term-btn-close" onclick="backToDifficulty()">⬅️ KEMBALI</button>
+            <button class="term-btn" style="background:#f59e0b;color:#0f172a;" onclick="openFinalStartScreen()">➡️ TERUSKAN</button>
+          </div>
+        </div>
+
+        <!-- PAGE 4: PENGESAHAN MULA PERMAINAN -->
+        <div id="final-start-modal" style="position:absolute; top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,.96);border-radius:2px;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;z-index:30;">
+          <div class="vic-title" style="font-size:.82rem;">📜 PERATURAN PERMAINAN</div>
+          <div class="vic-details" style="line-height:1.45;">
+            <div>• Selesaikan 5 stage dan jawab soalan FSTB.</div>
+            <div>• Kunci membuka pintu, kotak peluru memberi 3 peluru.</div>
+            <div>• Item ❤️ memberi +1 nyawa jika jawapan betul.</div>
+            <div>• Elakkan zombi dan tewaskan BOSS di Stage 5.</div>
+            <div>Difficulty: <b id="selected-difficulty-label" style="color:#fbbf24;">MEDIUM</b></div>
+          </div>
+          <div class="term-btn-group" style="width:90%;">
+            <button class="term-btn term-btn-close" onclick="backToControl()">⬅️ KEMBALI</button>
+            <button class="term-btn" style="background:#22c55e;color:#052e16;" onclick="startGameWithCountdown()">▶️ MULA PERMAINAN</button>
           </div>
         </div>
 
         <!-- PAGE SCOREBOARD -->
         <div id="leaderboard-modal">
           <div class="vic-title" style="font-size: 0.85rem; margin-bottom:4px;">🏆 CARTA SCOREBOARD TOP 5</div>
+          <div class="difficulty-tabs">
+            <button class="difficulty-tab active" id="sb-tab-easy" onclick="setScoreboardTab('easy')">🟢 EASY</button>
+            <button class="difficulty-tab" id="sb-tab-medium" onclick="setScoreboardTab('medium')">🟡 MEDIUM</button>
+            <button class="difficulty-tab" id="sb-tab-hard" onclick="setScoreboardTab('hard')">🔴 HARD</button>
+          </div>
           <table class="sb-table">
             <thead>
               <tr>
@@ -532,66 +704,7 @@
       <div class="brand-title">FSTB <span>ZOMBIE ESCAPE</span></div>
     </div>
 
-    <!-- Kawalan Emulator -->
-    <div id="controls">
-      <div class="dpad-container">
-        <div id="dpad-ui" class="dpad">
-          <div class="btn-dpad dpad-up" onmousedown="startMove(0,-1)" onmouseup="stopMove()" ontouchstart="startMove(0,-1)" ontouchend="stopMove()">▲</div>
-          <div class="btn-dpad dpad-left" onmousedown="startMove(-1,0)" onmouseup="stopMove()" ontouchstart="startMove(-1,0)" ontouchend="stopMove()">◄</div>
-          <div class="btn-dpad dpad-center"></div>
-          <div class="btn-dpad dpad-right" onmousedown="startMove(1,0)" onmouseup="stopMove()" ontouchstart="startMove(1,0)" ontouchend="stopMove()">►</div>
-          <div class="btn-dpad dpad-down" onmousedown="startMove(0,1)" onmouseup="stopMove()" ontouchstart="startMove(0,1)" ontouchend="stopMove()">▼</div>
-        </div>
 
-        <div id="joystick-ui" style="display:none;">
-          <div id="joystick-box">
-            <div id="joystick-stick"></div>
-          </div>
-        </div>
-
-        <div class="kb-hint" style="bottom:-18px; left:18px;">WASD / 🠄🠅🠆C</div>
-      </div>
-
-      <div class="action-container">
-        <div class="action-buttons">
-          <div class="btn-action" 
-               onclick="useButtonB()" 
-               ontouchstart="event.preventDefault(); useButtonB();" 
-               ontouchend="event.preventDefault(); unlockShoot();" 
-               onmouseup="unlockShoot();" 
-               onmouseleave="unlockShoot();">
-            B
-            <span class="btn-label-sub">SHOOT</span>
-            <div class="kb-hint" style="top:-18px; left:-2px;">SHIFT / J</div>
-          </div>
-          <div class="btn-action" 
-               onclick="useButtonA()" 
-               ontouchstart="event.preventDefault(); useButtonA();">
-            A
-            <span class="btn-label-sub">AMBIL</span>
-            <div class="kb-hint" style="top:-18px; right:-2px;">SPACE / E</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="meta-buttons">
-      <div class="btn-pill-box">
-        <div class="btn-pill" onclick="restartGame()"></div>
-        <div class="pill-label">RESET</div>
-        <div class="kb-hint" style="bottom:-15px;">[R]</div>
-      </div>
-      <div class="btn-pill-box">
-        <div class="btn-pill" onclick="toggleBGM()"></div>
-        <div class="pill-label">SOUND</div>
-        <div class="kb-hint" style="bottom:-15px;">[M]</div>
-      </div>
-      <div class="btn-pill-box">
-        <div class="btn-pill" onclick="useButtonA()"></div>
-        <div class="pill-label">START</div>
-        <div class="kb-hint" style="bottom:-15px;">[ENTER]</div>
-      </div>
-    </div>
   </div>
 
   <div id="keyboard-guide">
@@ -605,6 +718,18 @@
   </div>
 
 <script>
+function toggleFullscreen(event) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  const target = document.getElementById('gameboy');
+  if (!document.fullscreenElement) {
+    const request = target.requestFullscreen || target.webkitRequestFullscreen;
+    if (request) { try { const result = request.call(target); if (result && result.catch) result.catch(() => {}); } catch (_) {} }
+  } else {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exit) { try { const result = exit.call(document); if (result && result.catch) result.catch(() => {}); } catch (_) {} }
+  }
+}
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -700,9 +825,21 @@ function startBGM() {
   if (isVictoryOpen || isGameOver || bgmInterval) return;
   bgmInterval = setInterval(() => {
     if (bgmEnabled && audioCtx && audioCtx.state === 'running' && !isVictoryOpen && !isGameOver) {
-      const note = bgmNotes[bgmNoteIndex];
-      playTone(note, 'square', 0.12, 0.03);
-      bgmNoteIndex = (bgmNoteIndex + 1) % bgmNotes.length;
+      if (currentRoom === 4) {
+        // Muzik suspen sintesis untuk Stage Boss (tanpa fail audio luaran).
+        const suspenseNotes = [65.41, 73.42, 65.41, 98.00, 87.31, 65.41, 110.00, 98.00];
+        const note = suspenseNotes[bgmNoteIndex % suspenseNotes.length];
+        playTone(note, 'sawtooth', 0.20, 0.045);
+        if (bgmNoteIndex % 2 === 0) {
+          let t = setTimeout(() => { if (bgmEnabled && currentRoom === 4) playTone(38, 'sine', 0.16, 0.07); }, 90);
+          soundTimeouts.push(t);
+        }
+        bgmNoteIndex = (bgmNoteIndex + 1) % suspenseNotes.length;
+      } else {
+        const note = bgmNotes[bgmNoteIndex];
+        playTone(note, 'square', 0.12, 0.03);
+        bgmNoteIndex = (bgmNoteIndex + 1) % bgmNotes.length;
+      }
     }
   }, 180);
 }
@@ -771,6 +908,11 @@ function playSFX(type) {
   } else if (type === 'door') {
     playTone(300, 'square', 0.08, 0.1);
     let t = setTimeout(() => playTone(450, 'square', 0.12, 0.1), 80);
+    soundTimeouts.push(t);
+  } else if (type === 'stomp') {
+    // Hentakan BOSS berfrekuensi rendah, bukan erangan zombi.
+    playTone(58, 'sine', 0.22, 0.24);
+    let t = setTimeout(() => playTone(38, 'triangle', 0.18, 0.18), 70);
     soundTimeouts.push(t);
   }
 }
@@ -841,6 +983,70 @@ const questionPool = {
   ]
 };
 
+const questionSets = {
+  easy: [
+    [{ a: 6, b: 18 }, { a: 6, b: 15 }, { a: 2, b: 18 }, { a: 2, b: 8 }, { a: 2, b: 12 }, { a: 2, b: 6 }, { a: 12, b: 14 }, { a: 7, b: 14 }, { a: 4, b: 12 }, { a: 3, b: 9 }, { a: 16, b: 18 }, { a: 8, b: 10 }, { a: 2, b: 14 }, { a: 10, b: 14 }, { a: 9, b: 12 }],
+    [{ a: 6, b: 10 }, { a: 14, b: 16 }, { a: 10, b: 12 }, { a: 3, b: 18 }, { a: 6, b: 12 }, { a: 12, b: 15 }, { a: 6, b: 8 }, { a: 5, b: 10 }, { a: 5, b: 15 }, { a: 4, b: 6 }, { a: 15, b: 18 }, { a: 10, b: 15 }, { a: 4, b: 10 }, { a: 4, b: 18 }, { a: 12, b: 18 }],
+    [{ a: 6, b: 9 }, { a: 2, b: 4 }, { a: 8, b: 16 }, { a: 3, b: 12 }, { a: 2, b: 10 }, { a: 4, b: 14 }, { a: 9, b: 18 }, { a: 4, b: 8 }, { a: 8, b: 14 }, { a: 9, b: 15 }, { a: 2, b: 16 }, { a: 3, b: 15 }, { a: 6, b: 16 }, { a: 4, b: 16 }, { a: 14, b: 18 }],
+    [{ a: 6, b: 14 }, { a: 10, b: 18 }, { a: 10, b: 16 }, { a: 8, b: 12 }, { a: 8, b: 18 }, { a: 12, b: 16 }, { a: 3, b: 6 }, { a: 7, b: 8 }, { a: 14, b: 19 }, { a: 5, b: 17 }, { a: 3, b: 5 }, { a: 3, b: 17 }, { a: 4, b: 9 }, { a: 5, b: 14 }, { a: 13, b: 19 }],
+    [{ a: 16, b: 19 }, { a: 7, b: 19 }, { a: 2, b: 9 }, { a: 3, b: 8 }, { a: 9, b: 14 }, { a: 6, b: 13 }, { a: 14, b: 17 }, { a: 7, b: 18 }, { a: 9, b: 17 }, { a: 4, b: 13 }, { a: 11, b: 12 }, { a: 7, b: 17 }, { a: 7, b: 11 }, { a: 14, b: 15 }, { a: 5, b: 7 }],
+    [{ a: 11, b: 13 }, { a: 13, b: 14 }, { a: 2, b: 17 }, { a: 2, b: 3 }, { a: 5, b: 13 }, { a: 11, b: 17 }, { a: 9, b: 11 }, { a: 8, b: 19 }, { a: 8, b: 13 }, { a: 5, b: 12 }, { a: 6, b: 7 }, { a: 7, b: 9 }, { a: 2, b: 13 }, { a: 4, b: 17 }, { a: 9, b: 10 }],
+    [{ a: 2, b: 7 }, { a: 4, b: 19 }, { a: 4, b: 15 }, { a: 8, b: 9 }, { a: 5, b: 9 }, { a: 7, b: 13 }, { a: 2, b: 5 }, { a: 11, b: 14 }, { a: 5, b: 8 }, { a: 3, b: 10 }, { a: 4, b: 7 }, { a: 15, b: 17 }, { a: 15, b: 16 }, { a: 5, b: 18 }, { a: 17, b: 19 }],
+    [{ a: 7, b: 10 }, { a: 18, b: 19 }, { a: 9, b: 19 }, { a: 2, b: 11 }, { a: 5, b: 6 }, { a: 12, b: 13 }, { a: 13, b: 17 }, { a: 13, b: 18 }, { a: 13, b: 16 }, { a: 16, b: 17 }, { a: 4, b: 11 }, { a: 12, b: 17 }, { a: 9, b: 13 }, { a: 7, b: 16 }, { a: 3, b: 14 }],
+    [{ a: 10, b: 17 }, { a: 7, b: 12 }, { a: 10, b: 19 }, { a: 10, b: 13 }, { a: 11, b: 18 }, { a: 12, b: 19 }, { a: 15, b: 19 }, { a: 6, b: 11 }, { a: 2, b: 19 }, { a: 2, b: 15 }, { a: 11, b: 16 }, { a: 11, b: 15 }, { a: 6, b: 19 }, { a: 8, b: 15 }, { a: 3, b: 11 }],
+    [{ a: 13, b: 15 }, { a: 6, b: 17 }, { a: 11, b: 19 }, { a: 5, b: 19 }, { a: 4, b: 5 }, { a: 3, b: 13 }, { a: 3, b: 16 }, { a: 5, b: 16 }, { a: 3, b: 4 }, { a: 8, b: 17 }, { a: 8, b: 11 }, { a: 7, b: 15 }, { a: 3, b: 7 }, { a: 3, b: 19 }, { a: 10, b: 11 }]
+  ],
+  medium: [
+    [{ a: 24, b: 33 }, { a: 26, b: 39 }, { a: 21, b: 49 }, { a: 20, b: 46 }, { a: 30, b: 46 }, { a: 24, b: 34 }, { a: 33, b: 36 }, { a: 18, b: 45 }, { a: 32, b: 40 }, { a: 18, b: 33 }, { a: 36, b: 44 }, { a: 18, b: 48 }, { a: 38, b: 48 }, { a: 20, b: 30 }, { a: 26, b: 34 }],
+    [{ a: 18, b: 44 }, { a: 21, b: 24 }, { a: 24, b: 44 }, { a: 10, b: 35 }, { a: 15, b: 27 }, { a: 10, b: 48 }, { a: 15, b: 24 }, { a: 10, b: 30 }, { a: 30, b: 40 }, { a: 35, b: 45 }, { a: 24, b: 30 }, { a: 10, b: 25 }, { a: 12, b: 28 }, { a: 12, b: 22 }, { a: 18, b: 38 }],
+    [{ a: 12, b: 39 }, { a: 23, b: 46 }, { a: 24, b: 40 }, { a: 10, b: 15 }, { a: 14, b: 36 }, { a: 13, b: 26 }, { a: 24, b: 36 }, { a: 26, b: 38 }, { a: 22, b: 44 }, { a: 16, b: 34 }, { a: 22, b: 38 }, { a: 14, b: 16 }, { a: 34, b: 42 }, { a: 15, b: 18 }, { a: 12, b: 38 }],
+    [{ a: 12, b: 14 }, { a: 30, b: 35 }, { a: 15, b: 30 }, { a: 18, b: 34 }, { a: 27, b: 36 }, { a: 30, b: 45 }, { a: 12, b: 18 }, { a: 15, b: 39 }, { a: 27, b: 45 }, { a: 15, b: 35 }, { a: 14, b: 30 }, { a: 22, b: 46 }, { a: 27, b: 39 }, { a: 27, b: 30 }, { a: 40, b: 46 }],
+    [{ a: 36, b: 39 }, { a: 28, b: 36 }, { a: 12, b: 16 }, { a: 20, b: 35 }, { a: 21, b: 27 }, { a: 18, b: 20 }, { a: 38, b: 40 }, { a: 32, b: 46 }, { a: 14, b: 22 }, { a: 14, b: 35 }, { a: 18, b: 30 }, { a: 21, b: 39 }, { a: 22, b: 26 }, { a: 20, b: 42 }, { a: 40, b: 44 }],
+    [{ a: 10, b: 18 }, { a: 24, b: 45 }, { a: 14, b: 24 }, { a: 28, b: 46 }, { a: 33, b: 42 }, { a: 26, b: 46 }, { a: 12, b: 45 }, { a: 21, b: 28 }, { a: 26, b: 48 }, { a: 18, b: 36 }, { a: 28, b: 48 }, { a: 26, b: 40 }, { a: 16, b: 32 }, { a: 12, b: 32 }, { a: 15, b: 45 }],
+    [{ a: 10, b: 46 }, { a: 34, b: 48 }, { a: 34, b: 44 }, { a: 15, b: 48 }, { a: 12, b: 26 }, { a: 19, b: 38 }, { a: 35, b: 42 }, { a: 14, b: 32 }, { a: 12, b: 48 }, { a: 10, b: 36 }, { a: 24, b: 32 }, { a: 18, b: 32 }, { a: 10, b: 16 }, { a: 32, b: 44 }, { a: 18, b: 40 }],
+    [{ a: 24, b: 48 }, { a: 36, b: 45 }, { a: 21, b: 42 }, { a: 28, b: 35 }, { a: 10, b: 44 }, { a: 14, b: 26 }, { a: 15, b: 42 }, { a: 39, b: 42 }, { a: 20, b: 25 }, { a: 24, b: 39 }, { a: 34, b: 46 }, { a: 30, b: 32 }, { a: 35, b: 49 }, { a: 28, b: 34 }, { a: 20, b: 48 }],
+    [{ a: 25, b: 30 }, { a: 10, b: 45 }, { a: 33, b: 48 }, { a: 28, b: 38 }, { a: 20, b: 45 }, { a: 10, b: 40 }, { a: 21, b: 33 }, { a: 40, b: 48 }, { a: 28, b: 49 }, { a: 36, b: 40 }, { a: 26, b: 36 }, { a: 40, b: 42 }, { a: 15, b: 21 }, { a: 22, b: 36 }, { a: 21, b: 48 }],
+    [{ a: 16, b: 38 }, { a: 12, b: 42 }, { a: 24, b: 27 }, { a: 33, b: 45 }, { a: 25, b: 45 }, { a: 14, b: 34 }, { a: 36, b: 46 }, { a: 34, b: 36 }, { a: 20, b: 34 }, { a: 20, b: 38 }, { a: 16, b: 18 }, { a: 39, b: 45 }, { a: 14, b: 20 }, { a: 12, b: 44 }, { a: 14, b: 44 }]
+  ],
+  hard: [
+    [{ a: 92, b: 100 }, { a: 88, b: 90 }, { a: 35, b: 40 }, { a: 36, b: 72 }, { a: 50, b: 74 }, { a: 36, b: 54 }, { a: 33, b: 90 }, { a: 42, b: 58 }, { a: 56, b: 78 }, { a: 52, b: 88 }, { a: 45, b: 55 }, { a: 40, b: 45 }, { a: 70, b: 82 }, { a: 35, b: 45 }, { a: 74, b: 78 }],
+    [{ a: 54, b: 82 }, { a: 43, b: 86 }, { a: 42, b: 90 }, { a: 36, b: 90 }, { a: 50, b: 90 }, { a: 33, b: 75 }, { a: 94, b: 98 }, { a: 38, b: 68 }, { a: 48, b: 52 }, { a: 45, b: 99 }, { a: 48, b: 88 }, { a: 39, b: 52 }, { a: 46, b: 60 }, { a: 35, b: 49 }, { a: 93, b: 96 }],
+    [{ a: 39, b: 54 }, { a: 64, b: 68 }, { a: 60, b: 78 }, { a: 75, b: 84 }, { a: 34, b: 78 }, { a: 80, b: 85 }, { a: 30, b: 95 }, { a: 44, b: 86 }, { a: 38, b: 84 }, { a: 39, b: 48 }, { a: 36, b: 81 }, { a: 46, b: 48 }, { a: 68, b: 96 }, { a: 46, b: 92 }, { a: 66, b: 72 }],
+    [{ a: 34, b: 92 }, { a: 84, b: 87 }, { a: 45, b: 60 }, { a: 35, b: 70 }, { a: 48, b: 68 }, { a: 34, b: 38 }, { a: 78, b: 88 }, { a: 50, b: 86 }, { a: 84, b: 86 }, { a: 64, b: 98 }, { a: 76, b: 88 }, { a: 36, b: 92 }, { a: 69, b: 87 }, { a: 95, b: 100 }, { a: 42, b: 80 }],
+    [{ a: 62, b: 94 }, { a: 66, b: 70 }, { a: 64, b: 94 }, { a: 57, b: 66 }, { a: 75, b: 90 }, { a: 46, b: 80 }, { a: 40, b: 62 }, { a: 44, b: 70 }, { a: 42, b: 74 }, { a: 58, b: 92 }, { a: 84, b: 91 }, { a: 62, b: 72 }, { a: 87, b: 90 }, { a: 72, b: 74 }, { a: 32, b: 86 }],
+    [{ a: 56, b: 70 }, { a: 42, b: 54 }, { a: 55, b: 60 }, { a: 45, b: 75 }, { a: 62, b: 74 }, { a: 30, b: 93 }, { a: 94, b: 100 }, { a: 63, b: 69 }, { a: 65, b: 95 }, { a: 45, b: 95 }, { a: 80, b: 95 }, { a: 72, b: 82 }, { a: 30, b: 94 }, { a: 44, b: 82 }, { a: 78, b: 92 }],
+    [{ a: 35, b: 63 }, { a: 51, b: 90 }, { a: 30, b: 33 }, { a: 82, b: 100 }, { a: 51, b: 81 }, { a: 76, b: 95 }, { a: 44, b: 100 }, { a: 58, b: 78 }, { a: 45, b: 96 }, { a: 35, b: 85 }, { a: 38, b: 64 }, { a: 66, b: 99 }, { a: 34, b: 96 }, { a: 42, b: 44 }, { a: 48, b: 80 }],
+    [{ a: 70, b: 80 }, { a: 35, b: 65 }, { a: 34, b: 85 }, { a: 48, b: 92 }, { a: 60, b: 63 }, { a: 51, b: 96 }, { a: 82, b: 98 }, { a: 62, b: 93 }, { a: 36, b: 94 }, { a: 54, b: 74 }, { a: 66, b: 100 }, { a: 39, b: 57 }, { a: 72, b: 96 }, { a: 62, b: 64 }, { a: 62, b: 88 }],
+    [{ a: 78, b: 96 }, { a: 51, b: 72 }, { a: 50, b: 76 }, { a: 56, b: 84 }, { a: 86, b: 96 }, { a: 62, b: 82 }, { a: 68, b: 80 }, { a: 55, b: 66 }, { a: 30, b: 98 }, { a: 48, b: 50 }, { a: 48, b: 66 }, { a: 33, b: 77 }, { a: 69, b: 84 }, { a: 66, b: 90 }, { a: 54, b: 100 }],
+    [{ a: 69, b: 78 }, { a: 38, b: 54 }, { a: 50, b: 64 }, { a: 32, b: 70 }, { a: 65, b: 70 }, { a: 44, b: 76 }, { a: 34, b: 98 }, { a: 38, b: 82 }, { a: 51, b: 87 }, { a: 34, b: 36 }, { a: 96, b: 98 }, { a: 54, b: 69 }, { a: 77, b: 91 }, { a: 69, b: 75 }, { a: 78, b: 86 }]
+  ],
+};
+let questionRunQueue = [];
+let questionRunIndex = 0;
+function shuffleQuestions(items) {
+  const copy = items.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+function resetQuestionRun() {
+  const sets = questionSets[selectedDifficulty] || questionSets.medium;
+  const firstSetIndex = Math.floor(Math.random() * sets.length);
+  const firstSet = shuffleQuestions(sets[firstSetIndex]);
+  const remainingSets = shuffleQuestions(sets.filter((_, i) => i !== firstSetIndex));
+  questionRunQueue = firstSet.concat(...remainingSets.map(set => shuffleQuestions(set)));
+  questionRunIndex = 0;
+}
+function gcd(a, b) { while (b) { const r = a % b; a = b; b = r; } return a; }
+function getDifficultyQuestion(stage) {
+  if (questionRunIndex >= questionRunQueue.length) resetQuestionRun();
+  const pair = questionRunQueue[questionRunIndex++];
+  const prefix = stage === 5 ? "Soalan BOSS! " : "";
+  return { q: `${prefix}Cari Faktor Sepunya Terbesar (FSTB) bagi ${pair.a} dan ${pair.b}.`, code: String(gcd(pair.a, pair.b)) };
+}
+
 const keyPositions = [
   { x: 150, y: 50 },
   { x: 150, y: 160 },
@@ -875,8 +1081,14 @@ const roomObstacles = {
 
 let currentRoom = 0;
 let totalScore = 0;
-let playerLives = 5;
+let playerLives = 3;
 let playerAmmo = 0;
+let selectedDifficulty = "medium";
+let scoreboardDifficulty = "easy";
+let heartItemUsedThisStage = false;
+let heartObj = { x: 205, y: 105, active: true };
+let bossStepTimer = null;
+let lastDamageAt = 0;
 let doorUnlocked = false;
 
 let isGameStarted = false;
@@ -1016,6 +1228,38 @@ function handleJoyMove(touch) {
   }
 }
 
+function getSafeItemPosition(itemType) {
+  // Pilih lokasi yang lapang, jauh daripada pemain, penghadang dan item lain.
+  const candidates = [];
+  for (let i = 0; i < 100; i++) {
+    candidates.push({ x: Math.floor(Math.random() * 190) + 40, y: Math.floor(Math.random() * 125) + 35 });
+  }
+  // Lokasi fallback memastikan fungsi sentiasa tamat walaupun bilik sempit.
+  candidates.push({x:45,y:45},{x:245,y:45},{x:45,y:165},{x:245,y:165},{x:235,y:105},{x:110,y:165});
+  for (const pos of candidates) {
+    if (isCollidingWithObstacle(pos.x, pos.y, 15)) continue;
+    if (Math.hypot(player.x-pos.x, player.y-pos.y) < 48) continue;
+    if (Math.hypot(keyObj.x-pos.x, keyObj.y-pos.y) < 42 && itemType !== 'key') continue;
+    if (itemType !== 'ammo' && ammoObj.active && Math.hypot(ammoObj.x-pos.x, ammoObj.y-pos.y) < 48) continue;
+    if (itemType !== 'heart' && heartObj.active && Math.hypot(heartObj.x-pos.x, heartObj.y-pos.y) < 48) continue;
+    if (door.isVisible && Math.hypot((door.x+door.w/2)-pos.x, (door.y+door.h/2)-pos.y) < 48) continue;
+    if (itemType !== 'key' && Math.hypot(keyObj.x-pos.x, keyObj.y-pos.y) < 48) continue;
+    return pos;
+  }
+  return { x: 235, y: 105 };
+}
+
+function resetHeartItem() {
+  heartItemUsedThisStage = false;
+  // Bonus nyawa hanya muncul bermula Stage 2.
+  if (currentRoom === 0) {
+    heartObj.active = false;
+    return;
+  }
+  const pos = getSafeItemPosition('heart');
+  heartObj.x = pos.x; heartObj.y = pos.y; heartObj.active = true;
+}
+
 function updateKeyLocation() {
   const pos = keyPositions[currentRoom];
   keyObj.x = pos.x;
@@ -1023,20 +1267,8 @@ function updateKeyLocation() {
 }
 
 function respawnAmmoItem() {
-  let valid = false;
-  let newX, newY;
-  while (!valid) {
-    newX = Math.floor(Math.random() * 160) + 50;
-    newY = Math.floor(Math.random() * 110) + 45;
-    let distToPlayer = Math.hypot(player.x - newX, player.y - newY);
-    let distToKey = Math.hypot(keyObj.x - newX, keyObj.y - newY);
-    if (distToPlayer > 45 && distToKey > 35 && !isCollidingWithObstacle(newX, newY, 15)) {
-      valid = true;
-    }
-  }
-  ammoObj.x = newX;
-  ammoObj.y = newY;
-  ammoObj.active = true;
+  const pos = getSafeItemPosition('ammo');
+  ammoObj.x = pos.x; ammoObj.y = pos.y; ammoObj.active = true;
 }
 
 function updateLivesDisplay() {
@@ -1049,38 +1281,36 @@ function updateLivesDisplay() {
 }
 
 function updateAmmoDisplay() {
-  document.getElementById("ammo-num").innerText = `${playerAmmo}/3`;
+  const n = Math.max(0, Math.min(3, playerAmmo));
+  document.getElementById("ammo-num").innerText = "🟡".repeat(n) + "⚫".repeat(3 - n);
+  document.getElementById("ammo-num").title = `${playerAmmo}/3`;
 }
 
 function relocateKey() {
-  let valid = false;
-  let newX, newY;
-  while (!valid) {
-    newX = Math.floor(Math.random() * 160) + 40;
-    newY = Math.floor(Math.random() * 110) + 45;
-    let distToPlayer = Math.hypot(player.x - newX, player.y - newY);
-    let distToDoor = Math.hypot(door.x - newX, door.y - newY);
-    if (distToPlayer > 45 && distToDoor > 40 && !isCollidingWithObstacle(newX, newY, 15)) {
-      valid = true;
-    }
-  }
-  keyObj.x = newX;
-  keyObj.y = newY;
+  const pos = getSafeItemPosition('key');
+  keyObj.x = pos.x; keyObj.y = pos.y;
 }
 
 function resetZombies() {
+  if (bossStepTimer) { clearInterval(bossStepTimer); bossStepTimer = null; }
   zombies = [];
   if (currentRoom === 4) {
     zombies.push({
       x: 220, y: 105, size: 16, speed: 1.2,
       hp: 5, maxHp: 5, isBoss: true, active: true
     });
+    bossStepTimer = setInterval(() => {
+      if (isGameStarted && !isTerminalOpen && !isGameOver && !isVictoryOpen && zombies.some(z => z.isBoss && z.active)) playSFX('stomp');
+    }, 720);
   } else {
     const stageSpeeds = [0.75, 1.00, 0.75, 1.00];
     const speed = stageSpeeds[currentRoom] || 0.75;
 
-    if (currentRoom === 0 || currentRoom === 1) {
+    if (currentRoom === 0) {
       zombies.push({ x: 230, y: 50, size: 10, speed: speed, hp: 1, maxHp: 1, isBoss: false, active: true });
+    } else if (currentRoom === 1) {
+      // Spawn Stage 2 di lorong kanan yang lapang, bukan berhimpit dengan tong di atas.
+      zombies.push({ x: 235, y: 105, size: 10, speed: speed, hp: 1, maxHp: 1, isBoss: false, active: true });
     } else {
       zombies.push({ x: 230, y: 50, size: 10, speed: speed, hp: 1, maxHp: 1, isBoss: false, active: true });
       zombies.push({ x: 230, y: 155, size: 10, speed: speed, hp: 1, maxHp: 1, isBoss: false, active: true });
@@ -1122,7 +1352,7 @@ function startGameTimer() {
   
   if (gameTimeTimer) clearInterval(gameTimeTimer);
   gameTimeTimer = setInterval(() => {
-    if (isGameStarted && !isTerminalOpen && !isVictoryOpen && !isGameOver) {
+    if (isGameStarted && !isTerminalOpen && !isVictoryOpen && !isGameOver && !document.getElementById("leaderboard-modal").classList.contains("active")) {
       totalGameSeconds++;
       const elem = document.getElementById("game-timer-display");
       if (elem) elem.innerText = formatTime(totalGameSeconds);
@@ -1134,135 +1364,122 @@ function stopGameTimer() {
   if (gameTimeTimer) clearInterval(gameTimeTimer);
 }
 
-// SCOREBOARD MEMORI LOKAL & AUTO-BERSIH DATA ROSAK
-function getLeaderboard() {
+// SCOREBOARD TERPISAH MENGIKUT DIFFICULTY
+function leaderboardKey(difficulty) { return `fstb_leaderboard_${difficulty}`; }
+function getLeaderboard(difficulty = scoreboardDifficulty) {
   try {
-    const data = localStorage.getItem("fstb_leaderboard");
-    let parsed = data ? JSON.parse(data) : [];
-    if (!Array.isArray(parsed)) return [];
-
-    // AUTO-BERSIHKAN DATA PENDUA (OLD BUG FIX)
-    if (parsed.length > 1) {
-      let first = parsed[0];
-      let allDuplicates = parsed.every(e => e.name === first.name && e.score === first.score && e.timeSec === first.timeSec);
-      if (allDuplicates) {
-        parsed = [first];
-        localStorage.setItem("fstb_leaderboard", JSON.stringify(parsed));
-      }
-    }
-    return parsed;
-  } catch (e) {
-    return [];
-  }
+    const raw = localStorage.getItem(leaderboardKey(difficulty));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) { return []; }
 }
-
 function saveScore(name, score, timeSec) {
-  let lb = getLeaderboard();
-
+  let lb = getLeaderboard(selectedDifficulty);
   const entryId = Date.now() + "_" + Math.floor(Math.random() * 1000);
-  const newEntry = {
+  lb.push({
     id: entryId,
     name: (name || "Pemain 1").substring(0, 10),
-    score: score,
-    timeSec: timeSec,
-    timeFormatted: formatTime(timeSec)
-  };
-
-  lb.push(newEntry);
+    score, timeSec, timeFormatted: formatTime(timeSec)
+  });
   lb.sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
-
   const rank = lb.findIndex(e => e.id === entryId) + 1;
-  lb = lb.slice(0, 5); // simpan Top 5 sahaja
-
-  try {
-    localStorage.setItem("fstb_leaderboard", JSON.stringify(lb));
-  } catch(e){}
-
-  return { rank: rank, isTop5: rank <= 5 };
+  try { localStorage.setItem(leaderboardKey(selectedDifficulty), JSON.stringify(lb.slice(0, 5))); } catch(e) {}
+  return { rank, isTop5: rank <= 5 };
 }
-
 function resetLeaderboard() {
-  initAudio();
-  playSFX('button');
-  if (confirm("Adakah anda pasti ingin memadam semua rekod scoreboard?")) {
-    try {
-      localStorage.removeItem("fstb_leaderboard");
-    } catch(e){}
+  initAudio(); playSFX('button');
+  if (confirm(`Padam semua rekod scoreboard ${scoreboardDifficulty.toUpperCase()}?`)) {
+    try { localStorage.removeItem(leaderboardKey(scoreboardDifficulty)); } catch(e) {}
     openLeaderboard();
   }
 }
-
-function openLeaderboard() {
-  initAudio();
-  playSFX('button');
-  const lb = getLeaderboard();
+function setScoreboardTab(difficulty) {
+  scoreboardDifficulty = difficulty;
+  ["easy", "medium", "hard"].forEach(d => {
+    const tab = document.getElementById(`sb-tab-${d}`);
+    if (tab) tab.classList.toggle("active", d === difficulty);
+  });
+  renderScoreboardTable();
+}
+function renderScoreboardTable() {
+  const lb = getLeaderboard(scoreboardDifficulty);
   const tbody = document.getElementById("sb-tbody");
   tbody.innerHTML = "";
-
   for (let i = 0; i < 5; i++) {
     const row = lb[i];
     const tr = document.createElement("tr");
     if (row) {
-      tr.innerHTML = `
-        <td>${i + 1}</td>
-        <td style="font-weight:bold;">${row.name}</td>
-        <td style="color:#fbbf24; font-weight:bold;">${row.score}</td>
-        <td style="color:#38bdf8;">${row.timeFormatted}</td>
-      `;
+      const safeName = String(row.name || "Pemain").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      tr.innerHTML = `<td>${i+1}</td><td style="font-weight:bold;">${safeName}</td><td style="color:#fbbf24;font-weight:bold;">${Number(row.score)||0}</td><td style="color:#38bdf8;">${row.timeFormatted || formatTime(Number(row.timeSec)||0)}</td>`;
     } else {
-      tr.innerHTML = `
-        <td>${i + 1}</td>
-        <td style="color:#64748b;">-</td>
-        <td style="color:#64748b;">-</td>
-        <td style="color:#64748b;">-</td>
-      `;
+      tr.innerHTML = `<td>${i+1}</td><td style="color:#64748b;">-</td><td style="color:#64748b;">-</td><td style="color:#64748b;">-</td>`;
     }
     tbody.appendChild(tr);
   }
-
+}
+function openLeaderboard() {
+  initAudio(); playSFX('button');
   document.getElementById("start-modal").classList.remove("active");
+  document.getElementById("difficulty-modal").classList.remove("active");
+  document.getElementById("guide-modal").classList.remove("active");
+  document.getElementById("control-modal").classList.remove("active");
+  document.getElementById("final-start-modal").classList.remove("active");
   document.getElementById("victory-modal").classList.remove("active");
+  document.getElementById("gameover-modal").classList.remove("active");
   document.getElementById("leaderboard-modal").classList.add("active");
+  setScoreboardTab(scoreboardDifficulty);
 }
 
 function closeLeaderboard() {
-  initAudio();
-  playSFX('button');
+  initAudio(); playSFX('button');
   document.getElementById("leaderboard-modal").classList.remove("active");
-  if (!isGameStarted) {
-    document.getElementById("start-modal").classList.add("active");
-  } else if (isVictoryOpen) {
-    document.getElementById("victory-modal").classList.add("active");
-  }
+  if (isVictoryOpen) document.getElementById("victory-modal").classList.add("active");
+  else if (isGameOver) document.getElementById("gameover-modal").classList.add("active");
+  else if (isGameStarted) { /* permainan sambung seperti biasa */ }
+  else document.getElementById("start-modal").classList.add("active");
 }
-
 function openGuideModal() {
-  initAudio();
-  startBGM();
-  playSFX('button');
+  initAudio(); startBGM(); playSFX('button');
   const inputElem = document.getElementById("player-name-input");
-  if (inputElem && inputElem.value.trim()) {
-    playerName = inputElem.value.trim().substring(0, 10);
-  } else {
-    playerName = "Pemain 1";
-  }
-
+  playerName = inputElem && inputElem.value.trim() ? inputElem.value.trim().substring(0, 10) : "Pemain 1";
   document.getElementById("start-modal").classList.remove("active");
-  document.getElementById("guide-modal").classList.add("active");
+  document.getElementById("difficulty-modal").classList.add("active");
 }
-
-function openControlSelection() {
-  initAudio();
+function selectDifficulty(difficulty) {
+  selectedDifficulty = ["easy","medium","hard"].includes(difficulty) ? difficulty : "medium";
   playSFX('button');
-  document.getElementById("guide-modal").classList.remove("active");
+  document.getElementById("difficulty-modal").classList.remove("active");
   document.getElementById("control-modal").classList.add("active");
 }
-
+function backToName() {
+  document.getElementById("difficulty-modal").classList.remove("active");
+  document.getElementById("start-modal").classList.add("active");
+}
+function backToDifficulty() {
+  document.getElementById("control-modal").classList.remove("active");
+  document.getElementById("guide-modal").classList.remove("active");
+  document.getElementById("difficulty-modal").classList.add("active");
+}
+function openControlSelection() {
+  initAudio(); playSFX('button');
+  document.getElementById("guide-modal").classList.remove("active");
+  document.getElementById("control-modal").classList.add("active");
+  updateControlModeHighlight();
+}
+function updateControlModeHighlight() {
+  const joystickButton = document.getElementById("control-joystick");
+  const dpadButton = document.getElementById("control-dpad");
+  if (joystickButton) joystickButton.classList.toggle("selected", selectedControl === "joystick");
+  if (dpadButton) dpadButton.classList.toggle("selected", selectedControl === "dpad");
+}
+function backToGuide() {
+  document.getElementById("control-modal").classList.remove("active");
+  document.getElementById("guide-modal").classList.add("active");
+}
 function setControlMode(mode) {
-  initAudio();
-  playSFX('button');
+  initAudio(); playSFX('button');
   selectedControl = mode;
-
+  updateControlModeHighlight();
   if (mode === 'joystick') {
     document.getElementById("dpad-ui").style.display = "none";
     document.getElementById("joystick-ui").style.display = "block";
@@ -1270,26 +1487,68 @@ function setControlMode(mode) {
     document.getElementById("dpad-ui").style.display = "grid";
     document.getElementById("joystick-ui").style.display = "none";
   }
-
+  // Pemilihan kawalan hanya menetapkan mod; pengguna menekan TERUSKAN untuk skrin seterusnya.
+  showGameNotice(mode === 'joystick' ? "🕹️ KAWALAN JOYSTICK DIPILIH" : "🎛️ KAWALAN D-PAD DIPILIH", "#38bdf8", 1500);
+}
+function openFinalStartScreen() {
+  document.getElementById("selected-difficulty-label").innerText = selectedDifficulty.toUpperCase();
   document.getElementById("control-modal").classList.remove("active");
+  document.getElementById("final-start-modal").classList.add("active");
+}
+function backToControl() {
+  document.getElementById("final-start-modal").classList.remove("active");
+  document.getElementById("control-modal").classList.add("active");
+}
+let countdownRunning = false;
+function startGameWithCountdown() {
+  if (countdownRunning) return;
+  countdownRunning = true;
+  initAudio(); playSFX('button');
+  document.getElementById("final-start-modal").classList.remove("active");
+  const overlay = document.getElementById("countdown-overlay");
+  const number = document.getElementById("countdown-number");
+  const caption = document.getElementById("countdown-caption");
+  overlay.classList.add("active");
+  let n = 3;
+  number.innerText = n;
+  caption.innerText = "SEDIA...";
+  playTone(660, "sine", .12, .12);
+  const tick = setInterval(() => {
+    n--;
+    if (n > 0) {
+      number.innerText = n;
+      playTone(660, "sine", .12, .12);
+    } else {
+      clearInterval(tick);
+      number.innerText = "MULA!";
+      caption.innerText = "SELAMAT BERJUANG!";
+      playTone(880, "sine", .25, .15);
+      setTimeout(() => {
+        overlay.classList.remove("active");
+        countdownRunning = false;
+        beginNewGame();
+      }, 650);
+    }
+  }, 800);
+}
+function beginNewGame() {
+  closeModals();
+  resetRunState();
   isGameStarted = true;
   startGameTimer();
+  startBGM();
 }
-
 function useButtonA() {
   initAudio();
   startBGM();
 
   if (!isGameStarted) {
-    if (document.getElementById("start-modal").classList.contains("active")) {
-      openGuideModal();
-    } else if (document.getElementById("guide-modal").classList.contains("active")) {
-      openControlSelection();
-    } else if (document.getElementById("control-modal").classList.contains("active")) {
-      setControlMode('dpad');
-    } else if (document.getElementById("leaderboard-modal").classList.contains("active")) {
-      closeLeaderboard();
-    }
+    if (document.getElementById("start-modal").classList.contains("active")) openGuideModal();
+    else if (document.getElementById("difficulty-modal").classList.contains("active")) selectDifficulty(selectedDifficulty);
+    else if (document.getElementById("guide-modal").classList.contains("active")) openControlSelection();
+    else if (document.getElementById("control-modal").classList.contains("active")) setControlMode(selectedControl || 'dpad');
+    else if (document.getElementById("final-start-modal").classList.contains("active")) startGameWithCountdown();
+    else if (document.getElementById("leaderboard-modal").classList.contains("active")) closeLeaderboard();
     return;
   }
 
@@ -1310,12 +1569,11 @@ function useButtonA() {
 
   let distAmmo = Math.hypot(player.x - ammoObj.x, player.y - ammoObj.y);
   if (ammoObj.active && distAmmo < 30) {
-    if (playerAmmo >= 3) {
-      showGameNotice("⚡ PELURU SUDAH PENUH (3/3)!", "#38bdf8", 2000);
-    } else {
-      openTerminal('ammo');
-    }
+    if (playerAmmo >= 3) showGameNotice("⚡ PELURU SUDAH PENUH (3/3)!", "#38bdf8", 2000);
+    else { openTerminal('ammo'); return; }
   }
+  const distHeart = Math.hypot(player.x - heartObj.x, player.y - heartObj.y);
+  if (heartObj.active && !heartItemUsedThisStage && distHeart < 30) openTerminal('heart');
 }
 
 let isShootLocked = false;
@@ -1380,9 +1638,14 @@ function startTimer() {
       if (activeModalType === 'key') {
         relocateKey();
         showGameNotice("🔑 MASA HABIS! KUNCI BERTUKAR LOKASI!", "#ef4444", 2500);
-      } else {
+      } else if (activeModalType === 'ammo') {
         respawnAmmoItem();
         showGameNotice("📦 MASA HABIS! IMEJ PELURU BERTUKAR LOKASI!", "#ef4444", 2500);
+      } else {
+        const pos = getSafeItemPosition('heart');
+        heartObj.x = pos.x; heartObj.y = pos.y; heartObj.active = true;
+        heartItemUsedThisStage = false;
+        showGameNotice("❤️ MASA HABIS! ITEM NYAWA BERPINDAH KE LOKASI BAHARU.", "#ef4444", 2500);
       }
     }
   }, 1000);
@@ -1396,8 +1659,7 @@ function openTerminal(type) {
   isTerminalOpen = true;
   activeModalType = type;
 
-  const currentPool = questionPool[currentRoom + 1];
-  activeQuestion = currentPool[Math.floor(Math.random() * currentPool.length)];
+  activeQuestion = getDifficultyQuestion(currentRoom + 1);
 
   document.getElementById("modal-room").innerText = currentRoom + 1;
   document.getElementById("modal-q").innerText = activeQuestion.q;
@@ -1406,9 +1668,12 @@ function openTerminal(type) {
   if (type === 'key') {
     document.getElementById("term-title-text").innerHTML = `🗝️ SOALAN KUNCI BILIK <span id="modal-room">${currentRoom + 1}</span>`;
     document.getElementById("term-warn-text").innerText = "JAWAB BETUL UNTUK BUKA PINTU RAHSIA!";
-  } else {
+  } else if (type === 'ammo') {
     document.getElementById("term-title-text").innerHTML = `📦 SOALAN PELURU BILIK <span id="modal-room">${currentRoom + 1}</span>`;
     document.getElementById("term-warn-text").innerText = "JAWAB BETUL UNTUK MENDAPATKAN 3 PELURU!";
+  } else {
+    document.getElementById("term-title-text").innerHTML = `❤️ BONUS NYAWA STAGE <span id="modal-room">${currentRoom + 1}</span>`;
+    document.getElementById("term-warn-text").innerText = "JAWAB BETUL UNTUK TAMBAH 1 NYAWA (MAKSIMUM 5)!";
   }
 
   document.getElementById("terminal-modal").classList.add("active");
@@ -1436,15 +1701,38 @@ function submitPasscode() {
       doorUnlocked = true;
       spawnRandomDoor();
       showGameNotice("✨ JAWAPAN BETUL! 🚪 PINTU RAHSIA TERBUKA!", "#4ade80", 3000);
-    } else {
+    } else if (activeModalType === 'ammo') {
       playerAmmo = 3;
       ammoObj.active = false;
       updateAmmoDisplay();
       showGameNotice("⚡ 3 BUTIR PELURU DIPEROLEHI! (3/3)", "#38bdf8", 3000);
+    } else {
+      heartObj.active = false;
+      heartItemUsedThisStage = true;
+      if (playerLives < 5) {
+        playerLives++;
+        updateLivesDisplay();
+        showGameNotice(`❤️ +1 NYAWA! BAKI HP: ${playerLives}/5`, "#4ade80", 2600);
+      } else {
+        showGameNotice("❤️ NYAWA PENUH! HP KEKAL 5/5.", "#fbbf24", 2600);
+      }
     }
   } else {
     playSFX('wrong');
-    showGameNotice("❌ JAWAPAN SALAH! SILA SEMAK FSTB", "#ef4444", 2000);
+    const failedType = activeModalType;
+    closeTerminal();
+    if (failedType === 'key') {
+      relocateKey();
+      showGameNotice("❌ JAWAPAN SALAH! KUNCI BERPINDAH KE LOKASI BAHARU.", "#ef4444", 2400);
+    } else if (failedType === 'ammo') {
+      respawnAmmoItem();
+      showGameNotice("❌ JAWAPAN SALAH! ITEM PELURU BERPINDAH KE LOKASI BAHARU.", "#ef4444", 2400);
+    } else {
+      const pos = getSafeItemPosition('heart');
+      heartObj.x = pos.x; heartObj.y = pos.y; heartObj.active = true;
+      heartItemUsedThisStage = false;
+      showGameNotice("❌ JAWAPAN SALAH! ITEM NYAWA BERPINDAH KE LOKASI BAHARU.", "#ef4444", 2400);
+    }
   }
 }
 
@@ -1453,6 +1741,7 @@ function openGameOverModal() {
   isGameOver = true;
   isGameStarted = false; // KUNCI UTAMA
   stopGameTimer();
+  if (bossStepTimer) { clearInterval(bossStepTimer); bossStepTimer = null; }
   stopAllAudio();
   document.getElementById("gameover-modal").classList.add("active");
 }
@@ -1465,10 +1754,11 @@ function openVictoryModal() {
   door.isVisible = false;
 
   stopGameTimer();
+  if (bossStepTimer) { clearInterval(bossStepTimer); bossStepTimer = null; }
   stopAllAudio();
   playVictoryFanfare();
 
-  let lostLives = 5 - playerLives;
+  let lostLives = 3 - playerLives;
   let penalty = lostLives * 40;
   let finalScore = Math.max(0, totalScore - penalty);
 
@@ -1501,81 +1791,42 @@ function closeModals() {
   document.getElementById("gameover-modal").classList.remove("active");
   document.getElementById("leaderboard-modal").classList.remove("active");
   document.getElementById("guide-modal").classList.remove("active");
+  document.getElementById("difficulty-modal").classList.remove("active");
+  document.getElementById("control-modal").classList.remove("active");
+  document.getElementById("final-start-modal").classList.remove("active");
+  document.getElementById("terminal-modal").classList.remove("active");
+}
+
+function resetRunState() {
+  stopTimer(); stopGameTimer();
+  resetQuestionRun();
+  if (bossStepTimer) { clearInterval(bossStepTimer); bossStepTimer = null; }
+  currentRoom = 0; totalScore = 0; playerLives = 3; playerAmmo = 0; totalGameSeconds = 0;
+  doorUnlocked = false; door.isVisible = false; isTerminalOpen = false;
+  activeQuestion = null; heartItemUsedThisStage = false;
+  player.x = 40; player.y = 105; bullets = [];
+  isVictoryOpen = false; isGameOver = false;
+  addScore(0); updateLivesDisplay(); updateAmmoDisplay();
+  document.getElementById("room-num").innerText = "1";
+  document.getElementById("door-status").innerText = "KUNCI";
+  document.getElementById("door-status").style.color = "#ef4444";
+  document.getElementById("game-timer-display").innerText = "00:00";
+  updateKeyLocation(); respawnAmmoItem(); resetHeartItem(); resetZombies();
 }
 
 // MAIN SEMULA UNTUK PEMAIN YANG SAMA
 function replaySamePlayer() {
-  initAudio();
-  playSFX('button');
-  stopTimer();
-  stopGameTimer();
-  stopAllAudio();
-  closeModals();
-
-  currentRoom = 0;
-  totalScore = 0;
-  playerLives = 5;
-  playerAmmo = 0;
-  totalGameSeconds = 0;
-  addScore(0);
-  updateLivesDisplay();
-  updateAmmoDisplay();
-
-  doorUnlocked = false;
-  door.isVisible = false;
-  isTerminalOpen = false;
-  player.x = 40;
-  player.y = 105;
-  bullets = [];
-  
-  document.getElementById("room-num").innerText = "1";
-  document.getElementById("door-status").innerText = "KUNCI";
-  document.getElementById("door-status").style.color = "#ef4444";
-
-  updateKeyLocation();
-  respawnAmmoItem();
-  resetZombies();
-
+  initAudio(); stopAllAudio(); closeModals();
+  resetRunState();
   isGameStarted = true;
-  startGameTimer();
-  startBGM();
+  startGameTimer(); startBGM();
 }
 
 // PEMAIN BAHARU (KEMBALI KE MUKA HADAPAN MENTAFSAR NAMA)
 function newPlayerModal() {
-  initAudio();
-  playSFX('button');
-  stopTimer();
-  stopGameTimer();
-  stopAllAudio();
-  closeModals();
-
+  initAudio(); stopAllAudio(); closeModals();
   isGameStarted = false;
-
-  currentRoom = 0;
-  totalScore = 0;
-  playerLives = 5;
-  playerAmmo = 0;
-  totalGameSeconds = 0;
-  addScore(0);
-  updateLivesDisplay();
-  updateAmmoDisplay();
-
-  doorUnlocked = false;
-  door.isVisible = false;
-  isTerminalOpen = false;
-  player.x = 40;
-  player.y = 105;
-  bullets = [];
-  
-  document.getElementById("room-num").innerText = "1";
-  document.getElementById("door-status").innerText = "KUNCI";
-  document.getElementById("door-status").style.color = "#ef4444";
-
-  updateKeyLocation();
-  respawnAmmoItem();
-  resetZombies();
-
+  resetRunState();
   document.getElementById("start-modal").classList.add("active");
 }
 
@@ -1591,8 +1842,11 @@ function startMove(dx, dy) {
   moveInterval = setInterval(() => movePlayer(dx, dy), 40);
 }
 function stopMove() {
-  if (moveInterval) clearInterval(moveInterval);
+  if (moveInterval) { clearInterval(moveInterval); moveInterval = null; }
 }
+window.addEventListener("mouseup", stopMove);
+window.addEventListener("touchend", stopMove, { passive: true });
+window.addEventListener("blur", () => { stopMove(); Object.keys(keys).forEach(k => keys[k] = false); unlockShoot(); });
 
 const keys = {};
 window.addEventListener("keydown", (e) => {
@@ -1655,6 +1909,7 @@ function movePlayer(dx, dy) {
 
 function update() {
   if (!isGameStarted) return;
+  if (document.getElementById("leaderboard-modal").classList.contains("active")) return;
 
   if (keys["w"] || keys["arrowup"]) movePlayer(0, -1);
   if (keys["s"] || keys["arrowdown"]) movePlayer(0, 1);
@@ -1696,7 +1951,8 @@ function update() {
           }
         }
 
-        if (dist < player.size + z.size) {
+        if (dist < player.size + z.size && Date.now() - lastDamageAt > 1100) {
+          lastDamageAt = Date.now();
           playerLives--;
           updateLivesDisplay();
 
@@ -1779,6 +2035,7 @@ function update() {
       
       updateKeyLocation();
       respawnAmmoItem();
+      resetHeartItem();
       resetZombies();
     }
   }
@@ -2014,6 +2271,12 @@ function draw() {
   drawObstacles25D();
   drawGoldenKey25D(keyObj.x, keyObj.y);
   drawAmmoItem25D(ammoObj.x, ammoObj.y);
+  if (heartObj.active) {
+    const hy = heartObj.y + Math.sin(Date.now() / 190) * 2;
+    ctx.font = "16px serif";
+    ctx.textAlign = "center";
+    ctx.fillText("❤️", heartObj.x, hy + 5);
+  }
 
   zombies.forEach(z => drawZombiePokemonStyle(z));
 
@@ -2045,10 +2308,12 @@ function gameLoop(currentTime) {
 
 updateKeyLocation();
 respawnAmmoItem();
+resetHeartItem();
 resetZombies();
 updateLivesDisplay();
 updateAmmoDisplay();
 setupJoystick();
+setScoreboardTab("easy");
 gameLoop();
 </script>
 </body>

@@ -1335,7 +1335,7 @@ function triggerGameOver(isVictory) {
 
 /* Scoreboard Management */
 function saveScoreboardRecord(name, diff, score, timeSec) {
-    let scores = JSON.parse(localStorage.getItem("fstb_scores_v3") || "{"easy":[],"medium":[],"hard":[]}");
+    let scores = JSON.parse(localStorage.getItem("fstb_scores_v3") || '{"easy":[],"medium":[],"hard":[]}');
     if (!scores[diff]) scores[diff] = [];
 
     scores[diff].push({ name, score, time: timeSec, date: new Date().toLocaleDateString() });
@@ -1346,7 +1346,7 @@ function saveScoreboardRecord(name, diff, score, timeSec) {
 }
 
 function renderScoreboardTable(diffTab) {
-    let scores = JSON.parse(localStorage.getItem("fstb_scores_v3") || "{"easy":[],"medium":[],"hard":[]}");
+    let scores = JSON.parse(localStorage.getItem("fstb_scores_v3") || '{"easy":[],"medium":[],"hard":[]}');
     let list = scores[diffTab] || [];
 
     let container = document.getElementById("scoreboardTableContainer");

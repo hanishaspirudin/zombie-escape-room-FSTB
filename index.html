@@ -1,1593 +1,2055 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FSTB Zombie Escape v3.0</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            margin: 0;
-            padding: 0;
-            touch-action: manipulation;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FSTB Zombie Escape</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 15px 10px;
+    }
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: #090d16;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #ffffff;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    /* Rangka Emulator */
+    #gameboy {
+      background: #4c1d95;
+      border: 5px solid #3b0764;
+      border-bottom-width: 14px;
+      border-radius: 24px 24px 55px 24px;
+      padding: 18px 16px 24px 16px;
+      width: 370px;
+      max-width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 -8px 15px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
 
-        /* Responsive GameBoy Overlay Wrapper */
-        #gameboy-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            max-width: 1100px;
-            max-height: 850px;
-            background: linear-gradient(145deg, #2e1065, #1e1b4b);
-            border: 6px solid #4c1d95;
-            border-radius: 24px;
-            box-shadow: 0 0 35px rgba(124, 58, 237, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            overflow: hidden;
-        }
+    /* Bezel Skrin */
+    #screen-bezel {
+      background: #1e293b;
+      border-radius: 12px 12px 35px 12px;
+      padding: 14px 14px 10px 14px;
+      width: 100%;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
+    }
+    
+    .screen-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #94a3b8;
+      font-size: 0.65rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .power-led {
+      width: 8px; height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #ef4444;
+      display: inline-block;
+      margin-right: 5px;
+    }
 
-        /* Top Header Brand */
-        .gb-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 16px;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 12px;
-            border: 1px solid #6d28d9;
-            z-index: 10;
-        }
+    /* Skrin Canvas LCD */
+    #canvas-container {
+      position: relative;
+      background: #1e1b4b;
+      border: 4px solid #0f172a;
+      border-radius: 4px;
+      overflow: hidden;
+      width: 100%;
+    }
+    canvas { 
+      display: block; 
+      background: #1e1b4b; 
+      image-rendering: pixelated; 
+      width: 100%; 
+      height: auto; 
+    }
 
-        .gb-title {
-            font-size: 1.1rem;
-            font-weight: 900;
-            color: #fbbf24;
-            letter-spacing: 1px;
-            text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-        }
+    /* Bar Status Skrin Style RPG */
+    #gb-status {
+      display: flex;
+      justify-content: space-between;
+      background: #020617;
+      color: #38bdf8;
+      font-size: 0.44rem;
+      padding: 3px 4px;
+      font-weight: bold;
+      border-bottom: 2px solid #334155;
+    }
 
-        .gb-led {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
+    .brand-title {
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      font-weight: bold;
+      font-style: italic;
+      margin-top: 8px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .brand-title span { color: #ec4899; }
 
-        .led-light {
-            width: 10px;
-            height: 10px;
-            background-color: #ef4444;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #ef4444;
-            animation: pulse-led 2s infinite;
-        }
+    /* NOTIFIKASI IN-GAME BANNER */
+    #game-notice {
+      display: none;
+      position: absolute;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #f59e0b;
+      color: #fbbf24;
+      font-size: 0.55rem;
+      font-weight: bold;
+      padding: 5px 8px;
+      border-radius: 6px;
+      z-index: 25;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+      pointer-events: none;
+      white-space: nowrap;
+    }
 
-        @keyframes pulse-led {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
+    /* Modal Dialog Box */
+    #terminal-modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.94);
+      border-radius: 2px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+      text-align: center;
+      z-index: 20;
+    }
+    #terminal-modal.active { display: flex; }
+    .term-title { color: #f59e0b; font-size: 0.68rem; font-weight: bold; }
+    .term-timer { color: #fbbf24; font-size: 0.75rem; font-weight: bold; background: #0f172a; padding: 2px 8px; border-radius: 4px; border: 1px solid #f59e0b; }
+    .term-warning { color: #38bdf8; font-size: 0.53rem; font-weight: bold; }
+    .term-question { 
+      font-size: 0.65rem; 
+      color: #f8fafc; 
+      line-height: 1.35; 
+      text-align: left; 
+      background: #1e293b; 
+      padding: 6px 8px; 
+      border-radius: 6px; 
+      border: 2px solid #38bdf8; 
+      width: 100%;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+    }
+    .term-input {
+      width: 100%;
+      padding: 5px;
+      background: #0284c7;
+      border: 2px solid #38bdf8;
+      color: #ffffff;
+      font-family: monospace;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: bold;
+      user-select: text;
+    }
+    .term-btn-group {
+      display: flex;
+      gap: 5px;
+      width: 100%;
+    }
+    .term-btn {
+      background: #22c55e;
+      color: #052e16;
+      border: none;
+      padding: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.65rem;
+      flex: 1;
+    }
+    .term-btn-close {
+      background: #ef4444;
+      color: #ffffff;
+    }
 
-        /* Canvas Viewport */
-        #canvas-wrapper {
-            position: relative;
-            width: 100%;
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 8px 0;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 4px solid #38bdf8;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
-            background: #020617;
-        }
+    /* MODAL OVERLAYS */
+    #start-modal, #guide-modal, #control-modal, #victory-modal, #gameover-modal, #leaderboard-modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 2px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      text-align: center;
+      z-index: 30;
+    }
+    #start-modal.active, #guide-modal.active, #control-modal.active, #victory-modal.active, #gameover-modal.active, #leaderboard-modal.active { display: flex; }
+    
+    .vic-title { color: #f59e0b; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; text-shadow: 0 0 6px #f59e0b; }
+    .go-title { color: #ef4444; font-size: 0.95rem; font-weight: bold; margin-bottom: 6px; text-shadow: 0 0 6px #ef4444; }
+    .vic-text { font-size: 0.6rem; color: #a7f3d0; line-height: 1.3; margin-bottom: 6px; }
+    .vic-details {
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 6px 8px;
+      border-radius: 4px;
+      width: 100%;
+      font-size: 0.58rem;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+      text-align: left;
+    }
+    .vic-score { font-size: 0.72rem; color: #fbbf24; font-weight: bold; margin-bottom: 6px; }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            image-rendering: pixelated;
-        }
+    /* SCOREBOARD TABLE */
+    .sb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.55rem;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+    }
+    .sb-table th, .sb-table td {
+      border: 1px solid #334155;
+      padding: 3px 4px;
+      text-align: center;
+    }
+    .sb-table th {
+      background: #1e293b;
+      color: #38bdf8;
+    }
+    .sb-table tr:nth-child(even) { background: rgba(30, 41, 59, 0.5); }
 
-        /* Overlay Touch Controls on GameBoy Screen */
-        .touch-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 20px;
-            z-index: 20;
-        }
+    .kb-hint {
+      position: absolute;
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      font-size: 0.52rem;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      pointer-events: none;
+    }
 
-        .control-group-left, .control-group-right {
-            pointer-events: auto;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
+    /* KAWALAN EMULATOR */
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-top: 18px;
+      padding: 0 10px;
+      touch-action: none;
+    }
 
-        /* Joystick Styling */
-        #joystick-zone {
-            width: 120px;
-            height: 120px;
-            background: rgba(30, 41, 59, 0.55);
-            border: 3px solid rgba(56, 189, 248, 0.6);
-            border-radius: 50%;
-            position: relative;
-            touch-action: none;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-        }
+    /* D-PAD */
+    .dpad-container { position: relative; }
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 34px);
+      grid-template-rows: repeat(3, 34px);
+    }
+    .btn-dpad {
+      background: #334155;
+      border: 1px solid #1e293b;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.15);
+    }
+    .btn-dpad:active { background: #0f172a; }
+    .dpad-up { grid-column: 2; grid-row: 1; border-radius: 5px 5px 0 0; }
+    .dpad-left { grid-column: 1; grid-row: 2; border-radius: 5px 0 0 5px; }
+    .dpad-center { grid-column: 2; grid-row: 2; background: #334155; }
+    .dpad-right { grid-column: 3; grid-row: 2; border-radius: 0 5px 5px 0; }
+    .dpad-down { grid-column: 2; grid-row: 3; border-radius: 0 0 5px 5px; }
 
-        #joystick-stick {
-            width: 50px;
-            height: 50px;
-            background: radial-gradient(circle, #38bdf8, #0284c7);
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            position: absolute;
-            top: 35px;
-            left: 35px;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
-            pointer-events: none;
-        }
+    /* VIRTUAL JOYSTICK */
+    #joystick-box {
+      width: 102px;
+      height: 102px;
+      background: #1e293b;
+      border: 3px solid #38bdf8;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    }
+    #joystick-stick {
+      width: 42px;
+      height: 42px;
+      background: #38bdf8;
+      border: 2px solid #0284c7;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      pointer-events: none;
+      transition: transform 0.05s ease-out;
+    }
 
-        /* D-Pad Styling */
-        #dpad-zone {
-            display: grid;
-            grid-template-columns: repeat(3, 40px);
-            grid-template-rows: repeat(3, 40px);
-            gap: 3px;
-        }
+    /* BUTANG A & B */
+    .action-container { position: relative; }
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      transform: rotate(-15deg);
+    }
+    .btn-action {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: #dc2626;
+      border: 3px solid #991b1b;
+      color: white;
+      font-weight: bold;
+      font-size: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 0 #7f1d1d, inset 0 2px 4px rgba(255,255,255,0.3);
+      cursor: pointer;
+      position: relative;
+      touch-action: manipulation;
+    }
+    .btn-action:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #7f1d1d;
+    }
+    .btn-label-sub { font-size: 0.48rem; color: #fecdd3; }
 
-        .dbtn {
-            background: rgba(30, 41, 59, 0.7);
-            border: 2px solid #38bdf8;
-            color: #38bdf8;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        .dbtn:active { background: #0284c7; color: white; }
+    /* META BUTTONS */
+    .meta-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+    }
+    .btn-pill-box { display: flex; flex-direction: column; align-items: center; position: relative; }
+    .btn-pill {
+      width: 42px; height: 12px;
+      background: #475569;
+      border-radius: 10px;
+      transform: rotate(-25deg);
+      cursor: pointer;
+      border: 1px solid #1e293b;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.2);
+    }
+    .btn-pill:active { background: #1e293b; }
+    .pill-label {
+      font-size: 0.58rem;
+      color: #cbd5e1;
+      text-align: center;
+      margin-top: 3px;
+      font-weight: bold;
+    }
 
-        /* Action Buttons A & B */
-        .btn-action-container {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .btn-round {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            border: 3px solid #ffffff;
-            font-weight: 900;
-            font-size: 1.2rem;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
-            cursor: pointer;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
-        }
-
-        .btn-b { background: linear-gradient(145deg, #ef4444, #991b1b); }
-        .btn-b:active { background: #dc2626; transform: scale(0.95); }
-
-        .btn-a { background: linear-gradient(145deg, #10b981, #047857); }
-        .btn-a:active { background: #059669; transform: scale(0.95); }
-
-        /* Meta Top Utility Buttons */
-        .meta-bar {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            display: flex;
-            gap: 10px;
-            pointer-events: auto;
-            z-index: 25;
-        }
-
-        .btn-meta {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid #a855f7;
-            color: #e2e8f0;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-        }
-        .btn-meta:hover { background: #6b21a8; }
-
-        /* Modals and UI Overlays */
-        .modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.92);
-            backdrop-filter: blur(6px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            padding: 20px;
-        }
-
-        .modal-card {
-            background: linear-gradient(145deg, #1e1b4b, #0f172a);
-            border: 3px solid #f59e0b;
-            border-radius: 20px;
-            padding: 24px;
-            width: 100%;
-            max-width: 550px;
-            box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
-            text-align: center;
-            color: #f8fafc;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-title {
-            font-size: 1.6rem;
-            color: #fbbf24;
-            margin-bottom: 12px;
-            font-weight: 900;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.8);
-        }
-
-        .modal-desc {
-            font-size: 0.95rem;
-            color: #cbd5e1;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .btn-primary {
-            background: linear-gradient(145deg, #22c55e, #15803d);
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
-            margin: 6px;
-            transition: all 0.2s;
-        }
-        .btn-primary:active { transform: scale(0.96); }
-
-        .btn-secondary {
-            background: linear-gradient(145deg, #64748b, #334155);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 6px;
-        }
-
-        .btn-back {
-            background: linear-gradient(145deg, #ef4444, #991b1b);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 6px;
-        }
-
-        /* Inputs & Options */
-        input[type="text"] {
-            width: 80%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 2px solid #38bdf8;
-            background: #0f172a;
-            color: white;
-            font-size: 1.1rem;
-            text-align: center;
-            margin-bottom: 15px;
-            outline: none;
-        }
-
-        .diff-grid, .ctrl-grid {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .btn-option {
-            flex: 1;
-            min-width: 120px;
-            padding: 14px;
-            border-radius: 12px;
-            border: 2px solid #475569;
-            background: #1e293b;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-option.selected {
-            border-color: #fbbf24;
-            background: #b45309;
-            box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
-        }
-
-        /* Scoreboard Tabs */
-        .tab-container {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        .tab-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid #475569;
-            background: #0f172a;
-            color: #94a3b8;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .tab-btn.active {
-            background: #2563eb;
-            color: white;
-            border-color: #60a5fa;
-        }
-
-        table.score-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        table.score-table th, table.score-table td {
-            padding: 8px;
-            border-bottom: 1px solid #334155;
-            font-size: 0.9rem;
-        }
-        table.score-table th { color: #fbbf24; }
-
-        /* Countdown overlay */
-        #countdown-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 80;
-            pointer-events: none;
-        }
-        #countdown-text {
-            font-size: 6rem;
-            font-weight: 900;
-            color: #fbbf24;
-            text-shadow: 0 0 30px #f59e0b;
-            animation: pop-num 0.8s ease-out infinite;
-        }
-        @keyframes pop-num {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* Rules list */
-        .rules-list {
-            text-align: left;
-            font-size: 0.88rem;
-            background: #0f172a;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #334155;
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-        .rules-list li { margin-left: 20px; margin-bottom: 6px; }
-
-        .hidden { display: none !important; }
-    </style>
+    #keyboard-guide {
+      margin-top: 15px;
+      background: #1e293b;
+      border: 2px solid #334155;
+      padding: 10px 14px;
+      border-radius: 8px;
+      max-width: 370px;
+      width: 100%;
+      color: #cbd5e1;
+      font-size: 0.68rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 12px;
+      margin-top: 5px;
+    }
+    .guide-item span {
+      background: #38bdf8;
+      color: #0f172a;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+  </style>
 </head>
-<body>
+<body onclick="initAudio(); startBGM();">
 
-<div id="gameboy-container">
-    <!-- Header -->
-    <div class="gb-header">
-        <div class="gb-title">🎮 FSTB ZOMBIE ESCAPE v3.0</div>
-        <div class="gb-led">
-            <div class="led-light"></div>
-            <span>POWER</span>
+  <div id="gameboy">
+    <div id="screen-bezel">
+      <div class="screen-header">
+        <div><span class="power-led"></span>POWER</div>
+        <div style="font-size:0.55rem;">GBA RETRO ENGINE</div>
+      </div>
+
+      <!-- Canvas LCD -->
+      <div id="canvas-container">
+        <!-- BAR STATUS HUD -->
+        <div id="gb-status">
+          <div>STG:<span id="room-num" style="color:#f59e0b">1</span>/5</div>
+          <div>MATA:<span id="score-num" style="color:#4ade80">0</span></div>
+          <div>MSA:<span id="game-timer-display" style="color:#38bdf8">00:00</span></div>
+          <div>PLR:<span id="ammo-num" style="color:#fbbf24">0/3</span></div>
+          <div>HP:<span id="lives-num" style="color:#ef4444">❤️❤️❤️❤️❤️</span></div>
+          <div>PTR:<span id="door-status" style="color:#ef4444">KUNCI</span></div>
         </div>
-    </div>
+        <canvas id="gameCanvas" width="300" height="210"></canvas>
 
-    <!-- Canvas Wrapper -->
-    <div id="canvas-wrapper">
-        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        <div id="game-notice">🔑 KUNCI BERTUKAR LOKASI!</div>
 
-        <!-- Meta Buttons Overlay -->
-        <div class="meta-bar">
-            <button class="btn-meta" id="btnSound">🔊 SOUND ON</button>
-            <button class="btn-meta" id="btnScoreboardTop">🏆 TOP 5</button>
-            <button class="btn-meta" id="btnResetGame">🔄 RESET</button>
+        <!-- PAGE 1: SKRIN MULA & NAMA PEMAIN -->
+        <div id="start-modal" class="active">
+          <div class="vic-title" style="font-size: 0.9rem; margin-bottom:6px;">🧟 FSTB ZOMBIE ESCAPE 🗝️</div>
+          <div class="vic-text" style="color:#cbd5e1; margin-bottom:8px;">
+            Masukkan Nama Pemain:
+          </div>
+          <input type="text" id="player-name-input" class="term-input" style="width:85%; margin-bottom:10px; font-size:0.85rem;" placeholder="NAMA PEMAIN" maxlength="10" value="Pemain 1" oninput="playTypingSFX()" onclick="initAudio(); startBGM();">
+          
+          <div class="term-btn-group" style="width:85%; flex-direction:column; gap:5px;">
+            <button class="term-btn" onclick="openGuideModal()">▶️ TERUSKAN</button>
+            <button class="term-btn" style="background:#38bdf8; color:#0f172a;" onclick="openLeaderboard()">📜 SCOREBOARD</button>
+          </div>
         </div>
 
-        <!-- Touch Controls Overlay -->
-        <div class="touch-overlay" id="touchOverlay">
-            <div class="control-group-left">
-                <!-- Joystick -->
-                <div id="joystick-zone" class="hidden">
-                    <div id="joystick-stick"></div>
-                </div>
-                <!-- D-Pad -->
-                <div id="dpad-zone" class="hidden">
-                    <div></div><div class="dbtn" id="dpad-up">▲</div><div></div>
-                    <div class="dbtn" id="dpad-left">◄</div><div></div><div class="dbtn" id="dpad-right">►</div>
-                    <div></div><div class="dbtn" id="dpad-down">▼</div><div></div>
-                </div>
+        <!-- PAGE 2: PANDUAN CARA MAIN -->
+        <div id="guide-modal">
+          <div class="vic-title" style="font-size: 0.8rem; margin-bottom:4px;">📜 MISI & PERATURAN</div>
+          <div class="vic-details" style="font-size: 0.52rem; line-height: 1.35; margin-bottom: 8px; padding: 6px 8px;">
+            <div style="color:#fbbf24; font-weight:bold;">🎯 MISI UTAMA:</div>
+            <div>• Escape 5 Stage Bilik Berzombie!</div>
+            <div style="color:#4ade80; font-weight:bold; margin-top:3px;">🔄 PERATURAN ITEM & SOALAN:</div>
+            <div>• 🗝️ <b>Kunci</b>: Jawab soalan FSTB -> Pintu Buka!</div>
+            <div>• 📦 <b>Peluru</b>: Jawab soalan FSTB -> Dpt 3 Peluru!</div>
+            <div>• Baki peluru dibolehkan bawa ke Stage seterusnya.</div>
+            <div>• Peluru habis? Imej peluru baharu akan muncul!</div>
+            <div style="color:#ef4444; font-weight:bold; margin-top:3px;">👹 BOSS STAGE 5:</div>
+            <div>• Zombi BOSS (5 HP & Laju 1.2)!</div>
+          </div>
+          <div class="term-btn-group" style="width:90%;">
+            <button class="term-btn" onclick="openControlSelection()">▶️ PILIH KAWALAN</button>
+          </div>
+        </div>
+
+        <!-- PAGE 3: PILIHAN MODE KAWALAN -->
+        <div id="control-modal">
+          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:6px;">🕹️ PILIH MODE KAWALAN</div>
+          <div class="vic-text" style="color:#cbd5e1; margin-bottom:10px;">Pilih gaya kawalan pergerakan:</div>
+          <div class="term-btn-group" style="flex-direction:column; gap:6px; width:90%;">
+            <button class="term-btn" style="background:#38bdf8; color:#0f172a;" onclick="setControlMode('joystick')">🕹️ VIRTUAL JOYSTICK (SENTUH 360°)</button>
+            <button class="term-btn" style="background:#22c55e; color:#052e16;" onclick="setControlMode('dpad')">🎛️ D-PAD BUTTONS (BUTANG 4-ARAH)</button>
+          </div>
+        </div>
+
+        <!-- PAGE SCOREBOARD -->
+        <div id="leaderboard-modal">
+          <div class="vic-title" style="font-size: 0.85rem; margin-bottom:4px;">🏆 CARTA SCOREBOARD TOP 5</div>
+          <table class="sb-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>NAMA</th>
+                <th>SKOR</th>
+                <th>MASA</th>
+              </tr>
+            </thead>
+            <tbody id="sb-tbody"></tbody>
+          </table>
+          <div class="term-btn-group" style="width:90%; gap:4px;">
+            <button class="term-btn term-btn-close" onclick="closeLeaderboard()">TUTUP [B]</button>
+            <button class="term-btn" style="background:#ef4444; color:#ffffff; max-width:85px;" onclick="resetLeaderboard()">PADAM</button>
+          </div>
+        </div>
+
+        <!-- Terminal Modal Soalan -->
+        <div id="terminal-modal">
+          <div class="term-title" id="term-title-text">🗝️ KUNCI BILIK <span id="modal-room">1</span></div>
+          <div class="term-timer">⏳ MASA: <span id="timer-sec">30</span>s</div>
+          <div class="term-warning" id="term-warn-text">PAUSKAN ZOMBIE! JAWAB SEBELUM MASA TAMAT.</div>
+          <div class="term-question" id="modal-q">Cari FSTB...</div>
+          <input type="number" id="passcode-input" class="term-input" placeholder="JAWAPAN FSTB" autocomplete="off" oninput="playTypingSFX()">
+          <div class="term-btn-group">
+            <button class="term-btn" onclick="submitPasscode()">[ A ] HANTAR (ENTER)</button>
+            <button class="term-btn term-btn-close" onclick="closeTerminal()">[ B ] TUTUP (SHIFT)</button>
+          </div>
+        </div>
+
+        <!-- PAGE VICTORY -->
+        <div id="victory-modal">
+          <div class="vic-title">🏆 VICTORY! SYABAS! 🏆</div>
+          <div class="vic-text">Pemain: <b id="vic-player-name" style="color:#fbbf24;">Pemain 1</b></div>
+          <div class="vic-details">
+            <div>• Masa Selesai: <span id="vic-total-time" style="color:#38bdf8">00:00</span></div>
+            <div>• Mata Asal: <span id="vic-base-score" style="color:#4ade80">0</span> PTS</div>
+            <div>• Penalti Nyawa: -<span id="vic-penalty" style="color:#ef4444">0</span> PTS</div>
+          </div>
+          <div class="vic-score">JUMLAH MATA AKHIR: <span id="final-score" style="color:#fbbf24;">0</span> PTS</div>
+          <!-- PAPARAN KEDUDUKAN STATIK -->
+          <div id="vic-rank-badge" style="font-size:0.62rem; color:#4ade80; font-weight:bold; margin-bottom:8px; background:#0f172a; padding:4px 8px; border-radius:4px; border:1px solid #4ade80;">
+            🏆 TAHNIAH! KEDUDUKAN KE-1 DALAM CARTA TOP 5
+          </div>
+          <div class="term-btn-group" style="margin-top:2px; flex-direction:column; gap:4px;">
+            <div style="display:flex; gap:4px; width:100%;">
+              <button class="term-btn" style="background:#22c55e; color:#052e16;" onclick="replaySamePlayer()">🔄 MAIN SEMULA</button>
+              <button class="term-btn" style="background:#38bdf8; color:#0f172a;" onclick="newPlayerModal()">👤 PEMAIN BAHARU</button>
             </div>
-
-            <div class="control-group-right">
-                <div class="btn-action-container">
-                    <div class="btn-round btn-b" id="btnShoot">B</div>
-                    <div class="btn-round btn-a" id="btnAction">A</div>
-                </div>
-            </div>
+            <button class="term-btn" style="background:#f59e0b; color:#0f172a;" onclick="openLeaderboard()">📜 SCOREBOARD</button>
+          </div>
         </div>
 
-        <!-- Countdown Overlay -->
-        <div id="countdown-overlay" class="hidden">
-            <div id="countdown-text">3</div>
+        <!-- PAGE GAME OVER -->
+        <div id="gameover-modal">
+          <div class="go-title">💀 GAME OVER 💀</div>
+          <div class="vic-text">Nyawa anda telah habis ditangkap oleh Zombie!</div>
+          <div class="term-btn-group" style="margin-top:10px; width:90%; gap:5px;">
+            <button class="term-btn" style="background:#22c55e; color:#052e16;" onclick="replaySamePlayer()">🔄 MAIN SEMULA</button>
+            <button class="term-btn term-btn-close" onclick="newPlayerModal()">👤 PEMAIN BAHARU</button>
+          </div>
         </div>
+
+      </div>
+
+      <div class="brand-title">FSTB <span>ZOMBIE ESCAPE</span></div>
     </div>
-</div>
 
-<!-- ================= MODALS ================= -->
+    <!-- Kawalan Emulator -->
+    <div id="controls">
+      <div class="dpad-container">
+        <div id="dpad-ui" class="dpad">
+          <div class="btn-dpad dpad-up" onmousedown="startMove(0,-1)" onmouseup="stopMove()" ontouchstart="startMove(0,-1)" ontouchend="stopMove()">▲</div>
+          <div class="btn-dpad dpad-left" onmousedown="startMove(-1,0)" onmouseup="stopMove()" ontouchstart="startMove(-1,0)" ontouchend="stopMove()">◄</div>
+          <div class="btn-dpad dpad-center"></div>
+          <div class="btn-dpad dpad-right" onmousedown="startMove(1,0)" onmouseup="stopMove()" ontouchstart="startMove(1,0)" ontouchend="stopMove()">►</div>
+          <div class="btn-dpad dpad-down" onmousedown="startMove(0,1)" onmouseup="stopMove()" ontouchstart="startMove(0,1)" ontouchend="stopMove()">▼</div>
+        </div>
 
-<!-- Modal 1: Name Input -->
-<div id="modalScreen1" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-title">🧟 FSTB ZOMBIE ESCAPE</div>
-        <div class="modal-desc">Sila masukkan nama anda untuk mendaftar identiti pemain.</div>
-        <input type="text" id="playerNameInput" maxlength="10" placeholder="Nama Pemain..." value="Pemain 1">
-        <br>
-        <button class="btn-primary" id="btnToScreen2">TERUSKAN ➔</button>
+        <div id="joystick-ui" style="display:none;">
+          <div id="joystick-box">
+            <div id="joystick-stick"></div>
+          </div>
+        </div>
+
+        <div class="kb-hint" style="bottom:-18px; left:18px;">WASD / 🠄🠅🠆C</div>
+      </div>
+
+      <div class="action-container">
+        <div class="action-buttons">
+          <div class="btn-action" 
+               onclick="useButtonB()" 
+               ontouchstart="event.preventDefault(); useButtonB();" 
+               ontouchend="event.preventDefault(); unlockShoot();" 
+               onmouseup="unlockShoot();" 
+               onmouseleave="unlockShoot();">
+            B
+            <span class="btn-label-sub">SHOOT</span>
+            <div class="kb-hint" style="top:-18px; left:-2px;">SHIFT / J</div>
+          </div>
+          <div class="btn-action" 
+               onclick="useButtonA()" 
+               ontouchstart="event.preventDefault(); useButtonA();">
+            A
+            <span class="btn-label-sub">AMBIL</span>
+            <div class="kb-hint" style="top:-18px; right:-2px;">SPACE / E</div>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
 
-<!-- Modal 2: Select Difficulty -->
-<div id="modalScreen2" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div class="modal-title">🎯 PILIH TAHAP KESUKARAN</div>
-        <div class="modal-desc">Pilih tahap kesukaran soalan Matematik FSTB:</div>
-        <div class="diff-grid">
-            <button class="btn-option selected" data-diff="easy">🟢 EASY<br><small>(Nombor < 20)</small></button>
-            <button class="btn-option" data-diff="medium">🟡 MEDIUM<br><small>(Nombor < 50)</small></button>
-            <button class="btn-option" data-diff="hard">🔴 HARD<br><small>(Nombor 30-100)</small></button>
-        </div>
-        <div>
-            <button class="btn-back" id="btnBackTo1">⬅️ KEMBALI</button>
-            <button class="btn-primary" id="btnToScreen3">TERUSKAN ➔</button>
-        </div>
+    <div class="meta-buttons">
+      <div class="btn-pill-box">
+        <div class="btn-pill" onclick="restartGame()"></div>
+        <div class="pill-label">RESET</div>
+        <div class="kb-hint" style="bottom:-15px;">[R]</div>
+      </div>
+      <div class="btn-pill-box">
+        <div class="btn-pill" onclick="toggleBGM()"></div>
+        <div class="pill-label">SOUND</div>
+        <div class="kb-hint" style="bottom:-15px;">[M]</div>
+      </div>
+      <div class="btn-pill-box">
+        <div class="btn-pill" onclick="useButtonA()"></div>
+        <div class="pill-label">START</div>
+        <div class="kb-hint" style="bottom:-15px;">[ENTER]</div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Modal 3: Select Controls -->
-<div id="modalScreen3" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div class="modal-title">🕹️ PILIH MOD KAWALAN</div>
-        <div class="modal-desc">Pilih gaya kawalan kegemaran anda:</div>
-        <div class="ctrl-grid">
-            <button class="btn-option selected" data-ctrl="joystick">🕹️ Virtual Joystick<br><small>(360° Multi-Touch)</small></button>
-            <button class="btn-option" data-ctrl="dpad">🎛️ D-Pad 4-Arah<br><small>(Butang Arah Traditional)</small></button>
-        </div>
-        <div>
-            <button class="btn-back" id="btnBackTo2">⬅️ KEMBALI</button>
-            <button class="btn-primary" id="btnToScreen4">TERUSKAN ➔</button>
-        </div>
+  <div id="keyboard-guide">
+    <div style="font-weight:bold; color:#f59e0b; text-align:center;">⌨️ PANDUAN KAWALAN KEYBOARD (PC):</div>
+    <div class="guide-grid">
+      <div class="guide-item">🏃 Gerak: <span>W A S D</span> / <span>🠄 🠅 🠆 C</span></div>
+      <div class="guide-item">🗝️ Ambil Item: <span>SPACE</span> / <span>E</span></div>
+      <div class="guide-item">🔫 Tembak: <span>SHIFT</span> / <span>J</span></div>
+      <div class="guide-item">🎵 Sound: <span>M</span> | Reset: <span>R</span></div>
     </div>
-</div>
+  </div>
 
-<!-- Modal 4: Instructions & Start -->
-<div id="modalScreen4" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div class="modal-title">📜 PERATURAN & PERSEDIAAN</div>
-        <ul class="rules-list">
-            <li><b>Misi Utama:</b> Loloskan diri menerusi 5 Stage Bilik Berzombi!</li>
-            <li><b>🗝️ Kunci Pintu:</b> Jawab soalan FSTB (30s) untuk membuka pintu.</li>
-            <li><b>📦 Kotak Peluru:</b> Jawab soalan FSTB untuk dapat 3 peluru. Peluru baharu akan muncul apabila habis (0/3).</li>
-            <li><b>❤️ Item Nyawa:</b> 1 item nyawa disediakan setiap stage (+1 HP). Hanya 1 kali percubaan per stage!</li>
-            <li><b>👹 Stage 5 BOSS:</b> Zombi gergasi (5 HP) dengan hentakan kaki berat!</li>
-            <li><b>🕹️ Kawalan:</b> Gerakkan watak & tekan <b>[B]</b> untuk menembak, <b>[A]</b> untuk tindakan/interaksi.</li>
-        </ul>
-        <div>
-            <button class="btn-back" id="btnBackTo3">⬅️ KEMBALI</button>
-            <button class="btn-primary" id="btnStartGame">▶️ MULA PERMAINAN</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Question (FSTB Challenge) -->
-<div id="modalQuestion" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div class="modal-title" id="qTitle">🗝️ CABARAN FSTB</div>
-        <div class="modal-desc" id="qDesc">Jawab soalan ini dalam masa 30 saat untuk mendapatkan item!</div>
-        <div style="font-size: 1.8rem; font-weight: bold; color: #fbbf24; margin: 15px 0;" id="qQuestionText">
-            FSTB bagi (12, 18) = ?
-        </div>
-        <div style="font-size: 1.2rem; color: #ef4444; font-weight: bold; margin-bottom: 15px;" id="qTimerText">
-            ⏳ Masa Baki: 30s
-        </div>
-        <input type="number" id="qAnswerInput" placeholder="Masukkan Jawapan..." style="width:60%; padding:10px; font-size:1.2rem; text-align:center;">
-        <br>
-        <button class="btn-primary" id="btnSubmitAnswer">HANTAR JAWAPAN</button>
-    </div>
-</div>
-
-<!-- Modal Scoreboard -->
-<div id="modalScoreboard" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div class="modal-title">🏆 TOP 5 SCOREBOARD</div>
-        <div class="tab-container">
-            <button class="tab-btn active" data-tab="easy">🟢 EASY</button>
-            <button class="tab-btn" data-tab="medium">🟡 MEDIUM</button>
-            <button class="tab-btn" data-tab="hard">🔴 HARD</button>
-        </div>
-        <div id="scoreboardTableContainer">
-            <!-- Table will be injected dynamically -->
-        </div>
-        <br>
-        <button class="btn-secondary" id="btnCloseScoreboard">TUTUP</button>
-    </div>
-</div>
-
-<!-- Modal Game Over / Victory -->
-<div id="modalEndGame" class="modal-overlay hidden">
-    <div class="modal-card">
-        <div class="modal-title" id="endTitle">🎉 KEMENANGAN!</div>
-        <div class="modal-desc" id="endDesc">Tahniah! Anda berjaya meloloskan diri dari kesemua 5 Stage!</div>
-        <div style="background:#0f172a; padding:15px; border-radius:10px; margin-bottom:15px; text-align:left; font-size:0.95rem;">
-            <div>👤 <b>Pemain:</b> <span id="endPlayerName">-</span></div>
-            <div>🎯 <b>Difficulty:</b> <span id="endDiff">-</span></div>
-            <div>⭐ <b>Mata Akhir:</b> <span id="endScore">0</span> PTS</div>
-            <div>⏱️ <b>Masa Diambil:</b> <span id="endTime">00:00</span></div>
-        </div>
-        <div>
-            <button class="btn-primary" id="btnReplay">🔄 MAIN SEMULA</button>
-            <button class="btn-secondary" id="btnNewPlayer">👤 PEMAIN BAHARU</button>
-        </div>
-    </div>
-</div>
-
-<!-- ================= JAVASCRIPT ENGINE ================= -->
 <script>
-/* Audio Engine using Web Audio API */
-class SoundEngine {
-    constructor() {
-        this.ctx = null;
-        this.bgmNode = null;
-        this.bgmGain = null;
-        this.isMuted = false;
-        this.bgmVolume = 0.15;
-    }
-
-    init() {
-        if (!this.ctx) {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            this.ctx = new AudioCtx();
-        }
-        if (this.ctx.state === 'suspended') {
-            this.ctx.resume();
-        }
-    }
-
-    stopAllAudio() {
-        if (this.bgmGain && this.ctx) {
-            this.bgmGain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.1);
-            setTimeout(() => {
-                if (this.bgmNode) {
-                    try { this.bgmNode.stop(); } catch(e){}
-                    this.bgmNode = null;
-                }
-            }, 120);
-        }
-    }
-
-    playBeep(freq = 440, type = 'sine', duration = 0.15, vol = 0.3) {
-        if (this.isMuted) return;
-        this.init();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
-    }
-
-    duckBGM(duration = 0.4) {
-        if (this.bgmGain && this.ctx && !this.isMuted) {
-            this.bgmGain.gain.setValueAtTime(0.03, this.ctx.currentTime);
-            this.bgmGain.gain.linearRampToValueAtTime(this.bgmVolume, this.ctx.currentTime + duration);
-        }
-    }
-
-    playFootstep() {
-        if (this.isMuted) return;
-        this.duckBGM(0.2);
-        this.playBeep(120, 'triangle', 0.05, 0.15);
-    }
-
-    playBossThud() {
-        if (this.isMuted) return;
-        this.duckBGM(0.5);
-        this.playBeep(60, 'sine', 0.3, 0.6);
-    }
-
-    playShoot() {
-        if (this.isMuted) return;
-        this.duckBGM(0.3);
-        this.playBeep(800, 'sawtooth', 0.1, 0.3);
-    }
-
-    playZombieGroan() {
-        if (this.isMuted) return;
-        this.duckBGM(0.6);
-        this.playBeep(90, 'sawtooth', 0.4, 0.25);
-    }
-
-    playHit() {
-        if (this.isMuted) return;
-        this.playBeep(150, 'square', 0.25, 0.4);
-    }
-
-    playBGM() {
-        if (this.isMuted) return;
-        this.init();
-        this.stopAllAudio();
-
-        this.bgmGain = this.ctx.createGain();
-        this.bgmGain.gain.setValueAtTime(this.bgmVolume, this.ctx.currentTime);
-        this.bgmGain.connect(this.ctx.destination);
-
-        // Simple procedural chiptune loop generator
-        const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-        let step = 0;
-
-        const playNextNote = () => {
-            if (!this.bgmGain || this.isMuted) return;
-            const osc = this.ctx.createOscillator();
-            const noteGain = this.ctx.createGain();
-            osc.type = 'square';
-            const freq = notes[step % notes.length];
-            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-            noteGain.gain.setValueAtTime(0.04, this.ctx.currentTime);
-            noteGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
-            osc.connect(noteGain);
-            noteGain.connect(this.bgmGain);
-            osc.start();
-            osc.stop(this.ctx.currentTime + 0.2);
-
-            step++;
-            this.bgmTimeout = setTimeout(playNextNote, 250);
-        };
-
-        playNextNote();
-    }
-}
-
-const audio = new SoundEngine();
-
-/* Game State Variable Definition */
-const state = {
-    playerName: "Pemain 1",
-    difficulty: "easy", // easy, medium, hard
-    controlType: "joystick", // joystick, dpad
-    stage: 1,
-    maxStages: 5,
-    score: 0,
-    startTime: 0,
-    elapsedSeconds: 0,
-    timerInterval: null,
-    isPaused: false,
-    isGameOver: false,
-
-    // Player Stats
-    player: {
-        x: 100,
-        y: 250,
-        radius: 18,
-        speed: 3.2,
-        hp: 5,
-        maxHp: 5,
-        ammo: 3,
-        maxAmmo: 3,
-        hasKey: false,
-        facing: 'right',
-        animFrame: 0,
-        isMoving: false
-    },
-
-    // Input state
-    keys: { up: false, down: false, left: false, right: false },
-    joystickVector: { x: 0, y: 0 },
-
-    // Game Objects in current room
-    zombies: [],
-    bullets: [],
-    keyItem: null,
-    ammoItem: null,
-    heartItem: null,
-    door: null,
-    obstacles: [],
-
-    // Item Question State
-    activeQuestionItem: null, // 'key', 'ammo', 'heart'
-    qTimer: 30,
-    qTimerInterval: null,
-    currentFstbAns: 0
-};
-
-// Canvas Setup
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-/* FSTB Math Question Generator */
-function gcd(a, b) {
-    return b === 0 ? a : gcd(b, a % b);
+// ==========================================
+// NOTIFIKASI BANNER RETRO DALAM GAME
+// ==========================================
+let noticeTimeout = null;
+function showGameNotice(msg, color='#f59e0b', duration=2500) {
+  const notice = document.getElementById("game-notice");
+  notice.innerText = msg;
+  notice.style.borderColor = color;
+  notice.style.color = color;
+  notice.style.display = "block";
+  if (noticeTimeout) clearTimeout(noticeTimeout);
+  noticeTimeout = setTimeout(() => {
+    notice.style.display = "none";
+  }, duration);
 }
 
-function generateFstbQuestion(diff) {
-    let min, max;
-    if (diff === 'easy') { min = 4; max = 20; }
-    else if (diff === 'medium') { min = 10; max = 50; }
-    else { min = 30; max = 100; }
+// ==========================================
+// SYSTEM AUDIOS (WEB AUDIO API - STABLE RAMP)
+// ==========================================
+let audioCtx = null;
+let bgmInterval = null;
+let bgmEnabled = true;
 
-    let num1 = Math.floor(Math.random() * (max - min + 1)) + min;
-    let num2 = Math.floor(Math.random() * (max - min + 1)) + min;
-    let ans = gcd(num1, num2);
+let activeOscillators = [];
+let soundTimeouts = [];
 
-    return { num1, num2, ans };
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
 }
 
-/* Stage Maps & Initializers */
-function initStage(stageNum) {
-    state.stage = stageNum;
-    state.player.x = 80;
-    state.player.y = 250;
-    state.player.hasKey = false;
-    state.zombies = [];
-    state.bullets = [];
+function stopAllAudio() {
+  stopBGM();
+  soundTimeouts.forEach(t => clearTimeout(t));
+  soundTimeouts = [];
+  
+  activeOscillators.forEach(osc => {
+    try {
+      osc.stop();
+      osc.disconnect();
+    } catch(e){}
+  });
+  activeOscillators = [];
+}
 
-    // Obstacles
-    state.obstacles = [];
-    if (stageNum === 1) {
-        state.obstacles = [{ x: 350, y: 150, w: 80, h: 200 }];
-    } else if (stageNum === 2) {
-        // Corrected Stage 2 Obstacles and Spawn space
-        state.obstacles = [{ x: 300, y: 80, w: 60, h: 140 }, { x: 300, y: 280, w: 60, h: 140 }];
-    } else if (stageNum === 3) {
-        state.obstacles = [{ x: 250, y: 120, w: 70, h: 260 }, { x: 450, y: 120, w: 70, h: 260 }];
-    } else if (stageNum === 4) {
-        state.obstacles = [{ x: 200, y: 100, w: 100, h: 100 }, { x: 450, y: 300, w: 100, h: 100 }];
-    } else if (stageNum === 5) {
-        // Original Stage 5 Obstacle layout preserved
-        state.obstacles = [{ x: 300, y: 100, w: 80, h: 120 }, { x: 300, y: 280, w: 80, h: 120 }];
+function playTone(freq, type, duration, volume = 0.1) {
+  if (!audioCtx || !bgmEnabled) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+
+    activeOscillators.push(osc);
+    osc.onended = () => {
+      const idx = activeOscillators.indexOf(osc);
+      if (idx > -1) activeOscillators.splice(idx, 1);
+    };
+  } catch(e){}
+}
+
+const bgmNotes = [
+  261.63, 329.63, 392.00, 523.25, 392.00, 329.63,
+  293.66, 349.23, 440.00, 587.33, 440.00, 349.23,
+  329.63, 392.00, 493.88, 659.25, 493.88, 392.00,
+  349.23, 440.00, 523.25, 698.46, 523.25, 440.00
+];
+let bgmNoteIndex = 0;
+
+function stopBGM() {
+  if (bgmInterval) {
+    clearInterval(bgmInterval);
+    bgmInterval = null;
+  }
+}
+
+function startBGM() {
+  if (isVictoryOpen || isGameOver || bgmInterval) return;
+  bgmInterval = setInterval(() => {
+    if (bgmEnabled && audioCtx && audioCtx.state === 'running' && !isVictoryOpen && !isGameOver) {
+      const note = bgmNotes[bgmNoteIndex];
+      playTone(note, 'square', 0.12, 0.03);
+      bgmNoteIndex = (bgmNoteIndex + 1) % bgmNotes.length;
     }
+  }, 180);
+}
 
-    // Door Position
-    state.door = { x: 730, y: 200, w: 40, h: 100, isOpen: false };
+function playTypingSFX() {
+  initAudio();
+  startBGM();
+  playTone(500 + Math.random() * 250, 'triangle', 0.03, 0.05);
+}
 
-    // Spawn Items
-    spawnKeyItem();
-    spawnAmmoItem();
-    spawnHeartItem();
+// MARIO VICTORY FANFARE (BEBAS BUNYI BINGIT)
+function playVictoryFanfare() {
+  stopAllAudio();
+  if (!bgmEnabled) return;
 
-    // Spawn Zombies
-    let zCount = stageNum + 1;
-    if (stageNum === 5) {
-        // Stage 5 BOSS Zombie
-        state.zombies.push({
-            x: 650, y: 250, r: 35, speed: 1.25, hp: 5, maxHp: 5, isBoss: true, animFrame: 0
-        });
+  const notes = [
+    {f: 392, d: 0.12, delay: 0},
+    {f: 523.25, d: 0.12, delay: 130},
+    {f: 659.25, d: 0.12, delay: 260},
+    {f: 783.99, d: 0.12, delay: 390},
+    {f: 1046.50, d: 0.25, delay: 520},
+    {f: 1318.51, d: 0.25, delay: 780},
+    {f: 1567.98, d: 0.40, delay: 1040}
+  ];
+
+  notes.forEach(n => {
+    let t = setTimeout(() => {
+      if (isVictoryOpen) {
+        playTone(n.f, 'triangle', n.d, 0.12);
+      }
+    }, n.delay);
+    soundTimeouts.push(t);
+  });
+}
+
+function toggleBGM() {
+  initAudio();
+  bgmEnabled = !bgmEnabled;
+  playSFX('button');
+  if (bgmEnabled) startBGM();
+  else stopAllAudio();
+}
+
+function playSFX(type) {
+  initAudio();
+  if (!bgmEnabled) return;
+  if (type === 'button') {
+    playTone(440, 'square', 0.05, 0.08);
+  } else if (type === 'correct') {
+    playTone(523.25, 'triangle', 0.1, 0.15);
+    let t1 = setTimeout(() => playTone(659.25, 'triangle', 0.1, 0.15), 100);
+    let t2 = setTimeout(() => playTone(783.99, 'triangle', 0.2, 0.15), 200);
+    soundTimeouts.push(t1, t2);
+  } else if (type === 'wrong') {
+    playTone(180, 'sawtooth', 0.15, 0.15);
+    let t = setTimeout(() => playTone(130, 'sawtooth', 0.25, 0.15), 150);
+    soundTimeouts.push(t);
+  } else if (type === 'shoot') {
+    playTone(800, 'square', 0.04, 0.12);
+    let t = setTimeout(() => playTone(300, 'sawtooth', 0.08, 0.12), 40);
+    soundTimeouts.push(t);
+  } else if (type === 'explosion') {
+    playTone(120, 'sawtooth', 0.2, 0.2);
+    let t = setTimeout(() => playTone(60, 'sawtooth', 0.3, 0.2), 100);
+    soundTimeouts.push(t);
+  } else if (type === 'door') {
+    playTone(300, 'square', 0.08, 0.1);
+    let t = setTimeout(() => playTone(450, 'square', 0.12, 0.1), 80);
+    soundTimeouts.push(t);
+  }
+}
+
+// ==========================================
+// BANK SOALAN MATEMATIK FSTB
+// ==========================================
+const questionPool = {
+  1: [
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 8 dan 12.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 6 dan 9.", code: "3" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 10 dan 15.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 12 dan 18.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 14 dan 21.", code: "7" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 16 dan 20.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 9 dan 15.", code: "3" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 10 dan 25.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 8 dan 20.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 15 dan 25.", code: "5" }
+  ],
+  2: [
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 18 dan 24.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 16 dan 24.", code: "8" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 30.", code: "10" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 21 dan 28.", code: "7" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 15 dan 30.", code: "15" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 32.", code: "8" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 18 dan 27.", code: "9" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 35.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 22 dan 33.", code: "11" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 12 dan 30.", code: "6" }
+  ],
+  3: [
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 36.", code: "12" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 28 dan 42.", code: "14" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 25 dan 40.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 30 dan 45.", code: "15" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 27 dan 36.", code: "9" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 32 dan 48.", code: "16" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 45.", code: "5" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 40.", code: "8" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 18 dan 42.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 21 dan 35.", code: "7" }
+  ],
+  4: [
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 30 dan 42.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 35 dan 49.", code: "7" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 32 dan 40.", code: "8" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 36 dan 45.", code: "9" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 20 dan 48.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 28 dan 49.", code: "7" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 36 dan 48.", code: "12" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 24 dan 44.", code: "4" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 30 dan 48.", code: "6" },
+    { q: "Cari Faktor Sepunya Terbesar (FSTB) bagi 26 dan 39.", code: "13" }
+  ],
+  5: [
+    { q: "Soalan BOSS! Cari FSTB bagi 36 dan 48.", code: "12" },
+    { q: "Soalan BOSS! Cari FSTB bagi 28 dan 42.", code: "14" },
+    { q: "Soalan BOSS! Cari FSTB bagi 30 dan 45.", code: "15" },
+    { q: "Soalan BOSS! Cari FSTB bagi 32 dan 48.", code: "16" },
+    { q: "Soalan BOSS! Cari FSTB bagi 25 dan 45.", code: "5" },
+    { q: "Soalan BOSS! Cari FSTB bagi 27 dan 45.", code: "9" },
+    { q: "Soalan BOSS! Cari FSTB bagi 35 dan 42.", code: "7" },
+    { q: "Soalan BOSS! Cari FSTB bagi 40 dan 48.", code: "8" },
+    { q: "Soalan BOSS! Cari FSTB bagi 24 dan 36.", code: "12" },
+    { q: "Soalan BOSS! Cari FSTB bagi 33 dan 44.", code: "11" }
+  ]
+};
+
+const keyPositions = [
+  { x: 150, y: 50 },
+  { x: 150, y: 160 },
+  { x: 220, y: 55 },
+  { x: 60, y: 160 },
+  { x: 150, y: 105 }
+];
+
+const roomObstacles = {
+  0: [{ x: 125, y: 85, w: 50, h: 30, type: 'table' }],
+  1: [
+    { x: 80, y: 55, w: 22, h: 22, type: 'barrel' },
+    { x: 140, y: 110, w: 28, h: 28, type: 'crate' },
+    { x: 200, y: 55, w: 22, h: 22, type: 'barrel' },
+    { x: 80, y: 135, w: 28, h: 28, type: 'crate' }
+  ],
+  2: [
+    { x: 140, y: 45, w: 35, h: 22, type: 'table' },
+    { x: 150, y: 125, w: 28, h: 28, type: 'crate' }
+  ],
+  3: [
+    { x: 75, y: 45, w: 25, h: 50, type: 'table' },
+    { x: 80, y: 125, w: 30, h: 30, type: 'crate' },
+    { x: 145, y: 85, w: 22, h: 22, type: 'barrel' },
+    { x: 190, y: 45, w: 22, h: 22, type: 'barrel' }
+  ],
+  4: [
+    { x: 80, y: 45, w: 24, h: 24, type: 'barrel' },
+    { x: 190, y: 140, w: 24, h: 24, type: 'barrel' }
+  ]
+};
+
+let currentRoom = 0;
+let totalScore = 0;
+let playerLives = 5;
+let playerAmmo = 0;
+let doorUnlocked = false;
+
+let isGameStarted = false;
+let isTerminalOpen = false;
+let activeModalType = 'key';
+let activeQuestion = null;
+
+let isVictoryOpen = false;
+let isGameOver = false;
+let selectedControl = 'dpad';
+
+let playerName = "Pemain 1";
+let totalGameSeconds = 0;
+let gameTimeTimer = null;
+
+let questionTimer = 30;
+let timerInterval = null;
+
+const player = { x: 40, y: 105, size: 10, speed: 2.2, facingX: 1, facingY: 0, animFrame: 0 };
+const keyObj = { x: 150, y: 50 };
+const ammoObj = { x: 100, y: 160, active: true };
+
+let door = { x: 260, y: 80, w: 18, h: 45, isVisible: false };
+
+let zombies = [];
+let bullets = [];
+
+function spawnRandomDoor() {
+  const wallPositions = [
+    { x: 260, y: Math.floor(Math.random() * 90) + 45, w: 18, h: 45 },
+    { x: Math.floor(Math.random() * 120) + 80, y: 22, w: 45, h: 18 },
+    { x: Math.floor(Math.random() * 120) + 80, y: 170, w: 45, h: 18 }
+  ];
+  
+  const chosen = wallPositions[Math.floor(Math.random() * wallPositions.length)];
+  door.x = chosen.x;
+  door.y = chosen.y;
+  door.w = chosen.w;
+  door.h = chosen.h;
+  door.isVisible = true;
+}
+
+// ==========================================
+// KAWALAN VIRTUAL JOYSTICK MULTI-TOUCH
+// ==========================================
+let joyActive = false;
+let joyCenterX = 0, joyCenterY = 0;
+let joyVector = { x: 0, y: 0 };
+let joyTouchId = null;
+
+function setupJoystick() {
+  const joyBox = document.getElementById("joystick-box");
+  const joyStick = document.getElementById("joystick-stick");
+
+  const joyStart = (e) => {
+    e.preventDefault();
+    if (e.touches) {
+      const touch = e.changedTouches[0];
+      joyTouchId = touch.identifier;
+      joyActive = true;
+      const rect = joyBox.getBoundingClientRect();
+      joyCenterX = rect.left + rect.width / 2;
+      joyCenterY = rect.top + rect.height / 2;
+      handleJoyMove(touch);
     } else {
-        for (let i = 0; i < zCount; i++) {
-            let zx = 450 + Math.random() * 200;
-            let zy = 100 + Math.random() * 300;
-            if (stageNum === 2) zx = 550 + Math.random() * 150; // Open space for Stage 2
-            state.zombies.push({
-                x: zx, y: zy, r: 18, speed: 1.1 + (stageNum * 0.15), hp: 1, maxHp: 1, isBoss: false, animFrame: 0
-            });
-        }
+      joyActive = true;
+      const rect = joyBox.getBoundingClientRect();
+      joyCenterX = rect.left + rect.width / 2;
+      joyCenterY = rect.top + rect.height / 2;
+      handleJoyMove(e);
     }
-}
+  };
 
-function getRandomOpenPos() {
-    let x, y, valid = false;
-    while (!valid) {
-        x = 150 + Math.random() * 520;
-        y = 80 + Math.random() * 340;
-        valid = true;
-        for (let obs of state.obstacles) {
-            if (x > obs.x - 30 && x < obs.x + obs.w + 30 && y > obs.y - 30 && y < obs.y + obs.h + 30) {
-                valid = false;
-                break;
-            }
+  const joyMove = (e) => {
+    if (joyActive) {
+      if (e.cancelable) e.preventDefault();
+      if (e.touches) {
+        for (let i = 0; i < e.touches.length; i++) {
+          if (e.touches[i].identifier === joyTouchId) {
+            handleJoyMove(e.touches[i]);
+            break;
+          }
         }
+      } else {
+        handleJoyMove(e);
+      }
     }
-    return { x, y };
-}
+  };
 
-function spawnKeyItem() {
-    let p = getRandomOpenPos();
-    state.keyItem = { x: p.x, y: p.y, r: 16 };
-}
-
-function spawnAmmoItem() {
-    let p = getRandomOpenPos();
-    state.ammoItem = { x: p.x, y: p.y, r: 16 };
-}
-
-function spawnHeartItem() {
-    let p = getRandomOpenPos();
-    state.heartItem = { x: p.x, y: p.y, r: 16 };
-}
-
-/* Question Modal Trigger */
-function openQuestionModal(type) {
-    state.isPaused = true;
-    state.activeQuestionItem = type;
-    state.qTimer = 30;
-
-    const qData = generateFstbQuestion(state.difficulty);
-    state.currentFstbAns = qData.ans;
-
-    const modal = document.getElementById("modalQuestion");
-    const title = document.getElementById("qTitle");
-    const desc = document.getElementById("qDesc");
-    const qText = document.getElementById("qQuestionText");
-    const qTimerText = document.getElementById("qTimerText");
-    const input = document.getElementById("qAnswerInput");
-
-    input.value = "";
-    qText.innerText = `FSTB bagi (${qData.num1}, ${qData.num2}) = ?`;
-    qTimerText.innerText = `⏳ Masa Baki: 30s`;
-
-    if (type === 'key') {
-        title.innerText = "🗝️ CABARAN KUNCI PINTU";
-        desc.innerText = "Jawab betul untuk membuka pintu bilik escape!";
-    } else if (type === 'ammo') {
-        title.innerText = "📦 CABARAN KOTAK PELURU";
-        desc.innerText = "Jawab betul untuk mendapatkan +3 peluru emas!";
-    } else if (type === 'heart') {
-        title.innerText = "❤️ CABARAN PENAMBAH NYAWA";
-        desc.innerText = "Jawab betul untuk menambah +1 Nyawa (HP)!";
-    }
-
-    modal.classList.remove("hidden");
-
-    clearInterval(state.qTimerInterval);
-    state.qTimerInterval = setInterval(() => {
-        state.qTimer--;
-        qTimerText.innerText = `⏳ Masa Baki: ${state.qTimer}s`;
-        if (state.qTimer <= 0) {
-            clearInterval(state.qTimerInterval);
-            finishQuestion(false);
+  const joyEnd = (e) => {
+    if (e.touches) {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === joyTouchId) {
+          joyActive = false;
+          joyTouchId = null;
+          joyVector = { x: 0, y: 0 };
+          joyStick.style.transform = `translate(0px, 0px)`;
+          break;
         }
-    }, 1000);
-}
-
-function finishQuestion(isCorrect) {
-    clearInterval(state.qTimerInterval);
-    document.getElementById("modalQuestion").classList.add("hidden");
-    state.isPaused = false;
-
-    if (isCorrect) {
-        audio.playBeep(600, 'sine', 0.3, 0.4);
-        state.score += 100;
-        if (state.activeQuestionItem === 'key') {
-            state.player.hasKey = true;
-            state.door.isOpen = true;
-            state.keyItem = null;
-        } else if (state.activeQuestionItem === 'ammo') {
-            state.player.ammo = 3;
-            state.ammoItem = null;
-        } else if (state.activeQuestionItem === 'heart') {
-            if (state.player.hp < state.player.maxHp) {
-                state.player.hp++;
-            }
-            state.heartItem = null; // Disappears once interacted with (doesn't respawn)
-        }
+      }
     } else {
-        audio.playBeep(180, 'square', 0.4, 0.4);
-        // Fail or timeout -> relocate item (or remove heart)
-        if (state.activeQuestionItem === 'key') spawnKeyItem();
-        else if (state.activeQuestionItem === 'ammo') spawnAmmoItem();
-        else if (state.activeQuestionItem === 'heart') state.heartItem = null; // Heart disappears on fail
+      joyActive = false;
+      joyVector = { x: 0, y: 0 };
+      joyStick.style.transform = `translate(0px, 0px)`;
     }
+  };
+
+  joyBox.addEventListener("touchstart", joyStart, { passive: false });
+  window.addEventListener("touchmove", joyMove, { passive: false });
+  window.addEventListener("touchend", joyEnd);
+  window.addEventListener("touchcancel", joyEnd);
+
+  joyBox.addEventListener("mousedown", joyStart);
+  window.addEventListener("mousemove", joyMove);
+  window.addEventListener("mouseup", joyEnd);
 }
 
-/* Bullet Shooting */
-function shootBullet() {
-    if (state.isPaused || state.isGameOver) return;
-    if (state.player.ammo <= 0) return;
+function handleJoyMove(touch) {
+  const dx = touch.clientX - joyCenterX;
+  const dy = touch.clientY - joyCenterY;
+  const dist = Math.hypot(dx, dy);
+  const maxRadius = 26;
 
-    state.player.ammo--;
-    audio.playShoot();
+  let normX = dx / (dist || 1);
+  let normY = dy / (dist || 1);
 
-    let vx = 0, vy = 0;
-    if (state.player.facing === 'right') vx = 8;
-    else if (state.player.facing === 'left') vx = -8;
-    else if (state.player.facing === 'up') vy = -8;
-    else if (state.player.facing === 'down') vy = 8;
+  let clampedDist = Math.min(dist, maxRadius);
+  const joyStick = document.getElementById("joystick-stick");
+  joyStick.style.transform = `translate(${normX * clampedDist}px, ${normY * clampedDist}px)`;
 
-    state.bullets.push({
-        x: state.player.x, y: state.player.y, vx, vy, r: 5
+  if (dist > 6) {
+    joyVector.x = normX;
+    joyVector.y = normY;
+  } else {
+    joyVector.x = 0;
+    joyVector.y = 0;
+  }
+}
+
+function updateKeyLocation() {
+  const pos = keyPositions[currentRoom];
+  keyObj.x = pos.x;
+  keyObj.y = pos.y;
+}
+
+function respawnAmmoItem() {
+  let valid = false;
+  let newX, newY;
+  while (!valid) {
+    newX = Math.floor(Math.random() * 160) + 50;
+    newY = Math.floor(Math.random() * 110) + 45;
+    let distToPlayer = Math.hypot(player.x - newX, player.y - newY);
+    let distToKey = Math.hypot(keyObj.x - newX, keyObj.y - newY);
+    if (distToPlayer > 45 && distToKey > 35 && !isCollidingWithObstacle(newX, newY, 15)) {
+      valid = true;
+    }
+  }
+  ammoObj.x = newX;
+  ammoObj.y = newY;
+  ammoObj.active = true;
+}
+
+function updateLivesDisplay() {
+  const elem = document.getElementById("lives-num");
+  if (playerLives > 0) {
+    elem.innerText = "❤️".repeat(playerLives);
+  } else {
+    elem.innerText = "💀";
+  }
+}
+
+function updateAmmoDisplay() {
+  document.getElementById("ammo-num").innerText = `${playerAmmo}/3`;
+}
+
+function relocateKey() {
+  let valid = false;
+  let newX, newY;
+  while (!valid) {
+    newX = Math.floor(Math.random() * 160) + 40;
+    newY = Math.floor(Math.random() * 110) + 45;
+    let distToPlayer = Math.hypot(player.x - newX, player.y - newY);
+    let distToDoor = Math.hypot(door.x - newX, door.y - newY);
+    if (distToPlayer > 45 && distToDoor > 40 && !isCollidingWithObstacle(newX, newY, 15)) {
+      valid = true;
+    }
+  }
+  keyObj.x = newX;
+  keyObj.y = newY;
+}
+
+function resetZombies() {
+  zombies = [];
+  if (currentRoom === 4) {
+    zombies.push({
+      x: 220, y: 105, size: 16, speed: 1.2,
+      hp: 5, maxHp: 5, isBoss: true, active: true
     });
+  } else {
+    const stageSpeeds = [0.75, 1.00, 0.75, 1.00];
+    const speed = stageSpeeds[currentRoom] || 0.75;
 
-    // If ammo reaches 0, spawn a new ammo item box
-    if (state.player.ammo === 0 && !state.ammoItem) {
-        spawnAmmoItem();
+    if (currentRoom === 0 || currentRoom === 1) {
+      zombies.push({ x: 230, y: 50, size: 10, speed: speed, hp: 1, maxHp: 1, isBoss: false, active: true });
+    } else {
+      zombies.push({ x: 230, y: 50, size: 10, speed: speed, hp: 1, maxHp: 1, isBoss: false, active: true });
+      zombies.push({ x: 230, y: 155, size: 10, speed: speed, hp: 1, maxHp: 1, isBoss: false, active: true });
     }
+  }
 }
 
-/* Main Game Loop */
-function update() {
-    if (state.isPaused || state.isGameOver) return;
+function addScore(pts) {
+  totalScore += pts;
+  document.getElementById("score-num").innerText = totalScore;
+}
 
-    // Movement calculation
-    let dx = 0, dy = 0;
-    if (state.keys.left) dx -= 1;
-    if (state.keys.right) dx += 1;
-    if (state.keys.up) dy -= 1;
-    if (state.keys.down) dy += 1;
+function isCollidingWithObstacle(x, y, radius) {
+  const obstacles = roomObstacles[currentRoom] || [];
+  for (let obs of obstacles) {
+    let closestX = Math.max(obs.x, Math.min(x, obs.x + obs.w));
+    let closestY = Math.max(obs.y, Math.min(y, obs.y + obs.h));
+    let distX = x - closestX;
+    let distY = y - closestY;
+    let distance = Math.hypot(distX, distY);
 
-    if (state.joystickVector.x !== 0 || state.joystickVector.y !== 0) {
-        dx = state.joystickVector.x;
-        dy = state.joystickVector.y;
+    if (distance < radius) {
+      return true;
     }
+  }
+  return false;
+}
 
-    if (dx !== 0 || dy !== 0) {
-        state.player.isMoving = true;
-        state.player.animFrame += 0.2;
-        if (Math.abs(dx) > Math.abs(dy)) {
-            state.player.facing = dx > 0 ? 'right' : 'left';
-        } else {
-            state.player.facing = dy > 0 ? 'down' : 'up';
-        }
+function formatTime(totalSec) {
+  const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
+  const s = (totalSec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
 
-        if (Math.floor(state.player.animFrame) % 10 === 0) {
-            audio.playFootstep();
-        }
+function startGameTimer() {
+  totalGameSeconds = 0;
+  const timerElem = document.getElementById("game-timer-display");
+  if (timerElem) timerElem.innerText = "00:00";
+  
+  if (gameTimeTimer) clearInterval(gameTimeTimer);
+  gameTimeTimer = setInterval(() => {
+    if (isGameStarted && !isTerminalOpen && !isVictoryOpen && !isGameOver) {
+      totalGameSeconds++;
+      const elem = document.getElementById("game-timer-display");
+      if (elem) elem.innerText = formatTime(totalGameSeconds);
+    }
+  }, 1000);
+}
 
-        let nextX = state.player.x + dx * state.player.speed;
-        let nextY = state.player.y + dy * state.player.speed;
+function stopGameTimer() {
+  if (gameTimeTimer) clearInterval(gameTimeTimer);
+}
 
-        // Wall & Obstacle Collision
-        if (nextX > 30 && nextX < canvas.width - 30) {
-            let collide = false;
-            for (let obs of state.obstacles) {
-                if (nextX + 15 > obs.x && nextX - 15 < obs.x + obs.w && state.player.y + 15 > obs.y && state.player.y - 15 < obs.y + obs.h) {
-                    collide = true; break;
-                }
-            }
-            if (!collide) state.player.x = nextX;
-        }
+// SCOREBOARD MEMORI LOKAL & AUTO-BERSIH DATA ROSAK
+function getLeaderboard() {
+  try {
+    const data = localStorage.getItem("fstb_leaderboard");
+    let parsed = data ? JSON.parse(data) : [];
+    if (!Array.isArray(parsed)) return [];
 
-        if (nextY > 30 && nextY < canvas.height - 30) {
-            let collide = false;
-            for (let obs of state.obstacles) {
-                if (state.player.x + 15 > obs.x && state.player.x - 15 < obs.x + obs.w && nextY + 15 > obs.y && nextY - 15 < obs.y + obs.h) {
-                    collide = true; break;
-                }
-            }
-            if (!collide) state.player.y = nextY;
-        }
+    // AUTO-BERSIHKAN DATA PENDUA (OLD BUG FIX)
+    if (parsed.length > 1) {
+      let first = parsed[0];
+      let allDuplicates = parsed.every(e => e.name === first.name && e.score === first.score && e.timeSec === first.timeSec);
+      if (allDuplicates) {
+        parsed = [first];
+        localStorage.setItem("fstb_leaderboard", JSON.stringify(parsed));
+      }
+    }
+    return parsed;
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveScore(name, score, timeSec) {
+  let lb = getLeaderboard();
+
+  const entryId = Date.now() + "_" + Math.floor(Math.random() * 1000);
+  const newEntry = {
+    id: entryId,
+    name: (name || "Pemain 1").substring(0, 10),
+    score: score,
+    timeSec: timeSec,
+    timeFormatted: formatTime(timeSec)
+  };
+
+  lb.push(newEntry);
+  lb.sort((a, b) => b.score - a.score || a.timeSec - b.timeSec);
+
+  const rank = lb.findIndex(e => e.id === entryId) + 1;
+  lb = lb.slice(0, 5); // simpan Top 5 sahaja
+
+  try {
+    localStorage.setItem("fstb_leaderboard", JSON.stringify(lb));
+  } catch(e){}
+
+  return { rank: rank, isTop5: rank <= 5 };
+}
+
+function resetLeaderboard() {
+  initAudio();
+  playSFX('button');
+  if (confirm("Adakah anda pasti ingin memadam semua rekod scoreboard?")) {
+    try {
+      localStorage.removeItem("fstb_leaderboard");
+    } catch(e){}
+    openLeaderboard();
+  }
+}
+
+function openLeaderboard() {
+  initAudio();
+  playSFX('button');
+  const lb = getLeaderboard();
+  const tbody = document.getElementById("sb-tbody");
+  tbody.innerHTML = "";
+
+  for (let i = 0; i < 5; i++) {
+    const row = lb[i];
+    const tr = document.createElement("tr");
+    if (row) {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td style="font-weight:bold;">${row.name}</td>
+        <td style="color:#fbbf24; font-weight:bold;">${row.score}</td>
+        <td style="color:#38bdf8;">${row.timeFormatted}</td>
+      `;
     } else {
-        state.player.isMoving = false;
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td style="color:#64748b;">-</td>
+        <td style="color:#64748b;">-</td>
+        <td style="color:#64748b;">-</td>
+      `;
     }
+    tbody.appendChild(tr);
+  }
 
-    // Bullet Updates
-    for (let i = state.bullets.length - 1; i >= 0; i--) {
-        let b = state.bullets[i];
-        b.x += b.vx;
-        b.y += b.vy;
+  document.getElementById("start-modal").classList.remove("active");
+  document.getElementById("victory-modal").classList.remove("active");
+  document.getElementById("leaderboard-modal").classList.add("active");
+}
 
-        // Collision with obstacles
-        let hitObs = false;
-        for (let obs of state.obstacles) {
-            if (b.x > obs.x && b.x < obs.x + obs.w && b.y > obs.y && b.y < obs.y + obs.h) {
-                hitObs = true; break;
-            }
-        }
-        if (hitObs || b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
-            state.bullets.splice(i, 1);
-            continue;
-        }
+function closeLeaderboard() {
+  initAudio();
+  playSFX('button');
+  document.getElementById("leaderboard-modal").classList.remove("active");
+  if (!isGameStarted) {
+    document.getElementById("start-modal").classList.add("active");
+  } else if (isVictoryOpen) {
+    document.getElementById("victory-modal").classList.add("active");
+  }
+}
 
-        // Collision with Zombies
-        for (let j = state.zombies.length - 1; j >= 0; j--) {
-            let z = state.zombies[j];
-            let dist = Math.hypot(b.x - z.x, b.y - z.y);
-            if (dist < b.r + z.r) {
-                z.hp--;
-                audio.playHit();
-                state.bullets.splice(i, 1);
-                if (z.hp <= 0) {
-                    state.score += z.isBoss ? 500 : 50;
-                    state.zombies.splice(j, 1);
-                }
-                break;
-            }
-        }
+function openGuideModal() {
+  initAudio();
+  startBGM();
+  playSFX('button');
+  const inputElem = document.getElementById("player-name-input");
+  if (inputElem && inputElem.value.trim()) {
+    playerName = inputElem.value.trim().substring(0, 10);
+  } else {
+    playerName = "Pemain 1";
+  }
+
+  document.getElementById("start-modal").classList.remove("active");
+  document.getElementById("guide-modal").classList.add("active");
+}
+
+function openControlSelection() {
+  initAudio();
+  playSFX('button');
+  document.getElementById("guide-modal").classList.remove("active");
+  document.getElementById("control-modal").classList.add("active");
+}
+
+function setControlMode(mode) {
+  initAudio();
+  playSFX('button');
+  selectedControl = mode;
+
+  if (mode === 'joystick') {
+    document.getElementById("dpad-ui").style.display = "none";
+    document.getElementById("joystick-ui").style.display = "block";
+  } else {
+    document.getElementById("dpad-ui").style.display = "grid";
+    document.getElementById("joystick-ui").style.display = "none";
+  }
+
+  document.getElementById("control-modal").classList.remove("active");
+  isGameStarted = true;
+  startGameTimer();
+}
+
+function useButtonA() {
+  initAudio();
+  startBGM();
+
+  if (!isGameStarted) {
+    if (document.getElementById("start-modal").classList.contains("active")) {
+      openGuideModal();
+    } else if (document.getElementById("guide-modal").classList.contains("active")) {
+      openControlSelection();
+    } else if (document.getElementById("control-modal").classList.contains("active")) {
+      setControlMode('dpad');
+    } else if (document.getElementById("leaderboard-modal").classList.contains("active")) {
+      closeLeaderboard();
     }
+    return;
+  }
 
-    // Zombie AI Movement
-    for (let z of state.zombies) {
-        z.animFrame += 0.1;
-        let zdx = state.player.x - z.x;
-        let zdy = state.player.y - z.y;
-        let dist = Math.hypot(zdx, zdy);
+  playSFX('button');
+
+  if (isVictoryOpen || isGameOver) return;
+
+  if (isTerminalOpen) {
+    submitPasscode();
+    return;
+  }
+
+  let distKey = Math.hypot(player.x - keyObj.x, player.y - keyObj.y);
+  if (distKey < 30 && !doorUnlocked) {
+    openTerminal('key');
+    return;
+  }
+
+  let distAmmo = Math.hypot(player.x - ammoObj.x, player.y - ammoObj.y);
+  if (ammoObj.active && distAmmo < 30) {
+    if (playerAmmo >= 3) {
+      showGameNotice("⚡ PELURU SUDAH PENUH (3/3)!", "#38bdf8", 2000);
+    } else {
+      openTerminal('ammo');
+    }
+  }
+}
+
+let isShootLocked = false;
+function unlockShoot() {
+  isShootLocked = false;
+}
+
+function useButtonB() {
+  initAudio();
+
+  if (!isGameStarted || isVictoryOpen || isGameOver || isShootLocked) return;
+
+  if (isTerminalOpen) {
+    closeTerminal();
+    return;
+  }
+
+  if (document.getElementById("leaderboard-modal").classList.contains("active")) {
+    closeLeaderboard();
+    return;
+  }
+
+  if (playerAmmo <= 0) {
+    playSFX('wrong');
+    showGameNotice("⚠️ TIADA PELURU! CARI IMEJ PELURU 📦", "#ef4444", 2000);
+    return;
+  }
+
+  isShootLocked = true;
+
+  playerAmmo--;
+  updateAmmoDisplay();
+
+  playSFX('shoot');
+  bullets.push({
+    x: player.x,
+    y: player.y,
+    vx: player.facingX * 6,
+    vy: player.facingY * 6,
+    size: 3
+  });
+
+  if (playerAmmo === 0 && !ammoObj.active) {
+    respawnAmmoItem();
+    showGameNotice("📦 PELURU HABIS! IMEJ PELURU BAHARU MUNCUL!", "#fbbf24", 2800);
+  }
+}
+
+function startTimer() {
+  questionTimer = 30;
+  document.getElementById("timer-sec").innerText = questionTimer;
+  if (timerInterval) clearInterval(timerInterval);
+
+  timerInterval = setInterval(() => {
+    questionTimer--;
+    document.getElementById("timer-sec").innerText = questionTimer;
+
+    if (questionTimer <= 0) {
+      clearInterval(timerInterval);
+      playSFX('wrong');
+      closeTerminal();
+      if (activeModalType === 'key') {
+        relocateKey();
+        showGameNotice("🔑 MASA HABIS! KUNCI BERTUKAR LOKASI!", "#ef4444", 2500);
+      } else {
+        respawnAmmoItem();
+        showGameNotice("📦 MASA HABIS! IMEJ PELURU BERTUKAR LOKASI!", "#ef4444", 2500);
+      }
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+}
+
+function openTerminal(type) {
+  isTerminalOpen = true;
+  activeModalType = type;
+
+  const currentPool = questionPool[currentRoom + 1];
+  activeQuestion = currentPool[Math.floor(Math.random() * currentPool.length)];
+
+  document.getElementById("modal-room").innerText = currentRoom + 1;
+  document.getElementById("modal-q").innerText = activeQuestion.q;
+  document.getElementById("passcode-input").value = "";
+
+  if (type === 'key') {
+    document.getElementById("term-title-text").innerHTML = `🗝️ SOALAN KUNCI BILIK <span id="modal-room">${currentRoom + 1}</span>`;
+    document.getElementById("term-warn-text").innerText = "JAWAB BETUL UNTUK BUKA PINTU RAHSIA!";
+  } else {
+    document.getElementById("term-title-text").innerHTML = `📦 SOALAN PELURU BILIK <span id="modal-room">${currentRoom + 1}</span>`;
+    document.getElementById("term-warn-text").innerText = "JAWAB BETUL UNTUK MENDAPATKAN 3 PELURU!";
+  }
+
+  document.getElementById("terminal-modal").classList.add("active");
+  startTimer();
+  setTimeout(() => document.getElementById("passcode-input").focus(), 100);
+}
+
+function closeTerminal() {
+  stopTimer();
+  document.getElementById("terminal-modal").classList.remove("active");
+  isTerminalOpen = false;
+  playSFX('button');
+}
+
+function submitPasscode() {
+  const input = document.getElementById("passcode-input").value.trim();
+
+  if (input === activeQuestion.code) {
+    stopTimer();
+    playSFX('correct');
+    addScore(100);
+    closeTerminal();
+
+    if (activeModalType === 'key') {
+      doorUnlocked = true;
+      spawnRandomDoor();
+      showGameNotice("✨ JAWAPAN BETUL! 🚪 PINTU RAHSIA TERBUKA!", "#4ade80", 3000);
+    } else {
+      playerAmmo = 3;
+      ammoObj.active = false;
+      updateAmmoDisplay();
+      showGameNotice("⚡ 3 BUTIR PELURU DIPEROLEHI! (3/3)", "#38bdf8", 3000);
+    }
+  } else {
+    playSFX('wrong');
+    showGameNotice("❌ JAWAPAN SALAH! SILA SEMAK FSTB", "#ef4444", 2000);
+  }
+}
+
+function openGameOverModal() {
+  if (isGameOver) return;
+  isGameOver = true;
+  isGameStarted = false; // KUNCI UTAMA
+  stopGameTimer();
+  stopAllAudio();
+  document.getElementById("gameover-modal").classList.add("active");
+}
+
+function openVictoryModal() {
+  if (isVictoryOpen) return; // ELAKKAN PEMICUAN BERULANG
+  isVictoryOpen = true;
+  isGameStarted = false; // KUNCI UTAMA
+  doorUnlocked = false;
+  door.isVisible = false;
+
+  stopGameTimer();
+  stopAllAudio();
+  playVictoryFanfare();
+
+  let lostLives = 5 - playerLives;
+  let penalty = lostLives * 40;
+  let finalScore = Math.max(0, totalScore - penalty);
+
+  document.getElementById("vic-player-name").innerText = playerName;
+  document.getElementById("vic-total-time").innerText = formatTime(totalGameSeconds);
+  document.getElementById("vic-base-score").innerText = totalScore;
+  document.getElementById("vic-penalty").innerText = penalty;
+  document.getElementById("final-score").innerText = finalScore;
+
+  let rankInfo = saveScore(playerName, finalScore, totalGameSeconds);
+
+  const badge = document.getElementById("vic-rank-badge");
+  if (rankInfo.isTop5) {
+    badge.style.borderColor = "#4ade80";
+    badge.style.color = "#4ade80";
+    badge.innerText = `🏆 TAHNIAH! KEDUDUKAN KE-${rankInfo.rank} DALAM CARTA TOP 5`;
+  } else {
+    badge.style.borderColor = "#f59e0b";
+    badge.style.color = "#fbbf24";
+    badge.innerText = `🎖️ KEDUDUKAN: KE-${rankInfo.rank} (DI LUAR CARTA TOP 5)`;
+  }
+
+  document.getElementById("victory-modal").classList.add("active");
+}
+
+function closeModals() {
+  isVictoryOpen = false;
+  isGameOver = false;
+  document.getElementById("victory-modal").classList.remove("active");
+  document.getElementById("gameover-modal").classList.remove("active");
+  document.getElementById("leaderboard-modal").classList.remove("active");
+  document.getElementById("guide-modal").classList.remove("active");
+}
+
+// MAIN SEMULA UNTUK PEMAIN YANG SAMA
+function replaySamePlayer() {
+  initAudio();
+  playSFX('button');
+  stopTimer();
+  stopGameTimer();
+  stopAllAudio();
+  closeModals();
+
+  currentRoom = 0;
+  totalScore = 0;
+  playerLives = 5;
+  playerAmmo = 0;
+  totalGameSeconds = 0;
+  addScore(0);
+  updateLivesDisplay();
+  updateAmmoDisplay();
+
+  doorUnlocked = false;
+  door.isVisible = false;
+  isTerminalOpen = false;
+  player.x = 40;
+  player.y = 105;
+  bullets = [];
+  
+  document.getElementById("room-num").innerText = "1";
+  document.getElementById("door-status").innerText = "KUNCI";
+  document.getElementById("door-status").style.color = "#ef4444";
+
+  updateKeyLocation();
+  respawnAmmoItem();
+  resetZombies();
+
+  isGameStarted = true;
+  startGameTimer();
+  startBGM();
+}
+
+// PEMAIN BAHARU (KEMBALI KE MUKA HADAPAN MENTAFSAR NAMA)
+function newPlayerModal() {
+  initAudio();
+  playSFX('button');
+  stopTimer();
+  stopGameTimer();
+  stopAllAudio();
+  closeModals();
+
+  isGameStarted = false;
+
+  currentRoom = 0;
+  totalScore = 0;
+  playerLives = 5;
+  playerAmmo = 0;
+  totalGameSeconds = 0;
+  addScore(0);
+  updateLivesDisplay();
+  updateAmmoDisplay();
+
+  doorUnlocked = false;
+  door.isVisible = false;
+  isTerminalOpen = false;
+  player.x = 40;
+  player.y = 105;
+  bullets = [];
+  
+  document.getElementById("room-num").innerText = "1";
+  document.getElementById("door-status").innerText = "KUNCI";
+  document.getElementById("door-status").style.color = "#ef4444";
+
+  updateKeyLocation();
+  respawnAmmoItem();
+  resetZombies();
+
+  document.getElementById("start-modal").classList.add("active");
+}
+
+function restartGame() {
+  newPlayerModal();
+}
+
+let moveInterval = null;
+function startMove(dx, dy) {
+  initAudio();
+  if (moveInterval) clearInterval(moveInterval);
+  movePlayer(dx, dy);
+  moveInterval = setInterval(() => movePlayer(dx, dy), 40);
+}
+function stopMove() {
+  if (moveInterval) clearInterval(moveInterval);
+}
+
+const keys = {};
+window.addEventListener("keydown", (e) => {
+  if (document.activeElement.tagName === "INPUT") {
+    if (e.key === "Enter") {
+      if (document.activeElement.id === "passcode-input") {
+        submitPasscode();
+      } else if (document.activeElement.id === "player-name-input") {
+        openGuideModal();
+      }
+    }
+    return;
+  }
+
+  initAudio();
+  const k = e.key.toLowerCase();
+
+  if (["arrowup", "arrowdown", "arrowleft", "arrowright", " ", "w", "a", "s", "d"].includes(k)) {
+    e.preventDefault();
+  }
+
+  if (e.repeat) return;
+
+  keys[k] = true;
+
+  if (k === "m") toggleBGM();
+  if (k === "r") restartGame();
+  if (k === "a" || k === "e" || k === "enter" || e.key === " ") useButtonA();
+  if (k === "b" || k === "shift" || k === "j" || k === "f") useButtonB();
+});
+
+window.addEventListener("keyup", (e) => {
+  const k = e.key.toLowerCase();
+  keys[k] = false;
+  if (k === "b" || k === "shift" || k === "j" || k === "f") unlockShoot();
+});
+
+function movePlayer(dx, dy) {
+  if (!isGameStarted || isTerminalOpen || isVictoryOpen || isGameOver) return;
+  let nextX = player.x + dx * player.speed;
+  let nextY = player.y + dy * player.speed;
+
+  if (dx !== 0 || dy !== 0) {
+    player.facingX = dx;
+    player.facingY = dy;
+    player.animFrame += 0.2;
+  }
+
+  if (nextX - player.size > 22 && nextX + player.size < canvas.width - 22) {
+    if (!isCollidingWithObstacle(nextX, player.y, player.size)) {
+      player.x = nextX;
+    }
+  }
+  if (nextY - player.size > 32 && nextY + player.size < canvas.height - 22) {
+    if (!isCollidingWithObstacle(player.x, nextY, player.size)) {
+      player.y = nextY;
+    }
+  }
+}
+
+function update() {
+  if (!isGameStarted) return;
+
+  if (keys["w"] || keys["arrowup"]) movePlayer(0, -1);
+  if (keys["s"] || keys["arrowdown"]) movePlayer(0, 1);
+  if (keys["a"] || keys["arrowleft"]) movePlayer(-1, 0);
+  if (keys["d"] || keys["arrowright"]) movePlayer(1, 0);
+
+  if (joyActive && (joyVector.x !== 0 || joyVector.y !== 0)) {
+    movePlayer(joyVector.x, joyVector.y);
+  }
+
+  if (!isTerminalOpen && !isVictoryOpen && !isGameOver) {
+    zombies.forEach(z => {
+      if (z.active) {
+        let zSpeed = z.speed;
+        let dx = player.x - z.x;
+        let dy = player.y - z.y;
+        let dist = Math.hypot(dx, dy);
 
         if (dist > 0) {
-            z.x += (zdx / dist) * z.speed;
-            z.y += (zdy / dist) * z.speed;
-        }
+          let vx = (dx / dist) * zSpeed;
+          let vy = (dy / dist) * zSpeed;
 
-        // BOSS Footstep Heavy Thud SFX
-        if (z.isBoss && Math.floor(z.animFrame) % 25 === 0) {
-            audio.playBossThud();
-        } else if (!z.isBoss && Math.random() < 0.003) {
-            audio.playZombieGroan();
-        }
-
-        // Zombie Player Collision (Damage)
-        if (dist < z.r + state.player.radius) {
-            state.player.hp--;
-            audio.playHit();
-            // Knockback player
-            state.player.x -= (zdx / dist) * 40;
-            state.player.y -= (zdy / dist) * 40;
-
-            if (state.player.hp <= 0) {
-                triggerGameOver(false);
+          if (!isCollidingWithObstacle(z.x + vx, z.y, z.size)) {
+            z.x += vx;
+          } else {
+            let slideY = vy > 0 ? zSpeed : -zSpeed;
+            if (!isCollidingWithObstacle(z.x, z.y + slideY, z.size)) {
+              z.y += slideY * 0.5;
             }
-        }
-    }
+          }
 
-    // Check Door / Escape Stage Clear
-    if (state.door.isOpen) {
-        if (state.player.x > state.door.x && state.player.y > state.door.y && state.player.y < state.door.y + state.door.h) {
-            if (state.stage >= state.maxStages) {
-                triggerGameOver(true);
-            } else {
-                audio.playBeep(800, 'sine', 0.4, 0.5);
-                initStage(state.stage + 1);
+          if (!isCollidingWithObstacle(z.x, z.y + vy, z.size)) {
+            z.y += vy;
+          } else {
+            let slideX = vx > 0 ? zSpeed : -zSpeed;
+            if (!isCollidingWithObstacle(z.x + slideX, z.y, z.size)) {
+              z.x += slideX * 0.5;
             }
+          }
         }
-    }
-}
 
-/* Render Function */
-function render() {
-    // Clear canvas
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (dist < player.size + z.size) {
+          playerLives--;
+          updateLivesDisplay();
 
-    // Grid floor pattern
-    ctx.strokeStyle = "#1e293b";
-    ctx.lineWidth = 1;
-    for (let x = 0; x < canvas.width; x += 40) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-    }
-    for (let y = 0; y < canvas.height; y += 40) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-    }
-
-    // Render Obstacles
-    ctx.fillStyle = "#78350f";
-    ctx.strokeStyle = "#b45309";
-    ctx.lineWidth = 3;
-    for (let obs of state.obstacles) {
-        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-        ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
-    }
-
-    // Render Door
-    ctx.fillStyle = state.door.isOpen ? "#22c55e" : "#ef4444";
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
-    ctx.fillRect(state.door.x, state.door.y, state.door.w, state.door.h);
-    ctx.strokeRect(state.door.x, state.door.y, state.door.w, state.door.h);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 12px sans-serif";
-    ctx.fillText(state.door.isOpen ? "EXIT" : "LOCK", state.door.x + 6, state.door.y + 55);
-
-    // Render Items
-    if (state.keyItem) {
-        ctx.fillStyle = "#fbbf24";
-        ctx.beginPath(); ctx.arc(state.keyItem.x, state.keyItem.y, state.keyItem.r, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#0f172a"; ctx.font = "14px sans-serif"; ctx.fillText("🗝️", state.keyItem.x - 8, state.keyItem.y + 5);
-    }
-
-    if (state.ammoItem) {
-        ctx.fillStyle = "#38bdf8";
-        ctx.beginPath(); ctx.arc(state.ammoItem.x, state.ammoItem.y, state.ammoItem.r, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#0f172a"; ctx.font = "14px sans-serif"; ctx.fillText("📦", state.ammoItem.x - 8, state.ammoItem.y + 5);
-    }
-
-    if (state.heartItem) {
-        ctx.fillStyle = "#ec4899";
-        ctx.beginPath(); ctx.arc(state.heartItem.x, state.heartItem.y, state.heartItem.r, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#ffffff"; ctx.font = "14px sans-serif"; ctx.fillText("❤️", state.heartItem.x - 8, state.heartItem.y + 5);
-    }
-
-    // Render Bullets
-    ctx.fillStyle = "#fbbf24";
-    for (let b of state.bullets) {
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
-    }
-
-    // Render Zombies (2.5D Animated Pixel Sprite)
-    for (let z of state.zombies) {
-        ctx.save();
-        ctx.translate(z.x, z.y);
-
-        if (z.isBoss) {
-            // BOSS Health Bar & Label
-            ctx.fillStyle = "#ef4444";
-            ctx.font = "bold 14px sans-serif";
-            ctx.fillText("BOSS", -20, -z.r - 20);
-            ctx.fillStyle = "#0f172a";
-            ctx.fillRect(-30, -z.r - 15, 60, 8);
-            ctx.fillStyle = "#22c55e";
-            ctx.fillRect(-30, -z.r - 15, (z.hp / z.maxHp) * 60, 8);
-
-            // BOSS Body
-            ctx.fillStyle = "#dc2626";
-            ctx.beginPath(); ctx.arc(0, 0, z.r, 0, Math.PI * 2); ctx.fill();
-            // Arms
-            let armOffset = Math.sin(z.animFrame) * 6;
-            ctx.fillRect(-z.r - 10, -5 + armOffset, 12, 20);
-            ctx.fillRect(z.r - 2, -5 - armOffset, 12, 20);
-        } else {
-            // Normal Zombie Body
-            ctx.fillStyle = "#15803d";
-            ctx.beginPath(); ctx.arc(0, 0, z.r, 0, Math.PI * 2); ctx.fill();
-            let armOffset = Math.sin(z.animFrame) * 4;
-            ctx.fillRect(-z.r - 5, -3 + armOffset, 8, 12);
-            ctx.fillRect(z.r - 3, -3 - armOffset, 8, 12);
+          if (playerLives <= 0) {
+            playSFX('wrong');
+            openGameOverModal();
+          } else {
+            playSFX('wrong');
+            showGameNotice(`⚠️ ZOMBIE TANGKAP! BAKI HP: ${playerLives}`, "#ef4444", 2000);
+            player.x = 40;
+            player.y = 105;
+            bullets = [];
+            resetZombies();
+          }
         }
-        ctx.restore();
+      }
+    });
+  }
+
+  const doorElem = document.getElementById("door-status");
+  if (doorUnlocked) {
+    doorElem.innerText = "BUKA";
+    doorElem.style.color = "#4ade80";
+  } else {
+    doorElem.innerText = "KUNCI";
+    doorElem.style.color = "#ef4444";
+  }
+
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    let b = bullets[i];
+    b.x += b.vx;
+    b.y += b.vy;
+
+    if (b.x < 15 || b.x > canvas.width - 15 || b.y < 25 || b.y > canvas.height - 15 || isCollidingWithObstacle(b.x, b.y, b.size)) {
+      bullets.splice(i, 1);
+      continue;
     }
 
-    // Render Player (2.5D Animated Pixel Sprite)
-    ctx.save();
-    ctx.translate(state.player.x, state.player.y);
+    zombies.forEach(z => {
+      if (z.active) {
+        let dist = Math.hypot(b.x - z.x, b.y - z.y);
+        if (dist < b.size + z.size) {
+          bullets.splice(i, 1);
+          z.hp--;
 
-    // Leg animation
-    let legOffset = state.player.isMoving ? Math.sin(state.player.animFrame) * 5 : 0;
-    ctx.fillStyle = "#0284c7";
-    ctx.fillRect(-8 + legOffset, 10, 6, 10);
-    ctx.fillRect(2 - legOffset, 10, 6, 10);
-
-    // Player Shirt
-    ctx.fillStyle = "#ec4899";
-    ctx.fillRect(-12, -10, 24, 22);
-
-    // Player Cap / Face
-    ctx.fillStyle = "#fed7aa";
-    ctx.beginPath(); ctx.arc(0, -12, 10, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#38bdf8";
-    ctx.fillRect(-10, -22, 20, 8); // Cap
-
-    ctx.restore();
-
-    // Render HUD Bar
-    ctx.fillStyle = "rgba(2, 6, 23, 0.85)";
-    ctx.fillRect(0, 0, canvas.width, 40);
-
-    ctx.fillStyle = "#4ade80"; ctx.font = "bold 13px sans-serif";
-    ctx.fillText(`STAGE: ${state.stage}/${state.maxStages}`, 15, 25);
-    ctx.fillText(`MATA: ${state.score}`, 120, 25);
-
-    // Render Visual Hearts
-    let heartStr = "❤️".repeat(state.player.hp);
-    ctx.fillText(`HP: ${heartStr}`, 230, 25);
-
-    // Render Visual Gold Bullets
-    let bulletStr = "🟡".repeat(state.player.ammo);
-    ctx.fillText(`PTR: ${bulletStr}`, 390, 25);
-
-    ctx.fillText(`MASA: ${formatTime(state.elapsedSeconds)}`, 520, 25);
-    ctx.fillText(`PINTU: ${state.door.isOpen ? "OPEN" : "LOCK"}`, 650, 25);
-}
-
-function formatTime(sec) {
-    let m = Math.floor(sec / 60).toString().padStart(2, '0');
-    let s = (sec % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-}
-
-/* Interaction Checks ([A] Button or Proximity) */
-function checkProximityAction() {
-    if (state.isPaused || state.isGameOver) return;
-
-    // Check Key Item
-    if (state.keyItem) {
-        let dist = Math.hypot(state.player.x - state.keyItem.x, state.player.y - state.keyItem.y);
-        if (dist < 35) {
-            openQuestionModal('key'); return;
+          if (z.hp <= 0) {
+            z.active = false;
+            playSFX('explosion');
+            addScore(z.isBoss ? 300 : 50);
+            if (z.isBoss) {
+              showGameNotice("💥 BOSS BERHASIL DITUMPASKAN!", "#4ade80", 3000);
+            }
+          } else {
+            playSFX('explosion');
+            showGameNotice(`💥 BOSS TERKENA SHOT! BAKI HP BOSS: ${z.hp}/${z.maxHp}`, "#f59e0b", 1500);
+          }
         }
-    }
+      }
+    });
+  }
 
-    // Check Ammo Item
-    if (state.ammoItem) {
-        let dist = Math.hypot(state.player.x - state.ammoItem.x, state.player.y - state.ammoItem.y);
-        if (dist < 35) {
-            openQuestionModal('ammo'); return;
-        }
-    }
+  if (doorUnlocked && door.isVisible) {
+    let touchDoor = player.x + player.size >= door.x && player.x - player.size <= door.x + door.w &&
+                    player.y + player.size >= door.y && player.y - player.size <= door.y + door.h;
 
-    // Check Heart Item
-    if (state.heartItem) {
-        let dist = Math.hypot(state.player.x - state.heartItem.x, state.player.y - state.heartItem.y);
-        if (dist < 35) {
-            openQuestionModal('heart'); return;
-        }
-    }
-}
-
-/* Game Timer & Loop Engine */
-function startGameLoop() {
-    clearInterval(state.timerInterval);
-    state.startTime = Date.now();
-    state.elapsedSeconds = 0;
-
-    state.timerInterval = setInterval(() => {
-        if (!state.isPaused && !state.isGameOver) {
-            state.elapsedSeconds++;
-        }
-    }, 1000);
-
-    function loop() {
-        update();
-        render();
-        requestAnimationFrame(loop);
-    }
-    loop();
-}
-
-function triggerGameOver(isVictory) {
-    state.isGameOver = true;
-    clearInterval(state.timerInterval);
-    audio.stopAllAudio();
-
-    if (isVictory) {
-        audio.playBeep(523, 'sine', 0.2, 0.4);
-        setTimeout(() => audio.playBeep(659, 'sine', 0.2, 0.4), 200);
-        setTimeout(() => audio.playBeep(783, 'sine', 0.4, 0.5), 400);
-    } else {
-        audio.playBeep(130, 'sawtooth', 0.5, 0.5);
-    }
-
-    // Save to LocalStorage Scoreboard
-    saveScoreboardRecord(state.playerName, state.difficulty, state.score, state.elapsedSeconds);
-
-    document.getElementById("endTitle").innerText = isVictory ? "🎉 KEMENANGAN!" : "💀 GAME OVER";
-    document.getElementById("endDesc").innerText = isVictory ?
-        "Tahniah! Anda berjaya meloloskan diri dari kesemua 5 Stage!" :
-        "Anda telah ditumpaskan oleh Zombi. Cuba lagi!";
-
-    document.getElementById("endPlayerName").innerText = state.playerName;
-    document.getElementById("endDiff").innerText = state.difficulty.toUpperCase();
-    document.getElementById("endScore").innerText = state.score;
-    document.getElementById("endTime").innerText = formatTime(state.elapsedSeconds);
-
-    document.getElementById("modalEndGame").classList.remove("hidden");
-}
-
-/* Scoreboard Management */
-function saveScoreboardRecord(name, diff, score, timeSec) {
-    let scores = JSON.parse(localStorage.getItem("fstb_scores_v3") || '{"easy":[],"medium":[],"hard":[]}');
-    if (!scores[diff]) scores[diff] = [];
-
-    scores[diff].push({ name, score, time: timeSec, date: new Date().toLocaleDateString() });
-    scores[diff].sort((a, b) => b.score - a.score || a.time - b.time);
-    scores[diff] = scores[diff].slice(0, 5); // Top 5 static
-
-    localStorage.setItem("fstb_scores_v3", JSON.stringify(scores));
-}
-
-function renderScoreboardTable(diffTab) {
-    let scores = JSON.parse(localStorage.getItem("fstb_scores_v3") || '{"easy":[],"medium":[],"hard":[]}');
-    let list = scores[diffTab] || [];
-
-    let container = document.getElementById("scoreboardTableContainer");
-    if (list.length === 0) {
-        container.innerHTML = `<div style="color:#94a3b8; margin:20px 0;">Tiada rekod untuk tahap ${diffTab.toUpperCase()}.</div>`;
+    if (touchDoor) {
+      playSFX('door');
+      currentRoom++;
+      if (currentRoom >= 5) {
+        openVictoryModal();
         return;
+      }
+      player.x = 40;
+      player.y = 105;
+      doorUnlocked = false;
+      door.isVisible = false;
+      bullets = [];
+
+      document.getElementById("room-num").innerText = currentRoom + 1;
+      
+      updateKeyLocation();
+      respawnAmmoItem();
+      resetZombies();
     }
-
-    let html = `<table class="score-table">
-        <thead><tr><th>#</th><th>NAMA</th><th>SKOR</th><th>MASA</th></tr></thead>
-        <tbody>`;
-    list.forEach((item, index) => {
-        html += `<tr>
-            <td>${index + 1}</td>
-            <td>${item.name}</td>
-            <td>${item.score}</td>
-            <td>${formatTime(item.time)}</td>
-        </tr>`;
-    });
-    html += `</tbody></table>`;
-    container.innerHTML = html;
+  }
 }
 
-/* Countdown Engine Before Stage 1 */
-function startCountdownBeforeGame() {
-    document.getElementById("modalScreen4").classList.add("hidden");
-    const overlay = document.getElementById("countdown-overlay");
-    const cdText = document.getElementById("countdown-text");
-    overlay.classList.remove("hidden");
+// ==========================================
+// LUKISAN GRAFIK RETRO GBA
+// ==========================================
+function drawMapEnvironment() {
+  const tileSize = 20;
+  for (let x = 0; x < canvas.width; x += tileSize) {
+    for (let y = 0; y < canvas.height; y += tileSize) {
+      let isEven = (x / tileSize + y / tileSize) % 2 === 0;
+      ctx.fillStyle = isEven ? "#334155" : "#1e293b";
+      ctx.fillRect(x, y, tileSize, tileSize);
+      
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, tileSize, tileSize);
+    }
+  }
 
-    let count = 3;
-    cdText.innerText = count;
-    audio.playBeep(440, 'sine', 0.2, 0.4);
+  const wallThick = 18;
 
-    let interval = setInterval(() => {
-        count--;
-        if (count > 0) {
-            cdText.innerText = count;
-            audio.playBeep(440, 'sine', 0.2, 0.4);
-        } else if (count === 0) {
-            cdText.innerText = "MULA!";
-            audio.playBeep(880, 'sine', 0.4, 0.6);
-        } else {
-            clearInterval(interval);
-            overlay.classList.add("hidden");
-            initStage(1);
-            state.isGameOver = false;
-            state.isPaused = false;
-            audio.playBGM();
-            startGameLoop();
-        }
-    }, 900);
+  ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, canvas.width, wallThick + 10);
+  ctx.fillStyle = "#475569"; ctx.fillRect(0, 0, canvas.width, 8);
+  ctx.fillStyle = "#334155"; ctx.fillRect(0, 8, canvas.width, wallThick + 2);
+  ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.fillRect(0, wallThick + 6, canvas.width, 4);
+
+  ctx.fillStyle = "#0f172a"; ctx.fillRect(0, canvas.height - wallThick, canvas.width, wallThick);
+  ctx.fillStyle = "#475569"; ctx.fillRect(0, canvas.height - wallThick, canvas.width, 6);
+
+  ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, wallThick, canvas.height);
+  ctx.fillStyle = "#475569"; ctx.fillRect(0, 0, 6, canvas.height);
+
+  ctx.fillStyle = "#0f172a"; ctx.fillRect(canvas.width - wallThick, 0, wallThick, canvas.height);
+  ctx.fillStyle = "#475569"; ctx.fillRect(canvas.width - wallThick, 0, 6, canvas.height);
 }
 
-/* Event Listeners Setup */
-window.addEventListener("DOMContentLoaded", () => {
-    // Keyboard fallback
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowUp" || e.key === "w") state.keys.up = true;
-        if (e.key === "ArrowDown" || e.key === "s") state.keys.down = true;
-        if (e.key === "ArrowLeft" || e.key === "a") state.keys.left = true;
-        if (e.key === "ArrowRight" || e.key === "d") state.keys.right = true;
-        if (e.key === " " || e.key === "j") shootBullet();
-        if (e.key === "e" || e.key === "Enter") checkProximityAction();
-    });
+function drawObstacles25D() {
+  const obstacles = roomObstacles[currentRoom] || [];
+  for (let obs of obstacles) {
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.fillRect(obs.x + 3, obs.y + obs.h - 2, obs.w, 6);
 
-    window.addEventListener("keyup", (e) => {
-        if (e.key === "ArrowUp" || e.key === "w") state.keys.up = false;
-        if (e.key === "ArrowDown" || e.key === "s") state.keys.down = false;
-        if (e.key === "ArrowLeft" || e.key === "a") state.keys.left = false;
-        if (e.key === "ArrowRight" || e.key === "d") state.keys.right = false;
-    });
+    if (obs.type === 'table') {
+      ctx.fillStyle = "#78350f"; ctx.fillRect(obs.x, obs.y + 6, obs.w, obs.h - 6);
+      ctx.fillStyle = "#b45309"; ctx.fillRect(obs.x, obs.y, obs.w, 8);
+      ctx.fillStyle = "#d97706"; ctx.fillRect(obs.x + 1, obs.y + 1, obs.w - 2, 2);
+    } else if (obs.type === 'barrel') {
+      ctx.fillStyle = "#334155"; ctx.fillRect(obs.x, obs.y + 4, obs.w, obs.h - 4);
+      ctx.fillStyle = "#64748b"; ctx.beginPath(); ctx.ellipse(obs.x + obs.w/2, obs.y + 4, obs.w/2, 4, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#ef4444"; ctx.fillRect(obs.x, obs.y + 10, obs.w, 3);
+    } else if (obs.type === 'crate') {
+      ctx.fillStyle = "#92400e"; ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+      ctx.fillStyle = "#d97706"; ctx.fillRect(obs.x + 2, obs.y + 2, obs.w - 4, obs.h - 4);
+      ctx.strokeStyle = "#78350f"; ctx.lineWidth = 2; ctx.strokeRect(obs.x + 2, obs.y + 2, obs.w - 4, obs.h - 4);
+    }
+  }
+}
 
-    // On-screen Touch Controls
-    document.getElementById("btnShoot").addEventListener("touchstart", (e) => { e.preventDefault(); shootBullet(); });
-    document.getElementById("btnShoot").addEventListener("click", () => shootBullet());
+function drawGoldenKey25D(x, y) {
+  if (doorUnlocked) return;
 
-    document.getElementById("btnAction").addEventListener("touchstart", (e) => { e.preventDefault(); checkProximityAction(); });
-    document.getElementById("btnAction").addEventListener("click", () => checkProximityAction());
+  let floatY = y + Math.sin(Date.now() / 200) * 3;
 
-    // Joystick Touch Handler
-    const jZone = document.getElementById("joystick-zone");
-    const jStick = document.getElementById("joystick-stick");
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 10, 7, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-    jZone.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-        let touch = e.touches[0];
-        let rect = jZone.getBoundingClientRect();
-        let centerX = rect.left + rect.width / 2;
-        let centerY = rect.top + rect.height / 2;
+  ctx.fillStyle = "rgba(251, 191, 36, 0.25)";
+  ctx.beginPath();
+  ctx.arc(x, floatY - 2, 12 + Math.sin(Date.now() / 150)*3, 0, Math.PI * 2);
+  ctx.fill();
 
-        let deltaX = touch.clientX - centerX;
-        let deltaY = touch.clientY - centerY;
-        let dist = Math.hypot(deltaX, deltaY);
-        let maxR = 35;
+  ctx.fillStyle = "#fbbf24";
+  ctx.strokeStyle = "#92400e";
+  ctx.lineWidth = 1.5;
 
-        if (dist > maxR) {
-            deltaX = (deltaX / dist) * maxR;
-            deltaY = (deltaY / dist) * maxR;
-        }
+  ctx.beginPath();
+  ctx.arc(x - 5, floatY - 2, 5, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
 
-        jStick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-        state.joystickVector.x = deltaX / maxR;
-        state.joystickVector.y = deltaY / maxR;
-    });
+  ctx.fillRect(x, floatY - 3, 11, 3); ctx.strokeRect(x, floatY - 3, 11, 3);
+  ctx.fillRect(x + 5, floatY, 3, 4); ctx.fillRect(x + 8, floatY, 3, 4);
+}
 
-    jZone.addEventListener("touchend", () => {
-        jStick.style.transform = `translate(0px, 0px)`;
-        state.joystickVector.x = 0;
-        state.joystickVector.y = 0;
-    });
+function drawAmmoItem25D(x, y) {
+  if (!ammoObj.active) return;
 
-    // D-Pad Touch Handlers
-    const bindDpad = (id, key) => {
-        const el = document.getElementById(id);
-        el.addEventListener("touchstart", (e) => { e.preventDefault(); state.keys[key] = true; });
-        el.addEventListener("touchend", (e) => { e.preventDefault(); state.keys[key] = false; });
-        el.addEventListener("mousedown", () => state.keys[key] = true);
-        el.addEventListener("mouseup", () => state.keys[key] = false);
-    };
-    bindDpad("dpad-up", "up");
-    bindDpad("dpad-down", "down");
-    bindDpad("dpad-left", "left");
-    bindDpad("dpad-right", "right");
+  let floatY = y + Math.sin(Date.now() / 180) * 2;
 
-    // Navigation Modals Handlers
-    document.getElementById("btnToScreen2").addEventListener("click", () => {
-        const nameInput = document.getElementById("playerNameInput").value.trim();
-        if (nameInput) state.playerName = nameInput;
-        document.getElementById("modalScreen1").classList.add("hidden");
-        document.getElementById("modalScreen2").classList.remove("hidden");
-    });
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 8, 8, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-    document.getElementById("btnBackTo1").addEventListener("click", () => {
-        document.getElementById("modalScreen2").classList.add("hidden");
-        document.getElementById("modalScreen1").classList.remove("hidden");
-    });
+  ctx.fillStyle = "#0284c7";
+  ctx.fillRect(x - 7, floatY - 6, 14, 12);
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillRect(x - 5, floatY - 4, 10, 8);
 
-    document.getElementById("btnToScreen3").addEventListener("click", () => {
-        document.getElementById("modalScreen2").classList.add("hidden");
-        document.getElementById("modalScreen3").classList.remove("hidden");
-    });
+  ctx.fillStyle = "#fbbf24";
+  ctx.fillRect(x - 3, floatY - 2, 2, 5);
+  ctx.fillRect(x, floatY - 2, 2, 5);
+  ctx.fillRect(x + 3, floatY - 2, 2, 5);
 
-    document.getElementById("btnBackTo2").addEventListener("click", () => {
-        document.getElementById("modalScreen3").classList.add("hidden");
-        document.getElementById("modalScreen2").classList.remove("hidden");
-    });
+  ctx.strokeStyle = "#0284c7";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x - 7, floatY - 6, 14, 12);
+}
 
-    document.getElementById("btnToScreen4").addEventListener("click", () => {
-        document.getElementById("modalScreen3").classList.add("hidden");
-        document.getElementById("modalScreen4").classList.remove("hidden");
+function drawDoor25D() {
+  if (!door.isVisible) return;
 
-        // Apply Control UI Type
-        if (state.controlType === 'joystick') {
-            document.getElementById("joystick-zone").classList.remove("hidden");
-            document.getElementById("dpad-zone").classList.add("hidden");
-        } else {
-            document.getElementById("dpad-zone").classList.remove("hidden");
-            document.getElementById("joystick-zone").classList.add("hidden");
-        }
-    });
+  ctx.fillStyle = "#052e16";
+  ctx.fillRect(door.x, door.y, door.w, door.h);
 
-    document.getElementById("btnBackTo3").addEventListener("click", () => {
-        document.getElementById("modalScreen4").classList.add("hidden");
-        document.getElementById("modalScreen3").classList.remove("hidden");
-    });
+  ctx.fillStyle = "#22c55e";
+  ctx.fillRect(door.x + 2, door.y + 2, door.w - 4, door.h - 4);
+  
+  ctx.fillStyle = "#4ade80";
+  ctx.fillRect(door.x + 4, door.y + 4, (door.w - 8)/2, door.h - 8);
+  ctx.fillRect(door.x + door.w/2 + 1, door.y + 4, (door.w - 8)/2, door.h - 8);
 
-    document.getElementById("btnStartGame").addEventListener("click", () => {
-        startCountdownBeforeGame();
-    });
+  ctx.strokeStyle = "#15803d";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(door.x, door.y, door.w, door.h);
+}
 
-    // Options Selection Buttons
-    document.querySelectorAll(".diff-grid .btn-option").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".diff-grid .btn-option").forEach(b => b.classList.remove("selected"));
-            btn.classList.add("selected");
-            state.difficulty = btn.dataset.diff;
-        });
-    });
+function drawPlayerPokemonStyle() {
+  const px = player.x;
+  const py = player.y;
 
-    document.querySelectorAll(".ctrl-grid .btn-option").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".ctrl-grid .btn-option").forEach(b => b.classList.remove("selected"));
-            btn.classList.add("selected");
-            state.controlType = btn.dataset.ctrl;
-        });
-    });
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+  ctx.beginPath();
+  ctx.ellipse(px, py + 8, 8, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-    // Answer Submission
-    document.getElementById("btnSubmitAnswer").addEventListener("click", () => {
-        const val = parseInt(document.getElementById("qAnswerInput").value, 10);
-        finishQuestion(val === state.currentFstbAns);
-    });
+  let legOffset = Math.sin(player.animFrame) * 2;
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(px - 5, py + 4 + legOffset, 4, 4);
+  ctx.fillRect(px + 1, py + 4 - legOffset, 4, 4);
 
-    // Scoreboard Tabs & Modal
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            renderScoreboardTable(btn.dataset.tab);
-        });
-    });
+  ctx.fillStyle = "#ec4899";
+  ctx.fillRect(px - 6, py - 4, 12, 9);
+  ctx.fillStyle = "#f8fafc";
+  ctx.fillRect(px - 3, py - 4, 6, 9);
 
-    document.getElementById("btnScoreboardTop").addEventListener("click", () => {
-        renderScoreboardTable("easy");
-        document.getElementById("modalScoreboard").classList.remove("hidden");
-    });
+  ctx.fillStyle = "#fed7aa";
+  ctx.fillRect(px - 5, py - 12, 10, 8);
 
-    document.getElementById("btnCloseScoreboard").addEventListener("click", () => {
-        document.getElementById("modalScoreboard").classList.add("hidden");
-    });
+  ctx.fillStyle = "#0f172a";
+  if (player.facingX >= 0) {
+    ctx.fillRect(px + 1, py - 9, 2, 3);
+    ctx.fillRect(px - 3, py - 9, 2, 3);
+  } else {
+    ctx.fillRect(px - 3, py - 9, 2, 3);
+    ctx.fillRect(px + 1, py - 9, 2, 3);
+  }
 
-    // End Game Replay / New Player
-    document.getElementById("btnReplay").addEventListener("click", () => {
-        document.getElementById("modalEndGame").classList.add("hidden");
-        initStage(1);
-        state.isGameOver = false;
-        state.isPaused = false;
-        audio.playBGM();
-        startGameLoop();
-    });
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillRect(px - 6, py - 15, 12, 4);
+  ctx.fillRect(px + (player.facingX * 2) - 4, py - 12, 8, 2);
 
-    document.getElementById("btnNewPlayer").addEventListener("click", () => {
-        document.getElementById("modalEndGame").classList.add("hidden");
-        document.getElementById("modalScreen1").classList.remove("hidden");
-    });
+  if (playerAmmo > 0) {
+    ctx.fillStyle = "#f59e0b";
+    ctx.fillRect(px + (player.facingX * 7) - 2, py - 1, 6, 3);
+  }
+}
 
-    // Meta Sound & Reset Buttons
-    document.getElementById("btnSound").addEventListener("click", () => {
-        audio.isMuted = !audio.isMuted;
-        document.getElementById("btnSound").innerText = audio.isMuted ? "🔇 SOUND OFF" : "🔊 SOUND ON";
-        if (!audio.isMuted) audio.playBGM();
-        else audio.stopAllAudio();
-    });
+function drawZombiePokemonStyle(z) {
+  if (!z.active) return;
 
-    document.getElementById("btnResetGame").addEventListener("click", () => {
-        if (confirm("Adakah anda pasti untuk reset semula pusingan ini?")) {
-            initStage(state.stage);
-        }
-    });
-});
+  const zx = z.x;
+  const zy = z.y;
+
+  if (z.isBoss) {
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.beginPath();
+    ctx.ellipse(zx, zy + 14, 14, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(zx - 10, zy - 6, 20, 16);
+
+    ctx.fillStyle = "#dc2626";
+    ctx.fillRect(zx - 8, zy - 18, 16, 13);
+
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(zx - 5, zy - 14, 3, 3);
+    ctx.fillRect(zx + 2, zy - 14, 3, 3);
+
+    // TEKS LABEL BOSS
+    ctx.fillStyle = "#f59e0b";
+    ctx.font = "bold 9px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("BOSS", zx, zy - 27);
+
+    // HEALTH BAR BOSS
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(zx - 12, zy - 24, 24, 4);
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(zx - 12, zy - 24, (z.hp / z.maxHp) * 24, 4);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(zx - 12, zy - 24, 24, 4);
+
+  } else {
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(zx, zy + 8, 8, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#15803d";
+    ctx.fillRect(zx - 6, zy - 4, 12, 9);
+
+    ctx.fillStyle = "#4ade80";
+    ctx.fillRect(zx - 5, zy - 12, 10, 8);
+
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(zx - 3, zy - 9, 2, 2);
+    ctx.fillRect(zx + 1, zy - 9, 2, 2);
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawMapEnvironment();
+  drawDoor25D();
+  drawObstacles25D();
+  drawGoldenKey25D(keyObj.x, keyObj.y);
+  drawAmmoItem25D(ammoObj.x, ammoObj.y);
+
+  zombies.forEach(z => drawZombiePokemonStyle(z));
+
+  ctx.fillStyle = "#fbbf24";
+  bullets.forEach(b => {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  drawPlayerPokemonStyle();
+}
+
+let lastFrameTime = performance.now();
+const fpsInterval = 1000 / 60;
+
+function gameLoop(currentTime) {
+  requestAnimationFrame(gameLoop);
+
+  const now = currentTime || performance.now();
+  const elapsed = now - lastFrameTime;
+
+  if (elapsed > fpsInterval) {
+    lastFrameTime = now - (elapsed % fpsInterval);
+    update();
+    draw();
+  }
+}
+
+updateKeyLocation();
+respawnAmmoItem();
+resetZombies();
+updateLivesDisplay();
+updateAmmoDisplay();
+setupJoystick();
+gameLoop();
 </script>
 </body>
 </html>

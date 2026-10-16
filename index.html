@@ -582,7 +582,7 @@
         <!-- PAGE 3: PANDUAN CARA MAIN -->
         <div id="guide-modal">
           <div class="vic-title" style="font-size: 0.8rem; margin-bottom:4px;">📜 MISI & PERATURAN</div>
-          <div class="vic-details" style="font-size: 0.52rem; line-height: 1.35; margin-bottom: 8px; padding: 6px 8px;">
+          <div class="vic-details" style="font-size: clamp(0.68rem, 1.5vw, 0.82rem); line-height: 1.5; margin-bottom: 8px; padding: 8px 10px;">
             <div style="color:#fbbf24; font-weight:bold;">🎯 MISI UTAMA:</div>
             <div>• Escape 5 Stage Bilik Berzombie!</div>
             <div style="color:#4ade80; font-weight:bold; margin-top:3px;">🔄 PERATURAN ITEM & SOALAN:</div>
@@ -615,7 +615,7 @@
         <!-- PAGE 4: PENGESAHAN MULA PERMAINAN -->
         <div id="final-start-modal" style="position:absolute; top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,.96);border-radius:2px;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;z-index:30;">
           <div class="vic-title" style="font-size:.82rem;">📜 PERATURAN PERMAINAN</div>
-          <div class="vic-details" style="line-height:1.45;">
+          <div class="vic-details" style="font-size:clamp(0.68rem, 1.55vw, 0.84rem); line-height:1.6; padding:8px 10px; margin-bottom:10px;">
             <div>• Selesaikan 5 stage dan jawab soalan FSTB.</div>
             <div>• Kunci membuka pintu, kotak peluru memberi 3 peluru.</div>
             <div>• Item ❤️ memberi +1 nyawa jika jawapan betul.</div>
@@ -1561,19 +1561,17 @@ function useButtonA() {
     return;
   }
 
-  let distKey = Math.hypot(player.x - keyObj.x, player.y - keyObj.y);
-  if (distKey < 30 && !doorUnlocked) {
-    openTerminal('key');
+  // Interaksi item hanya berlaku apabila pemain menekan A / ENTER.
+  // Jika beberapa item berdekatan, pilih item paling hampir supaya tak tersalah claim.
+  const nearbyItems = [];
+  if (!doorUnlocked) nearbyItems.push({ type: 'key', dist: Math.hypot(player.x - keyObj.x, player.y - keyObj.y) });
+  if (ammoObj.active && playerAmmo < 3) nearbyItems.push({ type: 'ammo', dist: Math.hypot(player.x - ammoObj.x, player.y - ammoObj.y) });
+  if (heartObj.active && !heartItemUsedThisStage) nearbyItems.push({ type: 'heart', dist: Math.hypot(player.x - heartObj.x, player.y - heartObj.y) });
+  nearbyItems.sort((a, b) => a.dist - b.dist);
+  if (nearbyItems.length && nearbyItems[0].dist < 30) {
+    openTerminal(nearbyItems[0].type);
     return;
   }
-
-  let distAmmo = Math.hypot(player.x - ammoObj.x, player.y - ammoObj.y);
-  if (ammoObj.active && distAmmo < 30) {
-    if (playerAmmo >= 3) showGameNotice("⚡ PELURU SUDAH PENUH (3/3)!", "#38bdf8", 2000);
-    else { openTerminal('ammo'); return; }
-  }
-  const distHeart = Math.hypot(player.x - heartObj.x, player.y - heartObj.y);
-  if (heartObj.active && !heartItemUsedThisStage && distHeart < 30) openTerminal('heart');
 }
 
 let isShootLocked = false;
@@ -2263,6 +2261,33 @@ function drawZombiePokemonStyle(z) {
   }
 }
 
+function drawItemPrompt() {
+  if (!isGameStarted || isTerminalOpen || isVictoryOpen || isGameOver) return;
+  const candidates = [];
+  if (!doorUnlocked) candidates.push({ x: keyObj.x, y: keyObj.y, type: 'KUNCI' });
+  if (ammoObj.active && playerAmmo < 3) candidates.push({ x: ammoObj.x, y: ammoObj.y, type: 'PELURU' });
+  if (heartObj.active && !heartItemUsedThisStage) candidates.push({ x: heartObj.x, y: heartObj.y, type: 'NYAWA' });
+  if (!candidates.length) return;
+  candidates.sort((a, b) => Math.hypot(player.x-a.x, player.y-a.y) - Math.hypot(player.x-b.x, player.y-b.y));
+  const item = candidates[0];
+  if (Math.hypot(player.x-item.x, player.y-item.y) > 38) return;
+  const label = 'A / ENTER: AMBIL ' + item.type;
+  ctx.save();
+  ctx.font = 'bold 8px monospace';
+  ctx.textAlign = 'center';
+  const width = ctx.measureText(label).width + 10;
+  const x = Math.max(width/2 + 2, Math.min(canvas.width - width/2 - 2, item.x));
+  const y = Math.max(38, item.y - 19);
+  ctx.fillStyle = 'rgba(15,23,42,0.92)';
+  ctx.fillRect(x-width/2, y-9, width, 13);
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x-width/2, y-9, width, 13);
+  ctx.fillStyle = '#fef3c7';
+  ctx.fillText(label, x, y);
+  ctx.restore();
+}
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -2277,6 +2302,7 @@ function draw() {
     ctx.textAlign = "center";
     ctx.fillText("❤️", heartObj.x, hy + 5);
   }
+  drawItemPrompt();
 
   zombies.forEach(z => drawZombiePokemonStyle(z));
 
